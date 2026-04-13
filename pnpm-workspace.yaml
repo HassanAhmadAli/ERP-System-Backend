@@ -1,9 +1,14 @@
-minimumReleaseAge: 4320
-sideEffectsCache: true
-preferOffline: true
 allowBuilds:
   '@nestjs/core': true
   '@prisma/engines': true
   '@scarf/scarf': true
+  '@swc/core': true
+  argon2: true
+  esbuild: true
+  msgpackr-extract: true
   prisma: true
+  prisma-zod-generator: true
   unrs-resolver: true
+minimumReleaseAge: 4320
+preferOffline: true
+sideEffectsCache: true

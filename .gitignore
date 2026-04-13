@@ -36,6 +36,7 @@ lerna-debug.log*
 !.vscode/extensions.json
 
 # dotenv environment variable files
+!.example.env
 .env
 .env.development.local
 .env.test.local
@@ -56,3 +57,7 @@ pids
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /generated/prisma
+pnpm-lock.yaml
+.idea/
+.husky/_
+prisma/migrations/

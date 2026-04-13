@@ -1,13 +1,241 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider     = "prisma-client"
+  output       = "../src/prisma/generated/prisma-client"
+  moduleFormat = "cjs"
+  engineType   = "client"
 }
+
+/**
+ * generator zod {
+ * provider = "prisma-zod-generator"
+ * output   = "../src/prisma/generated/zod"
+ * config   = "./zod-generator.config.json"
+ * }/*
+ */
 
 datasource db {
   provider = "postgresql"
+}
+
+enum ComplaintStatus {
+  Pending
+  InProgress
+  Resolved
+  Rejected
+}
+
+enum Role {
+  Admin
+  Citizen
+  Employee
+  Debugging
+}
+
+enum ComplaintPriority {
+  Low
+  Medium
+  High
+}
+
+enum ComplaintUpdateOperation {
+  CREATE
+  EMPLOYEE_ASSIGNED
+  UPDATE
+  ADD_ATTACHMENT
+  DELETE
+  ARCHIVING
+  STATUS_CHANGE
+}
+
+model errors {
+  id    Int  @id @default(autoincrement())
+  error Json @db.JsonB
+}
+
+model Department {
+  id Int @id @default(autoincrement())
+
+  //
+  name        String  @unique
+  description String?
+
+  //
+  employees  User[]
+  complaints Complaint[]
+
+  //
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  deletedAt                DateTime?
+  complaintUpdateHistories ComplaintUpdateHistory[]
+}
+
+model Complaint {
+  id String @id @default(cuid())
+
+  //
+  title             String
+  description       String
+  status            ComplaintStatus   @default(Pending)
+  complaintPriority ComplaintPriority @default(Medium)
+  isArchived        Boolean           @default(false)
+  location          String?
+  lockedAt          DateTime?
+
+  //
+  departmentId       Int
+  citizenId          Int
+  assignedEmployeeId Int?
+  lockedById         Int?
+
+  //
+  department       Department        @relation(fields: [departmentId], references: [id])
+  citizen          User              @relation("CitizenComplaints", fields: [citizenId], references: [id], onDelete: Restrict)
+  assignedEmployee User?             @relation("EmployeeComplaints", fields: [assignedEmployeeId], references: [id], onDelete: SetNull)
+  lockedBy         User?             @relation("UserLockedComplaints", fields: [lockedById], references: [id])
+  logs             Complaint_audit[]
+  attachments      Attachment[]
+  comments         Comment[]
+
+  //
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  deletedAt                DateTime?
+  complaintUpdateHistories ComplaintUpdateHistory[]
+
+  @@index([citizenId])
+  @@index([assignedEmployeeId])
+  @@index([departmentId])
+  @@index([status])
+}
+
+model ComplaintUpdateHistory {
+  id Int @id @default(autoincrement())
+
+  message       String
+  operationType ComplaintUpdateOperation
+
+  complaintId  String
+  departmentId Int
+  userId       Int
+
+  department Department @relation(fields: [departmentId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+  complaint  Complaint  @relation(fields: [complaintId], references: [id])
+
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  @@index([departmentId])
+}
+
+model Comment {
+  id Int @id @default(autoincrement())
+
+  //
+  content String
+
+  //
+  complaintId String
+  userId      Int
+
+  //
+  complaint Complaint @relation(fields: [complaintId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+
+  //
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  //
+  @@index([complaintId])
+  @@index([userId])
+}
+
+// This model represents the "Complaint_audit" table
+
+model Complaint_audit {
+  id             Int       @id @default(autoincrement())
+  complaint_id   String
+  complaint      Complaint @relation(fields: [complaint_id], references: [id])
+  changedAt      DateTime  @default(now())
+  operation_type String
+  old_data       Json?
+  new_data       Json?
+
+  deletedAt DateTime?
+}
+
+model Attachment {
+  id           Int    @id @default(autoincrement())
+  storedFileId String
+  //
+  creatorId    Int
+  complaintId  String
+
+  //
+  complaint  Complaint  @relation(fields: [complaintId], references: [id])
+  storedFile StoredFile @relation(fields: [storedFileId], references: [id])
+  creator    User       @relation(fields: [creatorId], references: [id])
+
+  //
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([complaintId])
+}
+
+model StoredFile {
+  id           String @id @unique
+  originalname String
+  mimetype     String
+  path         String @unique
+  size         Int
+
+  //
+  attachments Attachment[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+model User {
+  id          Int     @id @default(autoincrement())
+  //
+  fullName    String
+  email       String  @unique
+  phoneNumber String  @unique
+  password    String
+  nationalId  String  @unique
+  role        Role
+  isActive    Boolean @default(true)
+
+  isVerified                Boolean   @default(false)
+  verificationCode          String?
+  verificationCodeExpiresAt DateTime?
+
+  //
+  departmentId Int?
+
+  //
+  department         Department?  @relation(fields: [departmentId], references: [id])
+  complaintsFiled    Complaint[]  @relation("CitizenComplaints")
+  complaintsAssigned Complaint[]  @relation("EmployeeComplaints")
+  complaints         Complaint[]  @relation("UserLockedComplaints")
+  // logsCreated        ComplaintLog[] // Tracks who updated a complaint status
+  comments           Comment[]
+  attachments        Attachment[]
+
+  //
+  createdAt                DateTime                 @default(now())
+  updatedAt                DateTime                 @updatedAt
+  deletedAt                DateTime?
+  complaintUpdateHistories ComplaintUpdateHistory[]
+
+  //
+  @@index([departmentId])
+  @@index([email, role, id])
 }
