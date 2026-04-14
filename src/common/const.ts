@@ -1,5 +1,3 @@
-import { User } from "@/prisma";
-
 export const Keys = {
   Auth: Symbol("Auth_Key"),
   Roles: Symbol("Roles_Key"),

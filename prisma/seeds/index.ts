@@ -1,15 +1,9 @@
 import { PrismaClientKnownRequestError } from "@/prisma";
-import { seedUsers } from "./user";
-import { seedDepartments } from "./department";
-import { seedComplaints } from "./complaints";
+
 import { logger } from "@/utils";
 import { prisma } from "./client-instance";
 
-async function seed() {
-  await seedDepartments();
-  await seedUsers();
-  await seedComplaints();
-}
+async function seed() {}
 
 async function bootstrap() {
   try {

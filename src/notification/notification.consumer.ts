@@ -4,7 +4,8 @@ import { Job } from "bullmq";
 import { Namespace } from "socket.io";
 import { Notification } from "./notification.interface";
 import { CachingService } from "@/common/caching/caching.service";
-import { MailerService } from "@nestjs-modules/mailer";
+import { MailerService } from "@/mailer/mailer.service";
+
 @Processor(Keys.notification)
 export class NotificationConsumer extends WorkerHost {
   constructor(

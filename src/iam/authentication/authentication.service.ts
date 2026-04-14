@@ -24,7 +24,7 @@ import { logger } from "@/utils";
 import { Cache } from "@nestjs/cache-manager";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
-import { Notification } from "@/notifications/notification.interface";
+import { Notification } from "@/notification/notification.interface";
 @Injectable()
 export class AuthenticationService {
   constructor(

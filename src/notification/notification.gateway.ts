@@ -9,7 +9,7 @@ import {
   WebSocketServer,
 } from "@nestjs/websockets";
 import { Namespace, Socket } from "socket.io";
-import { NotificationsService } from "./notifications.service";
+import { NotificationsService } from "./notification.service";
 import { logger } from "@/utils";
 import { UseStandardGatewaySetup } from "@/common/decorators/standard-gateway.decorator";
 

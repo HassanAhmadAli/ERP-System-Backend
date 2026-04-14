@@ -12,3 +12,5 @@ allowBuilds:
 minimumReleaseAge: 4320
 preferOffline: true
 sideEffectsCache: true
+# autoInstallPeers: true
+# strictPeerDependencies: false

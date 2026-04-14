@@ -10,19 +10,16 @@ import { IdentityAndAccessManagementModule } from "@/iam/iam.module";
 import { DevtoolsModule } from "@nestjs/devtools-integration";
 import { CacheModule } from "@nestjs/cache-manager";
 import { UserModule } from "./user/user.module";
-import { ComplaintsModule } from "./complaints/complaints.module";
-import { NotificationsModule } from "./notifications/notifications.module";
-import { StatisticsModule } from "./statistics/statistics.module";
-import { DepartmentModule } from "./department/department.module";
+import { NotificationsModule } from "./notification/notification.module";
 import KeyvRedis from "@keyv/redis";
 import morgan from "morgan";
 import { env } from "@/common/env";
-import { CommentModule } from "./comment/comment.module";
 import { AttachmentModule } from "./attachment/attachment.module";
 import { ScheduleModule } from "@nestjs/schedule";
 import { BullModule } from "@nestjs/bullmq";
 import { CachingService } from "./common/caching/caching.service";
 import { BackupModule } from "./backup/backup.module";
+
 @Module({
   imports: [
     BullModule.forRoot({
@@ -65,11 +62,7 @@ import { BackupModule } from "./backup/backup.module";
     PrismaModule,
     IdentityAndAccessManagementModule,
     UserModule,
-    ComplaintsModule,
     NotificationsModule,
-    StatisticsModule,
-    DepartmentModule,
-    CommentModule,
     AttachmentModule,
     BackupModule,
   ],
