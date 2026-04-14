@@ -61,3 +61,4 @@ pnpm-lock.yaml
 .idea/
 .husky/_
 prisma/migrations/
+/src/prisma/generated/

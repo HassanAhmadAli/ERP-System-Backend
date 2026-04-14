@@ -9,6 +9,7 @@
     "declaration": true,
     "lib": ["ES2022"],
     "removeComments": true,
+    "types": ["node", "jest", "multer"],
     "emitDecoratorMetadata": true,
     "noUncheckedIndexedAccess": true,
     "experimentalDecorators": true,
@@ -18,7 +19,6 @@
     "target": "ES2022",
     "sourceMap": true,
     "outDir": "dist",
-    "baseUrl": "./src",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
@@ -30,7 +30,7 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"]
     }
   }
 }

@@ -25,20 +25,16 @@ export const envSchema = z.object({
     .string()
     .default(path.join(__dirname, "..", "..", "backups"))
     .transform((x) => {
+      const { data: Is_DOCKER } = z.stringbool().safeParse(process.env.IS_DOCKER);
+      if (Is_DOCKER) {
+        return "/app/backups";
+      }
       const path = x.replaceAll("\\", "/").replace(/dist\/backups$/, "/backups");
       console.log(path);
       return path;
     }),
 });
-// .refine((env) => {
-//   if (env.IS_DOCKER) {
-//     return {
-//       ...env,
-//       backupDir: "/app/backups",
-//     } as const;
-//   }
-//   return env;
-// });
+
 export const validateEnv = (input: Record<string, any>) => {
   const { data, error, success } = envSchema.safeParse(input);
   if (success) {

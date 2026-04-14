@@ -23,7 +23,6 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { BullModule } from "@nestjs/bullmq";
 import { CachingService } from "./common/caching/caching.service";
 import { BackupModule } from "./backup/backup.module";
-import { AuthModule } from "./auth/auth.module";
 @Module({
   imports: [
     BullModule.forRoot({
@@ -73,7 +72,6 @@ import { AuthModule } from "./auth/auth.module";
     CommentModule,
     AttachmentModule,
     BackupModule,
-    AuthModule,
   ],
   controllers: [],
   providers: [
