@@ -1,7 +1,5 @@
 import {
-  ArgumentsHost,
   BadRequestException,
-  Catch,
   ConflictException,
   HttpException,
   InternalServerErrorException,
@@ -11,9 +9,15 @@ import { PrismaClientKnownRequestError } from "@/prisma";
 import { logger } from "@/utils";
 import { AppBaseExceptionFilter } from "@/common/app_filter";
 
-@Catch(PrismaClientKnownRequestError)
 export class PrismaServerErrorFilter extends AppBaseExceptionFilter {
-  override catch(
+  constructor() {
+    super();
+  }
+  override canHandle(exception: Error): boolean {
+    return exception instanceof PrismaClientKnownRequestError;
+  }
+
+  override handle(
     error: PrismaClientKnownRequestError & {
       meta: {
         driverAdapterError?: {
@@ -23,7 +27,6 @@ export class PrismaServerErrorFilter extends AppBaseExceptionFilter {
         };
       };
     },
-    host: ArgumentsHost,
   ) {
     const originalMessage = error.meta.driverAdapterError?.cause?.originalMessage;
     let exception: HttpException | undefined = undefined;
@@ -67,6 +70,6 @@ export class PrismaServerErrorFilter extends AppBaseExceptionFilter {
         if (exception == undefined) exception = new BadRequestException(originalMessage || `Prisma Validation Error`);
       }
     }
-    return super.catch(exception, host);
+    return exception;
   }
 }

@@ -1,16 +1,9 @@
 ﻿import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
-import { JwtErrorFilter } from "./filter/jwt-error.filter";
-import { APP_FILTER } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
 @Module({
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: JwtErrorFilter,
-    },
-  ],
+  providers: [],
   imports: [
     JwtModule.registerAsync({
       inject: [ConfigService],

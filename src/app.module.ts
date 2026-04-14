@@ -1,5 +1,5 @@
 import { ZodValidationPipe, ZodSerializerInterceptor } from "nestjs-zod";
-import { APP_PIPE, APP_INTERCEPTOR } from "@nestjs/core";
+import { APP_PIPE, APP_INTERCEPTOR, APP_FILTER } from "@nestjs/core";
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { EnvVariables, validateEnv } from "@/common/schema/env";
@@ -19,6 +19,7 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { BullModule } from "@nestjs/bullmq";
 import { CachingService } from "./common/caching/caching.service";
 import { BackupModule } from "./backup/backup.module";
+import { GlobalExceptionFilter } from "./global-exception-filter";
 
 @Module({
   imports: [
@@ -68,6 +69,10 @@ import { BackupModule } from "./backup/backup.module";
   ],
   controllers: [],
   providers: [
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
