@@ -62,3 +62,5 @@ pnpm-lock.yaml
 .husky/_
 prisma/migrations/
 /src/prisma/generated/
+prisma/new.prisma.txt
+prisma/old.prisma.txt

@@ -1,3 +1,5 @@
+// todo: remove the customer from the invoices , make sales invoices annonymous
+// todo: make decision, to include or not to include orders with invoices
 generator client {
   provider     = "prisma-client"
   output       = "../src/prisma/generated/prisma-client"
@@ -5,32 +7,340 @@ generator client {
   engineType   = "client"
 }
 
-/**
- * generator zod {
- * provider = "prisma-zod-generator"
- * output   = "../src/prisma/generated/zod"
- * config   = "./zod-generator.config.json"
- * }/*
- */
-
 datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  Admin
-  Citizen
-  Employee
-  Debugging
+//// enums
+//////////////////////////
+//// Testing Ground
+enum LoyaltyReason {
+  PURCHASE
+  REDEMPTION
+  ADJUSTMENT
 }
 
+//////////////////////////
 
+enum UserRole {
+  ADMIN
+  EMPLOYEE
+  CUSTOMER
+  MANAGER
+}
+
+enum InvoiceStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum DiscountScope {
+  GLOBAL
+  CATEGORY
+  PRODUCT
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  PREPARING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum NotificationTargetType {
+  USER
+  ROLE
+  ALL
+}
+
+//// Enums
+
+model User {
+  id           Int      @id @default(autoincrement())
+  fullName     String
+  email        String   @unique
+  phoneNumber  String?
+  passwordHash String   @map("password")
+  nationalId   String   @unique
+  role         UserRole
+  isActive     Boolean  @default(true)
+
+  isVerified                Boolean   @default(false)
+  verificationCode          String?
+  verificationCodeExpiresAt DateTime?
+
+  // relations
+  attachments Attachment[]
+  employee    Employee?
+
+  customer               Customer?
+  auditLogs              AuditLog[]
+  sentNotifications      Notification[]          @relation("SentBy")
+  notificationRecipients NotificationRecipient[]
+  recordedExpenses       Expense[]
+  createdDiscounts       Discount[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  deletedAt              DateTime?
+
+  @@index([email, role, id])
+}
+
+model Employee {
+  id       Int    @id @default(autoincrement())
+  userId   Int    @unique
+  jobTitle String
+
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  processedInvoices SalesInvoice[]    @relation("Cashier")
+  recordedPurchases PurchaseInvoice[] @relation("Accountant")
+}
+
+model Customer {
+  id            Int     @id @default(autoincrement())
+  userId        Int     @unique
+  name          String
+  phone         String?
+  email         String?
+  address       String?
+  loyaltyPoints Int     @default(0)
+  totalSpent    Decimal @default(0) @db.Decimal(12, 2)
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  salesInvoices SalesInvoice[]
+  orders        Order[]
+}
+
+//// Products
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+
+  products Product[]
+}
+
+model Supplier {
+  id       Int     @id @default(autoincrement())
+  fullName String
+  phone    String?
+  email    String?
+  address  String?
+
+  products         Product[]
+  purchaseInvoices PurchaseInvoice[]
+}
+
+model Product {
+  id              Int      @id @default(autoincrement())
+  name            String
+  description     String?
+  barcode         String   @unique
+  purchasePrice   Decimal  @db.Decimal(12, 2)
+  sellingPrice    Decimal  @db.Decimal(12, 2)
+  quantityInStock Int
+  minQuantity     Int
+  categoryId      Int
+  supplierId      Int
+  imageUrl        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+
+  saleItems     SaleItem[]
+  purchaseItems PurchaseItem[]
+  orderItems    OrderItem[]
+}
+
+// Sales & Invoicing
+
+model SalesInvoice {
+  id             Int           @id @default(autoincrement())
+  cashierId      Int
+  customerId     Int?
+  subtotal       Decimal       @db.Decimal(12, 2)
+  discountAmount Decimal       @default(0) @db.Decimal(12, 2)
+  total          Decimal       @db.Decimal(12, 2)
+  amountPaid     Decimal       @db.Decimal(12, 2)
+  status         InvoiceStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
+
+  cashier  Employee   @relation("Cashier", fields: [cashierId], references: [id])
+  customer Customer?  @relation(fields: [customerId], references: [id])
+  items    SaleItem[]
+}
+
+model SaleItem {
+  id        Int     @id @default(autoincrement())
+  invoiceId Int
+  productId Int
+  quantity  Int
+  unitPrice Decimal @db.Decimal(12, 2)
+  discount  Decimal @default(0) @db.Decimal(12, 2)
+  subtotal  Decimal @db.Decimal(12, 2)
+
+  invoice SalesInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product Product      @relation(fields: [productId], references: [id])
+}
+
+model PurchaseInvoice {
+  id           Int           @id @default(autoincrement())
+  supplierId   Int
+  accountantId Int
+  total        Decimal       @db.Decimal(12, 2)
+  status       InvoiceStatus @default(PENDING)
+  invoiceDate  DateTime
+  createdAt    DateTime      @default(now())
+
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  accountant Employee @relation("Accountant", fields: [accountantId], references: [id])
+
+  items PurchaseItem[]
+}
+
+model PurchaseItem {
+  id         Int     @id @default(autoincrement())
+  purchaseId Int
+  productId  Int
+  quantity   Int
+  unitCost   Decimal @db.Decimal(12, 2)
+  subtotal   Decimal @db.Decimal(12, 2)
+  // todo: 
+  expiryDate       DateTime?
+
+  purchase PurchaseInvoice @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product  Product         @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id                Int         @id @default(autoincrement())
+  customerId        Int
+  subtotal          Decimal     @db.Decimal(12, 2)
+  discountAmount    Decimal     @default(0) @db.Decimal(12, 2)
+  total             Decimal     @db.Decimal(12, 2)
+  loyaltyPointsUsed Int         @default(0)
+  deliveryAddress   String?
+  status            OrderStatus @default(PENDING)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  customer Customer    @relation(fields: [customerId], references: [id])
+  items    OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  unitPrice Decimal @db.Decimal(12, 2)
+  subtotal  Decimal @db.Decimal(12, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// Discounts & Loyalty
+
+model Discount {
+  id              Int           @id @default(autoincrement())
+  name            String
+  type            DiscountType
+  value           Decimal       @db.Decimal(12, 2)
+  scope           DiscountScope
+  maxInvoiceValue Decimal       @default(0) @db.Decimal(12, 2)
+  maxUses         Int?
+  usedCount       Int           @default(0)
+  startDate       DateTime
+  endDate         DateTime?
+  isActive        Boolean       @default(true)
+  createdById     Int
+  createdAt       DateTime      @default(now())
+
+  createdBy User @relation(fields: [createdById], references: [id])
+}
+
+model LoyaltyReward {
+  id                String  @id @default(uuid())
+  pointsThreshold   Int
+  rewardDescription String
+  discountValue     Decimal @db.Decimal(12, 2)
+  isActive          Boolean @default(true)
+}
+
+// Notifications
+
+model Notification {
+  id         Int                    @id @default(autoincrement())
+  senderId   Int
+  title      String
+  body       String
+  targetType NotificationTargetType
+  sentAt     DateTime               @default(now())
+
+  sender     User                    @relation("SentBy", fields: [senderId], references: [id])
+  recipients NotificationRecipient[]
+}
+
+model NotificationRecipient {
+  id             Int       @id @default(autoincrement())
+  notificationId Int
+  userId         Int
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+
+  notification Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([notificationId, userId])
+}
+
+// Audit & Logging
+
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  action      String
+  entity      String
+  entityId    Int
+  oldValue    Json?
+  newValue    Json?
+  performedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Expense {
+  id           Int      @id @default(autoincrement())
+  recordedById Int
+  description  String
+  category     String
+  amount       Decimal  @db.Decimal(12, 2)
+  expenseDate  DateTime
+  createdAt    DateTime @default(now())
+
+  recordedBy User @relation(fields: [recordedById], references: [id])
+}
+
+////
 model errors {
   id    Int  @id @default(autoincrement())
   error Json @db.JsonB
 }
-
-// This model represents the "Complaint_audit" table
 
 model Attachment {
   id           Int    @id @default(autoincrement())
@@ -63,29 +373,3 @@ model StoredFile {
   deletedAt DateTime?
 }
 
-model User {
-  id Int @id @default(autoincrement())
-
-  fullName    String
-  email       String  @unique
-  phoneNumber String  @unique
-  password    String
-  nationalId  String  @unique
-  role        Role
-  isActive    Boolean @default(true)
-
-  isVerified                Boolean   @default(false)
-  verificationCode          String?
-  verificationCodeExpiresAt DateTime?
-
-  departmentId Int?
-
-  attachments Attachment[]
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  @@index([departmentId])
-  @@index([email, role, id])
-}
