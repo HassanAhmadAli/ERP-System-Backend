@@ -57,7 +57,7 @@ export class AuthenticationService {
     const user = await this.prisma.user.create({
       data: {
         ...signupDto,
-        password: encryptedPassword,
+        passwordHash: encryptedPassword,
         isVerified: false,
         verificationCode,
         verificationCodeExpiresAt,
@@ -152,7 +152,7 @@ export class AuthenticationService {
         email,
       },
       select: {
-        password: true,
+        passwordHash: true,
         id: true,
         role: true,
         isVerified: true,
@@ -165,7 +165,7 @@ export class AuthenticationService {
 
     const doesPasswordMatch = await this.hashingService.compare({
       raw: rawPassword,
-      encrypted: user.password,
+      encrypted: user.passwordHash,
     });
 
     if (!doesPasswordMatch) {
@@ -190,13 +190,13 @@ export class AuthenticationService {
         id: userId,
       },
       select: {
-        password: true,
+        passwordHash: true,
       },
     });
 
     const doesPasswordMatch = await this.hashingService.compare({
       raw: rawPassword,
-      encrypted: user.password,
+      encrypted: user.passwordHash,
     });
 
     if (!doesPasswordMatch) {
