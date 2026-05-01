@@ -5,7 +5,7 @@ import { AuthenticationController } from "./authentication/authentication.contro
 import { AuthenticationService } from "./authentication/authentication.service";
 import { APP_GUARD } from "@nestjs/core";
 import { AuthenticationGuard } from "./authentication/guard/authentication.guard";
-import { RolesGuard } from "./authorization/guards/roles.guard";
+import { PermissionsGuard } from "./authorization/guards/permissions.guard";
 import { NotificationsModule } from "@/notification/notification.module";
 import { HashingModule } from "@/iam/hashing/hashing.module";
 import { AppJwtModule } from "./jwt/appjwt.module";
@@ -21,7 +21,7 @@ import { AppJwtModule } from "./jwt/appjwt.module";
     },
     {
       provide: APP_GUARD,
-      useClass: RolesGuard,
+      useClass: PermissionsGuard,
     },
   ],
   imports: [AppJwtModule, HashingModule, NotificationsModule],

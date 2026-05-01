@@ -1,15 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ActiveUser } from "@/iam/decorators/ActiveUser.decorator";
 import { SetAllowedRoles } from "@/iam/authorization/decorators/roles.decorator";
-import { Role } from "@/prisma";
+import { UserRole } from "@/prisma";
 import { CreateEmployeeDto } from "./dto/create-user.dto";
-import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 @Controller("user")
 export class UserController {
   constructor(private readonly userService: UserService) {}
-  @SetAllowedRoles(Role.Admin, Role.Citizen)
+  @SetAllowedRoles(UserRole.ADMIN, UserRole.CUSTOMER)
   @Patch("profile")
   updateProfile(
     @Body()
@@ -24,7 +23,7 @@ export class UserController {
     return this.userService.getProfile(userId);
   }
 
-  @SetAllowedRoles(Role.Admin)
+  @SetAllowedRoles(UserRole.ADMIN)
   @Post("employee")
   async addEmployee(
     @Body()
@@ -33,7 +32,7 @@ export class UserController {
     return await this.userService.addEmployee(createEmployeeDto);
   }
 
-  @SetAllowedRoles(Role.Admin)
+  @SetAllowedRoles(UserRole.ADMIN)
   @Patch("employee/profile/:id")
   async updateEmployeeProfile(
     @Param("id", ParseIntPipe)
@@ -44,7 +43,7 @@ export class UserController {
     return await this.userService.updateEmployeeProfile(updateUserDto, userId);
   }
 
-  @SetAllowedRoles(Role.Admin)
+  @SetAllowedRoles(UserRole.ADMIN)
   @Patch("employee/promote/:id")
   async promoteToAdmin(
     @Param("id", ParseIntPipe)
@@ -53,25 +52,15 @@ export class UserController {
     return await this.userService.promoteToAdmin(employeeId);
   }
 
-  @SetAllowedRoles(Role.Admin)
+  @SetAllowedRoles(UserRole.ADMIN)
   @Delete("archive/:id")
   async archiveAccount(@Param("id") userId: number) {
     return await this.userService.archiveAccount(userId);
   }
 
-  @SetAllowedRoles(Role.Admin)
+  @SetAllowedRoles(UserRole.ADMIN)
   @Delete("delete/:id")
   async deleteAccount(@Param("id") userId: number) {
     return await this.userService.deleteAccount(userId);
-  }
-  @SetAllowedRoles(Role.Admin)
-  @Get("department/:id/employees")
-  async getEmployeesOfDepartment(
-    @Query()
-    paginationQueryDto: PaginationQueryDto,
-    @Param("id", ParseIntPipe)
-    departmentId: number,
-  ) {
-    return await this.userService.getEmployeesOfDepartment(departmentId, paginationQueryDto);
   }
 }

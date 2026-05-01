@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Prisma, PrismaService, Role } from "@/prisma";
+import { Prisma, PrismaService, UserRole } from "@/prisma";
 import { Public } from "@/common/decorators/public.decorator";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { getEntriesOfTrue } from "@/utils";
@@ -23,16 +23,14 @@ export class UserService {
     const res = await this.prisma.user.update({
       where: {
         id: userId,
-        role: {
-          in: [Role.Employee, Role.Debugging],
-        },
+        role: UserRole.ADMIN,
       },
       data: updateUserDto,
       select: {
         ...getEntriesOfTrue(updateUserDto),
         phoneNumber: true,
         email: true,
-        password: false,
+        passwordHash: false,
       } satisfies Prisma.UserSelect,
     });
     await this.cachingService.users.removeCachedUserData(userId);
@@ -49,7 +47,6 @@ export class UserService {
         phoneNumber: true,
         nationalId: true,
         role: true,
-        departmentId: true,
       },
     });
   }
@@ -57,9 +54,7 @@ export class UserService {
     const user = await this.prisma.user.update({
       where: {
         id: userId,
-        role: {
-          in: [Role.Employee, Role.Debugging],
-        },
+        role: UserRole.EMPLOYEE,
       },
       data: updateUserDto,
       select: {
@@ -71,13 +66,13 @@ export class UserService {
     return user;
   }
   async addEmployee({ password: rawPassword, ...createEcmployeeDto }: CreateEmployeeDto) {
-    const password = await this.hashingService.hash({
+    const passwordHash = await this.hashingService.hash({
       raw: rawPassword,
     });
     return await this.prisma.user.create({
       data: {
         ...createEcmployeeDto,
-        password,
+        passwordHash,
         isVerified: true,
       },
       select: {
@@ -121,20 +116,6 @@ export class UserService {
       },
       data: {
         deletedAt: new Date(),
-      },
-    });
-  }
-  async getEmployeesOfDepartment(departmentId: number, { deletedAt, limit, offset }: PaginationQueryDto) {
-    return await this.prisma.user.findMany({
-      where: {
-        departmentId,
-        deletedAt,
-      },
-      skip: offset,
-      take: limit,
-      omit: {
-        password: true,
-        deletedAt: true,
       },
     });
   }
