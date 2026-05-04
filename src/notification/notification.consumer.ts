@@ -3,13 +3,13 @@ import { Keys } from "@/common/const";
 import { Job } from "bullmq";
 import { Namespace } from "socket.io";
 import { Notification } from "./notification.interface";
-import { CachingService } from "@/caching/caching.service";
+import { AppCachingService } from "@/caching/caching.service";
 import { MailerService } from "@/mailer/mailer.service";
 
 @Processor(Keys.notification)
 export class NotificationConsumer extends WorkerHost {
   constructor(
-    private readonly cacheService: CachingService,
+    private readonly cacheService: AppCachingService,
     private readonly mailingService: MailerService,
   ) {
     super();

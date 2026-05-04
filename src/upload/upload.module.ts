@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { UploadService } from "./upload.service";
+import { AppUploadService } from "./upload.service";
 import { MulterModule } from "@nestjs/platform-express";
 @Module({
   imports: [
@@ -8,6 +8,6 @@ import { MulterModule } from "@nestjs/platform-express";
     }),
   ],
   exports: [MulterModule],
-  providers: [UploadService],
+  providers: [AppUploadService],
 })
 export class UploadModule {}

@@ -183,29 +183,12 @@ export class AuthenticationService {
     return generatedTokens;
   }
 
-  async signout({ refreshToken, password: rawPassword }: SignoutDto) {
-    const { sub: userId } = await this.jwtService.verifyAsync<RefreshTokenPayload>(refreshToken);
-    const user = await this.prisma.user.findUniqueOrThrow({
-      where: {
-        id: userId,
-      },
-      select: {
-        passwordHash: true,
-      },
-    });
-
-    const doesPasswordMatch = await this.hashingService.compare({
-      raw: rawPassword,
-      encrypted: user.passwordHash,
-    });
-
-    if (!doesPasswordMatch) {
-      return new UnauthorizedException("Incorrect Password");
-    }
+  async signout({ refresh_token }: SignoutDto) {
+    const { sub: userId } = await this.jwtService.verifyAsync<RefreshTokenPayload>(refresh_token);
     return await this.refreshTokenIdsStorage.invalidate(userId);
   }
-  async refreshTokens({ refreshToken }: RefreshTokenDto) {
-    const { refreshTokenId, sub: userId } = await this.jwtService.verifyAsync<RefreshTokenPayload>(refreshToken);
+  async refreshTokens({ refresh_token }: RefreshTokenDto) {
+    const { refreshTokenId, sub: userId } = await this.jwtService.verifyAsync<RefreshTokenPayload>(refresh_token);
     const isValid = await this.refreshTokenIdsStorage.validate(userId, refreshTokenId);
     if (!isValid) {
       throw new UnauthorizedException("Refresh Token Expired");
@@ -239,7 +222,7 @@ export class AuthenticationService {
       ...payLoadDto,
       tokenType: "access",
     });
-    const [accessToken, refreshToken] = await Promise.all([
+    const [access_token, refresh_token] = await Promise.all([
       this.signMethod(accessTokenPayload, this.config.getOrThrow("JWT_TTL", { infer: true })),
       this.signMethod(
         refreshTokenPayload,
@@ -250,8 +233,8 @@ export class AuthenticationService {
     ]);
 
     return {
-      accessToken,
-      refreshToken,
+      access_token,
+      refresh_token,
       refreshTokenId: refreshTokenPayload.refreshTokenId,
     };
   }

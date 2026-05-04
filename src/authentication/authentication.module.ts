@@ -9,7 +9,7 @@ import { HashingModule } from "@/hashing/hashing.module";
 @Module({
   controllers: [AuthenticationController],
   providers: [AuthenticationService, RefreshTokenIdsStorage, AccessTokenGuard],
-  imports: [HashingModule, HashingModule, NotificationsModule],
+  imports: [HashingModule, NotificationsModule],
   exports: [AccessTokenGuard],
 })
 export class AuthenticationModule {}

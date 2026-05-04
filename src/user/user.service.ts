@@ -5,8 +5,7 @@ import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { getEntriesOfTrue } from "@/utils";
 import { HashingService } from "@/hashing/hashing.service";
 import { CreateEmployeeDto } from "./dto/create-user.dto";
-import { CachingService } from "@/caching/caching.service";
-import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
+import { AppCachingService } from "@/caching/caching.service";
 
 @Public()
 @Injectable()
@@ -14,7 +13,7 @@ export class UserService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly hashingService: HashingService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: AppCachingService,
   ) {}
   get prisma() {
     return this.prismaService.client;

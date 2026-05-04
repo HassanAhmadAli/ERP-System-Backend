@@ -6,12 +6,12 @@ import path from "node:path";
 import { logger } from "@/utils";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
-import { CachingService } from "@/caching/caching.service";
+import { AppCachingService } from "@/caching/caching.service";
 @Injectable()
 export class BackupService implements OnModuleInit {
   constructor(
     private readonly configService: ConfigService<EnvVariables>,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: AppCachingService,
   ) {}
   onModuleInit() {}
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

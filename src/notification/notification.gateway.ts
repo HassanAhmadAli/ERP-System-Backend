@@ -36,7 +36,7 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
   }
 
   @SubscribeMessage("login")
-  async handleLogin(@ConnectedSocket() socket: Socket, @MessageBody() accessToken: string) {
-    return await this.notificationsService.handleLogin(socket, accessToken);
+  async handleLogin(@ConnectedSocket() socket: Socket, @MessageBody() access_token: string) {
+    return await this.notificationsService.handleLogin(socket, access_token);
   }
 }

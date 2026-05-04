@@ -14,8 +14,8 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   @Post("signin")
   async signin(@Body() signinDto: SigninDto) {
-    const { accessToken, refreshToken } = await this.authenticationService.signIn(signinDto);
-    return { accessToken, refreshToken };
+    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto);
+    return { access_token, refresh_token };
   }
 
   @Post("verify")

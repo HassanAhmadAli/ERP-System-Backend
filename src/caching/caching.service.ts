@@ -5,7 +5,7 @@ import { BadRequestException, Injectable } from "@nestjs/common";
 import { cachedUserPayload } from "./interface/cached-user-payload.interface";
 import { CacheKey, CashingNamespace } from "../common/const";
 @Injectable()
-export class CachingService {
+export class AppCachingService {
   constructor(
     public readonly manager: Cache,
     private readonly prismaService: PrismaService,
