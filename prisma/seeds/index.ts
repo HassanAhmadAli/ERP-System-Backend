@@ -2,8 +2,10 @@ import { PrismaClientKnownRequestError } from "@/prisma";
 
 import { logger } from "@/utils";
 import { prisma } from "./client-instance";
-
-async function seed() {}
+import { seedUsers } from "./user";
+async function seed() {
+  await seedUsers();
+}
 
 async function bootstrap() {
   try {
@@ -13,6 +15,11 @@ async function bootstrap() {
       logger.error({
         caller: "PrismaClientKnownRequestError",
         value: e.message,
+      });
+    } else {
+      logger.error({
+        caller: "unknown error",
+        value: e,
       });
     }
     await prisma.$disconnect();

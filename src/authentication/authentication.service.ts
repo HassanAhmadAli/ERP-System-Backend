@@ -14,7 +14,7 @@ import {
 } from "./dto/request-user.dto";
 import { randomUUID, randomInt } from "node:crypto";
 import { RefreshTokenIdsStorage } from "./refresh-token-ids.storage";
-import { Prisma, PrismaService, User } from "@/prisma";
+import { Prisma, PrismaService, User, UserRole } from "@/prisma";
 import { ErrorMessages, Keys } from "@/common/const";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
@@ -47,8 +47,8 @@ export class AuthenticationService {
     return this.prismaService.client;
   }
 
-  async signup({ password: rawPassword, ...signupDto }: SignupDto) {
-    const encryptedPassword = await this.hashingService.hash({
+  async genericSignup(role: UserRole, { password: rawPassword, ...signupDto }: SignupDto) {
+    const passwordHash = await this.hashingService.hash({
       raw: rawPassword,
     });
     const verificationCode = (this.NODE_ENV === "production" ? randomInt(10000000, 99999999) : 12345678).toString();
@@ -56,8 +56,9 @@ export class AuthenticationService {
     console.log(signupDto);
     const user = await this.prisma.user.create({
       data: {
+        role,
         ...signupDto,
-        passwordHash: encryptedPassword,
+        passwordHash,
         isVerified: false,
         verificationCode,
         verificationCodeExpiresAt,
