@@ -6,7 +6,6 @@ import nodemailer from "nodemailer";
 @Injectable()
 export class MailerService {
   private transporter: nodemailer.Transporter;
-
   constructor(private readonly configService: ConfigService<EnvVariables>) {
     this.transporter = nodemailer.createTransport({
       host: this.configService.get("APP_EMAIL_HOST", { infer: true }),

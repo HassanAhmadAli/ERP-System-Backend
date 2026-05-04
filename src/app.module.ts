@@ -3,10 +3,8 @@ import { APP_PIPE, APP_INTERCEPTOR, APP_FILTER } from "@nestjs/core";
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { EnvVariables, validateEnv } from "@/common/schema/env";
-import { CommonModule } from "@/common/common.module";
 import { PrismaModule } from "@/prisma/prisma.module";
 import { TimeoutInterceptor } from "@/common/interceptors/timeout.interceptor";
-import { DevtoolsModule } from "@nestjs/devtools-integration";
 import { CacheModule } from "@nestjs/cache-manager";
 import { UserModule } from "./user/user.module";
 import { NotificationsModule } from "./notification/notification.module";
@@ -16,16 +14,18 @@ import { env } from "@/common/env";
 import { AttachmentModule } from "./attachment/attachment.module";
 import { ScheduleModule } from "@nestjs/schedule";
 import { BullModule } from "@nestjs/bullmq";
-import { CachingService } from "./common/caching/caching.service";
 import { BackupModule } from "./backup/backup.module";
 import { GlobalExceptionFilter } from "./global-exception-filter";
 import { PermissionsGuard } from "./access-control/guards/permissions.guard";
 import { APP_GUARD } from "@nestjs/core";
 import { AuthenticationGuard } from "./authentication/guard/authentication.guard";
 import { AuthenticationModule } from "./authentication/authentication.module";
+import { CachingModule } from "./caching/caching.module";
+import { UploadModule } from "./upload/upload.module";
 
 @Module({
   imports: [
+    //// core imports
     BullModule.forRoot({
       connection: {
         url: env!.REDIS_DATABASE_URL,
@@ -48,11 +48,6 @@ import { AuthenticationModule } from "./authentication/authentication.module";
         ],
       }),
     }),
-    env!.ENABLE_Devtools
-      ? DevtoolsModule.register({
-          http: true,
-        })
-      : CommonModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [
@@ -62,14 +57,15 @@ import { AuthenticationModule } from "./authentication/authentication.module";
       ],
       validate: validateEnv,
     }),
-    CommonModule,
+    ////
     PrismaModule,
-
     UserModule,
     NotificationsModule,
     AttachmentModule,
     BackupModule,
     AuthenticationModule,
+    CachingModule,
+    UploadModule,
   ],
   controllers: [],
   providers: [
@@ -97,11 +93,12 @@ import { AuthenticationModule } from "./authentication/authentication.module";
       provide: APP_INTERCEPTOR,
       useClass: TimeoutInterceptor,
     },
-    CachingService,
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(morgan("dev")).forRoutes("*");
+    if (env?.NODE_ENV === "development") {
+      consumer.apply(morgan("dev")).forRoutes("*");
+    }
   }
 }

@@ -4,18 +4,16 @@ import { NotificationsGateway } from "./notification.gateway";
 import { BullModule } from "@nestjs/bullmq";
 import { env } from "@/common/env";
 import { Keys } from "@/common/const";
-import { CommonModule } from "@/common/common.module";
 import { NotificationConsumer } from "./notification.consumer";
 import { HashingModule } from "@/hashing/hashing.module";
-import { AppJwtModule } from "@/jwt/jwt.module";
 import { MailerModule } from "@/mailer/mailer.module";
+import { CachingModule } from "@/caching/caching.module";
 
 @Module({
   imports: [
     MailerModule,
-    AppJwtModule,
-    CommonModule,
     HashingModule,
+    CachingModule,
     BullModule.registerQueue({
       name: Keys.notification,
       connection: {

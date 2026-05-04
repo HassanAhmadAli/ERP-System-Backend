@@ -3,7 +3,7 @@ import { AppModule } from "@/app.module";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
 import { env } from "./common/env";
-import { RedisIoAdapter } from "@/socketio/socketio";
+import { RedisIoAdapter } from "@/socketio";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

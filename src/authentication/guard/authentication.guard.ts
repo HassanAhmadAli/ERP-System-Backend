@@ -12,14 +12,15 @@ export class AuthenticationGuard implements CanActivate {
     private readonly reflector: Reflector,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const authType =
-      this.reflector.getAllAndOverride<AuthType>(Keys.Auth, [context.getHandler(), context.getClass()]) ||
-      this.defaultAuthType;
-    switch (authType) {
-      case AuthType.NONE:
-        return true;
-      case AuthType.BEARER:
-        return this.accessTokenGuard.canActivate(context);
+    const IsPublic =
+      this.reflector.getAllAndOverride<boolean | undefined>(Keys.IsPublic, [
+        context.getHandler(),
+        context.getClass(),
+      ]) || this.defaultAuthType;
+    if (IsPublic) {
+      return true;
+    } else {
+      return this.accessTokenGuard.canActivate(context);
     }
   }
 }

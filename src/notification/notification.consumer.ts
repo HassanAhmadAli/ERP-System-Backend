@@ -3,7 +3,7 @@ import { Keys } from "@/common/const";
 import { Job } from "bullmq";
 import { Namespace } from "socket.io";
 import { Notification } from "./notification.interface";
-import { CachingService } from "@/common/caching/caching.service";
+import { CachingService } from "@/caching/caching.service";
 import { MailerService } from "@/mailer/mailer.service";
 
 @Processor(Keys.notification)

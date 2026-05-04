@@ -6,7 +6,7 @@ import path from "node:path";
 import { logger } from "@/utils";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
-import { CachingService } from "@/common/caching/caching.service";
+import { CachingService } from "@/caching/caching.service";
 @Injectable()
 export class BackupService implements OnModuleInit {
   constructor(

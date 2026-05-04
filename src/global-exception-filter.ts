@@ -2,7 +2,7 @@ import { ArgumentsHost, Catch, HttpException } from "@nestjs/common";
 import { AppBaseExceptionFilter } from "./common/app_filter";
 import { ZodErrorFilter } from "./common/filter/zod-error.filter";
 import { HttpExceptionFilter } from "./common/filter/http-exception.filter";
-import { JwtErrorFilter } from "./jwt/filter/jwt-error.filter";
+import { JwtErrorFilter } from "./hashing/filter/jwt-error.filter";
 import { PrismaServerErrorFilter } from "./prisma/filter/prisma-error.filter";
 import { BaseExceptionFilter } from "@nestjs/core";
 import { WsException } from "@nestjs/websockets";

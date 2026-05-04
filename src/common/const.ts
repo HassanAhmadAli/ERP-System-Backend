@@ -1,5 +1,5 @@
 export const Keys = {
-  Auth: Symbol("Auth_Key"),
+  IsPublic: Symbol("Is_Public"),
   Roles: Symbol("Roles_Key"),
   User: Symbol("User_Key"),
   Permissions: Symbol("Permissions_KEY"),

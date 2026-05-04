@@ -4,7 +4,7 @@ import { MessageBody } from "@nestjs/websockets";
 import { PrismaService } from "@/prisma";
 import { JwtService } from "@nestjs/jwt";
 import { ActiveUserSchema } from "@/authentication/dto/request-user.dto";
-import { CachingService } from "@/common/caching/caching.service";
+import { CachingService } from "@/caching/caching.service";
 import { NotificationConsumer } from "./notification.consumer";
 
 @Injectable()

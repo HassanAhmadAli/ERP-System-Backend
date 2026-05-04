@@ -5,12 +5,11 @@ import { AuthenticationController } from "./authentication.controller";
 import { AuthenticationService } from "./authentication.service";
 import { NotificationsModule } from "@/notification/notification.module";
 import { HashingModule } from "@/hashing/hashing.module";
-import { AppJwtModule } from "@/jwt/jwt.module";
 
 @Module({
   controllers: [AuthenticationController],
   providers: [AuthenticationService, RefreshTokenIdsStorage, AccessTokenGuard],
-  imports: [AppJwtModule, HashingModule, NotificationsModule],
+  imports: [HashingModule, HashingModule, NotificationsModule],
   exports: [AccessTokenGuard],
 })
 export class AuthenticationModule {}

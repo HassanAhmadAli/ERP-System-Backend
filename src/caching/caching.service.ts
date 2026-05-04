@@ -2,8 +2,8 @@ import { PrismaService } from "@/prisma";
 import { logger } from "@/utils";
 import { Cache } from "@nestjs/cache-manager";
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { cachedUserPayload } from "./user.cachedpayload.interface";
-import { CacheKey, CashingNamespace } from "../const";
+import { cachedUserPayload } from "./interface/cached-user-payload.interface";
+import { CacheKey, CashingNamespace } from "../common/const";
 @Injectable()
 export class CachingService {
   constructor(
