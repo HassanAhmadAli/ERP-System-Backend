@@ -6,8 +6,8 @@ import { env } from "@/common/env";
 import { Keys } from "@/common/const";
 import { CommonModule } from "@/common/common.module";
 import { NotificationConsumer } from "./notification.consumer";
-import { HashingModule } from "@/iam/hashing/hashing.module";
-import { AppJwtModule } from "@/iam/jwt/appjwt.module";
+import { HashingModule } from "@/hashing/hashing.module";
+import { AppJwtModule } from "@/jwt/jwt.module";
 import { MailerModule } from "@/mailer/mailer.module";
 
 @Module({

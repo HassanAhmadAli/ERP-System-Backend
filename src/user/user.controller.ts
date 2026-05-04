@@ -1,8 +1,8 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
-import { ActiveUser } from "@/iam/decorators/ActiveUser.decorator";
-import { SetAllowedRoles } from "@/iam/authorization/decorators/roles.decorator";
+import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
+import { SetAllowedRoles } from "@/access-control/decorators/roles.decorator";
 import { UserRole } from "@/prisma";
 import { CreateEmployeeDto } from "./dto/create-user.dto";
 @Controller("user")

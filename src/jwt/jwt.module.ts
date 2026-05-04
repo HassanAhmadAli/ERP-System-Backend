@@ -11,23 +11,13 @@ import { EnvVariables } from "@/common/schema/env";
         return {
           secret: config.get("JWT_SECRET", { infer: true }),
           signOptions: {
-            audience: config.get("JWT_AUDIENCE", {
-              infer: true,
-            }),
-            issuer: config.get("JWT_ISSUER", {
-              infer: true,
-            }),
-            expiresIn: config.get("JWT_TTL", {
-              infer: true,
-            }),
+            audience: config.get("JWT_AUDIENCE", { infer: true }),
+            issuer: config.get("JWT_ISSUER", { infer: true }),
+            expiresIn: config.get("JWT_TTL", { infer: true }),
           },
           verifyOptions: {
-            audience: config.get("JWT_AUDIENCE", {
-              infer: true,
-            }),
-            issuer: config.get("JWT_ISSUER", {
-              infer: true,
-            }),
+            audience: config.get("JWT_AUDIENCE", { infer: true }),
+            issuer: config.get("JWT_ISSUER", { infer: true }),
           },
         };
       },

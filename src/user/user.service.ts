@@ -3,7 +3,7 @@ import { Prisma, PrismaService, UserRole } from "@/prisma";
 import { Public } from "@/common/decorators/public.decorator";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { getEntriesOfTrue } from "@/utils";
-import { HashingService } from "@/iam/hashing/hashing.service";
+import { HashingService } from "@/hashing/hashing.service";
 import { CreateEmployeeDto } from "./dto/create-user.dto";
 import { CachingService } from "@/common/caching/caching.service";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";

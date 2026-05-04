@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { Permissions, PermissionsMap } from "../permission.type";
 import { Keys } from "@/common/const";
-import { RequestWithActiveUser } from "@/iam/decorators/ActiveUser.decorator";
+import { RequestWithActiveUser } from "@/common/decorators/ActiveUser.decorator";
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {

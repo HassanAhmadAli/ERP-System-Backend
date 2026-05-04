@@ -6,7 +6,6 @@ import { EnvVariables, validateEnv } from "@/common/schema/env";
 import { CommonModule } from "@/common/common.module";
 import { PrismaModule } from "@/prisma/prisma.module";
 import { TimeoutInterceptor } from "@/common/interceptors/timeout.interceptor";
-import { IdentityAndAccessManagementModule } from "@/iam/iam.module";
 import { DevtoolsModule } from "@nestjs/devtools-integration";
 import { CacheModule } from "@nestjs/cache-manager";
 import { UserModule } from "./user/user.module";
@@ -20,6 +19,10 @@ import { BullModule } from "@nestjs/bullmq";
 import { CachingService } from "./common/caching/caching.service";
 import { BackupModule } from "./backup/backup.module";
 import { GlobalExceptionFilter } from "./global-exception-filter";
+import { PermissionsGuard } from "./access-control/guards/permissions.guard";
+import { APP_GUARD } from "@nestjs/core";
+import { AuthenticationGuard } from "./authentication/guard/authentication.guard";
+import { AuthenticationModule } from "./authentication/authentication.module";
 
 @Module({
   imports: [
@@ -61,14 +64,23 @@ import { GlobalExceptionFilter } from "./global-exception-filter";
     }),
     CommonModule,
     PrismaModule,
-    IdentityAndAccessManagementModule,
+
     UserModule,
     NotificationsModule,
     AttachmentModule,
     BackupModule,
+    AuthenticationModule,
   ],
   controllers: [],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthenticationGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
+    },
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,

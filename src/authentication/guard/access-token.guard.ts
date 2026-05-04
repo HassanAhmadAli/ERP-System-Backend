@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { ErrorMessages, Keys } from "@/common/const";
 import { ActiveUserSchema } from "../dto/request-user.dto";
-import { RequestWithActiveUser } from "@/iam/decorators/ActiveUser.decorator";
+import { RequestWithActiveUser } from "@/common/decorators/ActiveUser.decorator";
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
   constructor(

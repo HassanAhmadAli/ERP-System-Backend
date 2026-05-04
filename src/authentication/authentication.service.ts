@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
-import { HashingService } from "@/iam/hashing/hashing.service";
+import { HashingService } from "@/hashing/hashing.service";
 import { SignupDto } from "./dto/signinup.dto";
 import { SigninDto } from "./dto/signin.dto";
 import { JwtService, JwtSignOptions } from "@nestjs/jwt";

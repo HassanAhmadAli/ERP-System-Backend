@@ -13,6 +13,7 @@
     "format": "prettier --write \"{src,test,prisma}/**/*.ts\"",
     "start": "cross-env NODE_ENV=development nest start",
     "start:dev": "cross-env NODE_ENV=development nest start --watch",
+    "dev": "pnpm run start:dev",
     "start:repl": "cross-env NODE_ENV=development nest start --entryFile repl",
     "start:repl:dev": "cross-env NODE_ENV=development nest start --entryFile repl --watch",
     "start:debug": "cross-env NODE_ENV=development NEST_DEBUG=true nest start --debug --watch",

@@ -3,7 +3,7 @@ import { Namespace, Socket } from "socket.io";
 import { MessageBody } from "@nestjs/websockets";
 import { PrismaService } from "@/prisma";
 import { JwtService } from "@nestjs/jwt";
-import { ActiveUserSchema } from "@/iam/authentication/dto/request-user.dto";
+import { ActiveUserSchema } from "@/authentication/dto/request-user.dto";
 import { CachingService } from "@/common/caching/caching.service";
 import { NotificationConsumer } from "./notification.consumer";
 
