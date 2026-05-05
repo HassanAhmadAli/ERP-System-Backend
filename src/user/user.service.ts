@@ -4,7 +4,6 @@ import { Public } from "@/common/decorators/public.decorator";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { getEntriesOfTrue } from "@/utils";
 import { HashingService } from "@/hashing/hashing.service";
-import { CreateEmployeeDto } from "./dto/create-user.dto";
 import { AppCachingService } from "@/caching/caching.service";
 
 @Public()
@@ -63,39 +62,6 @@ export class UserService {
       } satisfies Prisma.UserSelect,
     });
     return user;
-  }
-  async addEmployee({ password: rawPassword, ...createEcmployeeDto }: CreateEmployeeDto) {
-    const passwordHash = await this.hashingService.hash({
-      raw: rawPassword,
-    });
-    return await this.prisma.user.create({
-      data: {
-        ...createEcmployeeDto,
-        passwordHash,
-        isVerified: true,
-      },
-      select: {
-        email: true,
-        phoneNumber: true,
-        role: true,
-        fullName: true,
-        createdAt: true,
-      },
-    });
-  }
-
-  //todo: Promote to Admin
-  async promoteToAdmin(employeeId: number) {
-    return await this.prisma.user.findUniqueOrThrow({
-      where: {
-        id: employeeId,
-      },
-      select: {
-        email: true,
-        phoneNumber: true,
-        role: true,
-      },
-    });
   }
 
   async archiveAccount(userId: number) {

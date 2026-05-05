@@ -1,14 +1,14 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
-import { SetAllowedRoles } from "@/access-control/decorators/roles.decorator";
-import { UserRole } from "@/prisma";
-import { CreateEmployeeDto } from "./dto/create-user.dto";
+import { setPermissions } from "@/access-control/decorators/permissions.decorator";
+import { Permissions } from "@/access-control/permission.type";
 @Controller("user")
 export class UserController {
   constructor(private readonly userService: UserService) {}
-  @SetAllowedRoles(UserRole.ADMIN, UserRole.CUSTOMER)
+  // @SetAllowedRoles(UserRole.ADMIN, UserRole.CUSTOMER)
+  @setPermissions(Permissions.updatePersonalProfile)
   @Patch("profile")
   updateProfile(
     @Body()
@@ -18,21 +18,13 @@ export class UserController {
     return this.userService.updateAdminProfile(updateUserDto, id);
   }
 
-  @Get("profile")
-  getProfile(@ActiveUser("sub") userId: number) {
+  @Get("me/profile")
+  getPersonalProfile(@ActiveUser("sub") userId: number) {
+    console.log({ sub: userId });
     return this.userService.getProfile(userId);
   }
 
-  @SetAllowedRoles(UserRole.ADMIN)
-  @Post("employee")
-  async addEmployee(
-    @Body()
-    createEmployeeDto: CreateEmployeeDto,
-  ) {
-    return await this.userService.addEmployee(createEmployeeDto);
-  }
-
-  @SetAllowedRoles(UserRole.ADMIN)
+  @setPermissions(Permissions.updateEmployeeProfile)
   @Patch("employee/profile/:id")
   async updateEmployeeProfile(
     @Param("id", ParseIntPipe)
@@ -43,22 +35,13 @@ export class UserController {
     return await this.userService.updateEmployeeProfile(updateUserDto, userId);
   }
 
-  @SetAllowedRoles(UserRole.ADMIN)
-  @Patch("employee/promote/:id")
-  async promoteToAdmin(
-    @Param("id", ParseIntPipe)
-    employeeId: number,
-  ) {
-    return await this.userService.promoteToAdmin(employeeId);
-  }
-
-  @SetAllowedRoles(UserRole.ADMIN)
+  @setPermissions(Permissions.archiveAccount)
   @Delete("archive/:id")
   async archiveAccount(@Param("id") userId: number) {
     return await this.userService.archiveAccount(userId);
   }
 
-  @SetAllowedRoles(UserRole.ADMIN)
+  @setPermissions(Permissions.deleteAccount)
   @Delete("delete/:id")
   async deleteAccount(@Param("id") userId: number) {
     return await this.userService.deleteAccount(userId);

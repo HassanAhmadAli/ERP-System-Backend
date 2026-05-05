@@ -64,3 +64,4 @@ prisma/migrations/
 /src/prisma/generated/
 prisma/new.prisma.txt
 prisma/old.prisma.txt
+ignore/

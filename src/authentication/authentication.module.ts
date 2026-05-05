@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common";
 import { RefreshTokenIdsStorage } from "./refresh-token-ids.storage";
-import { AccessTokenGuard } from "./guard/access-token.guard";
 import { AuthenticationController } from "./authentication.controller";
 import { AuthenticationService } from "./authentication.service";
 import { NotificationsModule } from "@/notification/notification.module";
@@ -9,20 +8,19 @@ import { CustomerAuthenticationService } from "./customer.authentication.service
 import { ManagerAuthenticationService } from "./manager.authentication.service";
 import { EmployeeAuthenticationService } from "./admin.authentication.service";
 import { AdminAuthenticationService } from "./employee.authentication.service";
+import { JwtModule } from "@nestjs/jwt";
 
 @Module({
   controllers: [AuthenticationController],
   providers: [
     RefreshTokenIdsStorage,
-    AccessTokenGuard,
     CustomerAuthenticationService,
     AuthenticationService,
     ManagerAuthenticationService,
     EmployeeAuthenticationService,
-    CustomerAuthenticationService,
     AdminAuthenticationService,
   ],
-  imports: [HashingModule, NotificationsModule],
-  exports: [AccessTokenGuard],
+  imports: [HashingModule, NotificationsModule, JwtModule],
+  exports: [JwtModule],
 })
 export class AuthenticationModule {}

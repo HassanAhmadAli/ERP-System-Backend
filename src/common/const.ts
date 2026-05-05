@@ -27,8 +27,3 @@ export const ErrorMessages = {
   INVALIDE_ACCESS_TOKEN: "Invalid Access Token",
   INVALID_TOKEN: "Invalid Token",
 } as const;
-export const AuthType = {
-  BEARER: "Bearer",
-  NONE: "None",
-} as const;
-export type AuthType = ValueOf<typeof AuthType>;
