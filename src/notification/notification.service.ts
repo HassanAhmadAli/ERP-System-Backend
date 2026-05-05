@@ -2,10 +2,10 @@ import { Injectable } from "@nestjs/common";
 import { Namespace, Socket } from "socket.io";
 import { MessageBody } from "@nestjs/websockets";
 import { PrismaService } from "@/prisma";
-import { JwtService } from "@nestjs/jwt";
 import { ActiveUserSchema } from "@/authentication/dto/request-user.dto";
 import { AppCachingService } from "@/caching/caching.service";
 import { NotificationConsumer } from "./notification.consumer";
+import { HashingService } from "@/hashing/hashing.service";
 
 @Injectable()
 export class NotificationsService {
@@ -13,7 +13,7 @@ export class NotificationsService {
 
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly jwtService: JwtService,
+    private readonly hashingService: HashingService,
     private readonly cachingService: AppCachingService,
     private readonly notificationConsumer: NotificationConsumer,
   ) {}
@@ -26,7 +26,7 @@ export class NotificationsService {
   }
 
   async handleLogin(client: Socket, @MessageBody() access_token: string) {
-    const decoded = (await this.jwtService.verifyAsync(access_token)) as unknown;
+    const decoded = this.hashingService.verifyJwtToken(access_token);
     const user = ActiveUserSchema.parse(decoded);
     await this.cachingService.socketIo.checkSocketid(client.id);
     await this.cachingService.socketIo.registerSocket(client.id, user.sub);

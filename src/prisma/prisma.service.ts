@@ -12,7 +12,7 @@ export const createPrismaClient = ({ DATABASE_URL }: { DATABASE_URL: string }) =
   });
   const prisma = new PrismaClient({
     adapter,
-    log: ["query"],
+    // log: ["query"],
   }).$extends(softDeletePrismaExtension);
   return prisma;
 };

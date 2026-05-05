@@ -1,14 +1,14 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { JwtService } from "@nestjs/jwt";
 import { ErrorMessages, Keys } from "@/common/const";
 import { ActiveUserSchema } from "../dto/request-user.dto";
 import { RequestWithActiveUser } from "@/common/decorators/ActiveUser.decorator";
+import { HashingService } from "@/hashing/hashing.service";
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly jwtService: JwtService,
+    private readonly hashingService: HashingService,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const IsPublic = this.reflector.getAllAndOverride<boolean | undefined>(Keys.IsPublic, [
@@ -16,12 +16,10 @@ export class AuthenticationGuard implements CanActivate {
       context.getClass(),
     ]);
     if (IsPublic) {
-      console.log({ IsPublic });
       return true;
-    } else {
-      const req = context.switchToHttp().getRequest<RequestWithActiveUser>();
-      return this.validateTokenAndAssignUser(req);
     }
+    const req = context.switchToHttp().getRequest<RequestWithActiveUser>();
+    return this.validateTokenAndAssignUser(req);
   }
 
   async validateTokenAndAssignUser(req: RequestWithActiveUser): Promise<boolean> {
@@ -29,7 +27,7 @@ export class AuthenticationGuard implements CanActivate {
     if (token == undefined) {
       throw new UnauthorizedException(ErrorMessages.ACCESS_TOKEN_NOT_PROVIDED);
     }
-    const payLoad: object = await this.jwtService.verifyAsync(token);
+    const payLoad = await this.hashingService.verifyJwtToken(token);
     req[Keys.User] = ActiveUserSchema.parse(payLoad);
     return true;
   }

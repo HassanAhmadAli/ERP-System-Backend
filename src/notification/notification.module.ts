@@ -20,6 +20,7 @@ import { CachingModule } from "@/caching/caching.module";
         url: env!.REDIS_DATABASE_URL,
       },
     }),
+    HashingModule,
   ],
   providers: [NotificationsGateway, NotificationsService, NotificationConsumer],
   exports: [NotificationsGateway, NotificationsService, NotificationConsumer, BullModule],

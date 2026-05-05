@@ -1,20 +1,31 @@
 import { UserRole } from "@/prisma";
 
 export const Permissions = {
-  updatePersonalProfile: "update-personal-profile",
-  updateEmployeeProfile: "update-employee-profile",
-  archiveAccount: "archive-account",
-  deleteAccount: "delete-account",
+  updatePersonalProfile: "any:update-self-profile",
+  //
+  updateEmployeeProfile: "employee:update-profile",
+  //
+  archiveAccount: "account:archive",
+  deleteAccount: "account:delete",
+  viewUsersProfiles: "user:view-profiles",
+  //
+  updateAdminProfile: "admin:update-profile",
+  //
 } as const;
 export type Permissions = ValueOf<typeof Permissions>;
+
+const BASE_PERMISSIONS: Permissions[] = [Permissions.updatePersonalProfile];
+
 export const PermissionsMap: Record<UserRole, Permissions[]> = {
-  CUSTOMER: [Permissions.updatePersonalProfile] satisfies Permissions[],
+  CUSTOMER: [...BASE_PERMISSIONS] satisfies Permissions[],
   ADMIN: [
-    Permissions.updatePersonalProfile,
+    ...BASE_PERMISSIONS,
     Permissions.updateEmployeeProfile,
     Permissions.archiveAccount,
     Permissions.deleteAccount,
+    Permissions.updateAdminProfile,
+    Permissions.viewUsersProfiles,
   ] satisfies Permissions[],
-  EMPLOYEE: [Permissions.updatePersonalProfile] satisfies Permissions[],
-  MANAGER: [Permissions.updatePersonalProfile] satisfies Permissions[],
+  EMPLOYEE: [...BASE_PERMISSIONS] satisfies Permissions[],
+  MANAGER: [...BASE_PERMISSIONS] satisfies Permissions[],
 };

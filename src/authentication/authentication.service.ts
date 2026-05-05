@@ -2,16 +2,9 @@ import { BadRequestException, Inject, Injectable, UnauthorizedException } from "
 import { HashingService } from "@/hashing/hashing.service";
 import { SignupDto } from "./dto/signinup.dto";
 import { SigninDto } from "./dto/signin.dto";
-import { JwtService, JwtSignOptions } from "@nestjs/jwt";
 import { DurationType } from "@/common/schema/duration-schema";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
-import {
-  ActiveUserSchema,
-  RefreshTokenPayloadSchema,
-  RefreshTokenPayload,
-  type ActiveUserType,
-  ActiveUserInput,
-} from "./dto/request-user.dto";
+import { ActiveUserSchema, RefreshTokenPayloadSchema, ActiveUserInput } from "./dto/request-user.dto";
 import { randomUUID, randomInt } from "node:crypto";
 import { RefreshTokenIdsStorage } from "./refresh-token-ids.storage";
 import { Prisma, PrismaService, User, UserRole } from "@/prisma";
@@ -30,8 +23,6 @@ export class AuthenticationService {
   constructor(
     private prismaService: PrismaService,
     private readonly hashingService: HashingService,
-    @Inject(JwtService)
-    private readonly jwtService: JwtService,
     @Inject(RefreshTokenIdsStorage)
     private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
     private readonly config: ConfigService<EnvVariables>,
@@ -41,19 +32,19 @@ export class AuthenticationService {
     this.NODE_ENV = this.config.getOrThrow("NODE_ENV", {
       infer: true,
     });
+    this.JWT_TTL = this.config.getOrThrow("JWT_TTL", { infer: true });
+    this.JWT_REFRESH_TTL = this.config.getOrThrow("JWT_REFRESH_TTL", { infer: true });
   }
   private NODE_ENV: EnvVariables["NODE_ENV"];
+  private JWT_TTL: DurationType;
+  private JWT_REFRESH_TTL: DurationType;
   public get prisma() {
     return this.prismaService.client;
   }
-
   async genericSignup(role: UserRole, { password: rawPassword, ...signupDto }: SignupDto) {
-    const passwordHash = await this.hashingService.hash({
-      raw: rawPassword,
-    });
+    const passwordHash = await this.hashingService.hash(rawPassword);
     const verificationCode = (this.NODE_ENV === "production" ? randomInt(10000000, 99999999) : 12345678).toString();
     const verificationCodeExpiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    console.log(signupDto);
     const user = await this.prisma.user.create({
       data: {
         role,
@@ -185,11 +176,13 @@ export class AuthenticationService {
   }
 
   async signout({ refresh_token }: SignoutDto) {
-    const { sub: userId } = await this.jwtService.verifyAsync<RefreshTokenPayload>(refresh_token);
+    const decoded = await this.hashingService.verifyJwtToken(refresh_token);
+    const { sub: userId } = RefreshTokenPayloadSchema.parse(decoded);
     return await this.refreshTokenIdsStorage.invalidate(userId);
   }
   async refreshTokens({ refresh_token }: RefreshTokenDto) {
-    const { refreshTokenId, sub: userId } = await this.jwtService.verifyAsync<RefreshTokenPayload>(refresh_token);
+    const decoded = await this.hashingService.verifyJwtToken(refresh_token);
+    const { refreshTokenId, sub: userId } = RefreshTokenPayloadSchema.parse(decoded);
     const isValid = await this.refreshTokenIdsStorage.validate(userId, refreshTokenId);
     if (!isValid) {
       throw new UnauthorizedException("Refresh Token Expired");
@@ -223,25 +216,15 @@ export class AuthenticationService {
       ...payLoadDto,
       tokenType: "access",
     });
-    const [access_token, refresh_token] = await Promise.all([
-      this.signMethod(accessTokenPayload, this.config.getOrThrow("JWT_TTL", { infer: true })),
-      this.signMethod(
-        refreshTokenPayload,
-        this.config.getOrThrow("JWT_REFRESH_TTL", {
-          infer: true,
-        }),
-      ),
-    ]);
 
+    const [access_token, refresh_token] = await Promise.all([
+      this.hashingService.signAccessToken(accessTokenPayload, this.JWT_TTL),
+      this.hashingService.signRefreshToken(refreshTokenPayload, this.JWT_REFRESH_TTL),
+    ]);
     return {
       access_token,
       refresh_token,
       refreshTokenId: refreshTokenPayload.refreshTokenId,
     };
-  }
-  private async signMethod(signedData: ActiveUserType | RefreshTokenPayload, expiresIn: DurationType) {
-    return await this.jwtService.signAsync(signedData, {
-      expiresIn,
-    } satisfies JwtSignOptions);
   }
 }

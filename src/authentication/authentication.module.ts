@@ -8,7 +8,6 @@ import { CustomerAuthenticationService } from "./customer.authentication.service
 import { ManagerAuthenticationService } from "./manager.authentication.service";
 import { EmployeeAuthenticationService } from "./admin.authentication.service";
 import { AdminAuthenticationService } from "./employee.authentication.service";
-import { JwtModule } from "@nestjs/jwt";
 
 @Module({
   controllers: [AuthenticationController],
@@ -20,7 +19,7 @@ import { JwtModule } from "@nestjs/jwt";
     EmployeeAuthenticationService,
     AdminAuthenticationService,
   ],
-  imports: [HashingModule, NotificationsModule, JwtModule],
-  exports: [JwtModule],
+  imports: [HashingModule, NotificationsModule],
+  exports: [HashingModule],
 })
 export class AuthenticationModule {}
