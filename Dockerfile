@@ -1,5 +1,5 @@
 FROM node:alpine AS base
-RUN apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main postgresql18-client=18.1-r0
+# RUN apk add --no-cache postgresql-client
 WORKDIR /app
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"

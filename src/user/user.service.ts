@@ -3,7 +3,6 @@ import { Prisma, PrismaService, UserRole } from "@/prisma";
 import { Public } from "@/common/decorators/public.decorator";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { getEntriesOfTrue } from "@/utils";
-import { HashingService } from "@/hashing/hashing.service";
 import { AppCachingService } from "@/caching/caching.service";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 
@@ -12,7 +11,6 @@ import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 export class UserService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly hashingService: HashingService,
     private readonly cachingService: AppCachingService,
   ) {}
   get prisma() {
