@@ -22,6 +22,7 @@ import { AuthenticationGuard } from "./authentication/guard/authentication.guard
 import { AuthenticationModule } from "./authentication/authentication.module";
 import { CachingModule } from "./caching/caching.module";
 import { UploadModule } from "./upload/upload.module";
+import { CustomerModule } from "./customer/customer.module";
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { UploadModule } from "./upload/upload.module";
     AuthenticationModule,
     CachingModule,
     UploadModule,
+    CustomerModule,
   ],
   controllers: [],
   providers: [
