@@ -3,28 +3,6 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "format",
-      "problemMatcher": [],
-      "label": "npm: format",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "dependsOn": "npm: lint"
-    },
-    {
-      "type": "npm",
-      "script": "lint",
-      "problemMatcher": [],
-      "label": "npm: lint",
-      "group": {
-        "kind": "build",
-        "isDefault": false
-      },
-      "dependsOn": "npm: reset:dev"
-    },
-    {
-      "type": "npm",
       "script": "reset:dev",
       "problemMatcher": [],
       "label": "npm: reset:dev",

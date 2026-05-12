@@ -6,7 +6,13 @@ import { seedUsers } from "./user";
 import { NestFactory } from "@nestjs/core";
 import { HashingService } from "@/hashing/hashing.service";
 import { SeedModule } from "./seed-modules";
+import { seedCategory } from "./categories";
+import { seedSuppliers } from "./suppliers";
+import { seedProducts } from "./products";
 async function seed(hashingService: HashingService) {
+  await seedCategory();
+  await seedSuppliers();
+  await seedProducts();
   await seedUsers(hashingService);
 }
 
