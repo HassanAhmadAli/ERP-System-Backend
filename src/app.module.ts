@@ -23,6 +23,8 @@ import { AuthenticationModule } from "./authentication/authentication.module";
 import { CachingModule } from "./caching/caching.module";
 import { UploadModule } from "./upload/upload.module";
 import { ProductModule } from "./product/product.module";
+import { CategoryModule } from "./category/category.module";
+import { SupplierModule } from "./supplier/supplier.module";
 
 @Module({
   imports: [
@@ -68,6 +70,8 @@ import { ProductModule } from "./product/product.module";
     CachingModule,
     UploadModule,
     ProductModule,
+    CategoryModule,
+    SupplierModule,
   ],
   controllers: [],
   providers: [

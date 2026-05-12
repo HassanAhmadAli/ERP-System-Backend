@@ -12,6 +12,8 @@ export const Permissions = {
   updateAdminProfile: "admin:update-profile",
   //
   addProduct: "product:create",
+  manageCategories: "category:manage",
+  manageSuppliers: "supplier:manage",
 } as const;
 export type Permissions = ValueOf<typeof Permissions>;
 
@@ -27,6 +29,8 @@ export const PermissionsMap: Record<UserRole, Permissions[]> = {
     Permissions.updateAdminProfile,
     Permissions.viewUsersProfiles,
     Permissions.addProduct,
+    Permissions.manageCategories,
+    Permissions.manageSuppliers,
   ] satisfies Permissions[],
   EMPLOYEE: [...BASE_PERMISSIONS] satisfies Permissions[],
   MANAGER: [...BASE_PERMISSIONS] satisfies Permissions[],

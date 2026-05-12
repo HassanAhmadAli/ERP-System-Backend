@@ -8,7 +8,7 @@
       "label": "npm: reset:dev",
       "group": {
         "kind": "build",
-        "isDefault": false
+        "isDefault": true
       }
     }
   ]
