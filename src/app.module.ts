@@ -25,6 +25,7 @@ import { UploadModule } from "./upload/upload.module";
 import { ProductModule } from "./product/product.module";
 import { CategoryModule } from "./category/category.module";
 import { SupplierModule } from "./supplier/supplier.module";
+import { CustomerModule } from "./customer/customer.module";
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { SupplierModule } from "./supplier/supplier.module";
     ProductModule,
     CategoryModule,
     SupplierModule,
+    CustomerModule,
   ],
   controllers: [],
   providers: [

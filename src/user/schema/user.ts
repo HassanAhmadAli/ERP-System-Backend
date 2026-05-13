@@ -11,4 +11,5 @@ export const CreateUserSchema = z.object({
 
 export const CreateCustomerSchema = CreateUserSchema.extend({
   phoneNumber: z.string(),
+  address: z.string().optional(),
 });
