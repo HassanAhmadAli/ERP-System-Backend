@@ -13,3 +13,7 @@ export const CreateCustomerSchema = CreateUserSchema.extend({
   phoneNumber: z.string(),
   address: z.string().optional(),
 });
+
+export const CreateEmployeeSchema = CreateUserSchema.extend({
+  jobTitle: z.string(),
+});

@@ -6,8 +6,8 @@ import { NotificationsModule } from "@/notification/notification.module";
 import { HashingModule } from "@/hashing/hashing.module";
 import { CustomerAuthenticationService } from "./customer.authentication.service";
 import { ManagerAuthenticationService } from "./manager.authentication.service";
-import { EmployeeAuthenticationService } from "./admin.authentication.service";
-import { AdminAuthenticationService } from "./employee.authentication.service";
+import { AdminAuthenticationService } from "./admin.authentication.service";
+import { EmployeeAuthenticationService } from "./employee.authentication.service";
 
 @Module({
   controllers: [AuthenticationController],
