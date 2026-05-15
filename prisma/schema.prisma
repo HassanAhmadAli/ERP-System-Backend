@@ -210,14 +210,14 @@ model PurchaseInvoice {
 }
 
 model PurchaseItem {
-  id         Int     @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   purchaseId Int
   productId  Int
   quantity   Int
-  unitCost   Decimal @db.Decimal(12, 2)
-  subtotal   Decimal @db.Decimal(12, 2)
+  unitCost   Decimal   @db.Decimal(12, 2)
+  subtotal   Decimal   @db.Decimal(12, 2)
   // todo: 
-  expiryDate       DateTime?
+  expiryDate DateTime?
 
   purchase PurchaseInvoice @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
   product  Product         @relation(fields: [productId], references: [id])
@@ -266,7 +266,8 @@ model Discount {
   endDate         DateTime?
   isActive        Boolean       @default(true)
   createdById     Int
-  createdAt       DateTime      @default(now())
+
+  createdAt DateTime @default(now())
 
   createdBy User @relation(fields: [createdById], references: [id])
 }
@@ -369,4 +370,3 @@ model StoredFile {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 }
-

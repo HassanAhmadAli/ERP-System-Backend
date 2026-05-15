@@ -17,6 +17,7 @@ export const Permissions = {
   addProduct: "product:create",
   manageCategories: "category:manage",
   manageSuppliers: "supplier:manage",
+  manageDiscounts: "discount:manage",
 } as const;
 export type Permissions = ValueOf<typeof Permissions>;
 
@@ -34,7 +35,8 @@ export const PermissionsMap: Record<UserRole, Permissions[]> = {
     Permissions.addProduct,
     Permissions.manageCategories,
     Permissions.manageSuppliers,
+    Permissions.manageDiscounts,
   ] satisfies Permissions[],
   EMPLOYEE: [...BASE_PERMISSIONS] satisfies Permissions[],
-  MANAGER: [...BASE_PERMISSIONS] satisfies Permissions[],
+  MANAGER: [...BASE_PERMISSIONS, Permissions.manageDiscounts] satisfies Permissions[],
 };

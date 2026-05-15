@@ -26,6 +26,7 @@ import { ProductModule } from "./product/product.module";
 import { CategoryModule } from "./category/category.module";
 import { SupplierModule } from "./supplier/supplier.module";
 import { CustomerModule } from "./customer/customer.module";
+import { DiscountModule } from "./discount/discount.module";
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { CustomerModule } from "./customer/customer.module";
     CategoryModule,
     SupplierModule,
     CustomerModule,
+    DiscountModule,
   ],
   controllers: [],
   providers: [
