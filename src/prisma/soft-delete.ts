@@ -148,6 +148,6 @@ const softDeleteQueryOptions = {
 
 export const softDeletePrismaExtension = Prisma.defineExtension({
   query: {
-    attachment: softDeleteQueryOptions,
+    productPhoto: softDeleteQueryOptions,
   },
 });

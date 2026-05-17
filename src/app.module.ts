@@ -11,7 +11,7 @@ import { NotificationsModule } from "./notification/notification.module";
 import KeyvRedis from "@keyv/redis";
 import morgan from "morgan";
 import { env } from "@/common/env";
-import { AttachmentModule } from "./attachment/attachment.module";
+import { ProductPhotoModule } from "./product-photo/product-photo.module";
 import { ScheduleModule } from "@nestjs/schedule";
 import { BullModule } from "@nestjs/bullmq";
 import { BackupModule } from "./backup/backup.module";
@@ -71,7 +71,7 @@ import { ReportModule } from "./report/report.module";
     PrismaModule,
     UserModule,
     NotificationsModule,
-    AttachmentModule,
+    ProductPhotoModule,
     BackupModule,
     AuthenticationModule,
     CachingModule,

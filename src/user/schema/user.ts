@@ -1,16 +1,17 @@
 import "@/common/env";
+import { phoneNumberSchema } from "@/common/schema/phone-number.schema";
 import { z } from "zod";
 
 export const CreateUserSchema = z.object({
   fullName: z.string(),
   email: z.email(),
-  phoneNumber: z.string().optional(),
+  phoneNumber: phoneNumberSchema.optional(),
   password: z.string(),
   nationalId: z.string(),
 });
 
 export const CreateCustomerSchema = CreateUserSchema.extend({
-  phoneNumber: z.string(),
+  phoneNumber: phoneNumberSchema,
   address: z.string().optional(),
 });
 

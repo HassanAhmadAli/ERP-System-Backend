@@ -79,8 +79,8 @@ model User {
   verificationCodeExpiresAt DateTime?
 
   // relations
-  attachments Attachment[]
-  employee    Employee?
+  productPhotos ProductPhoto[]
+  employee      Employee?
 
   customer               Customer?
   auditLogs              AuditLog[]
@@ -161,6 +161,7 @@ model Product {
   saleItems     SaleItem[]
   purchaseItems PurchaseItem[]
   orderItems    OrderItem[]
+  productPhotos ProductPhoto[]
 }
 
 // Sales & Invoicing
@@ -349,21 +350,22 @@ model errors {
   error Json @db.JsonB
 }
 
-model Attachment {
+model ProductPhoto {
   id           Int    @id @default(autoincrement())
   storedFileId String
 
-  creatorId   Int
-  complaintId String
+  creatorId Int
+  productId Int
 
   storedFile StoredFile @relation(fields: [storedFileId], references: [id])
   creator    User       @relation(fields: [creatorId], references: [id])
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 
-  @@index([complaintId])
+  @@index([productId])
 }
 
 model StoredFile {
@@ -373,7 +375,7 @@ model StoredFile {
   path         String @unique
   size         Int
 
-  attachments Attachment[]
+  productPhotos ProductPhoto[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

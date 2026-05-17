@@ -1,26 +1,24 @@
 import { prisma } from "./client-instance";
-import { faker } from "@faker-js/faker";
+
 export const suppliersData = [
   {
-    id: 0,
-    address: faker.location.country(),
-    email: faker.internet.email(),
-    fullName: faker.person.fullName(),
-    phone: faker.phone.number(),
+    id: 1,
+    fullName: "Acme Wholesale Co.",
+    email: "contact@acmewholesale.example.com",
+    phone: "+963911000001",
+    address: "100 Industrial Park, Springfield",
   },
   {
-    id: 1,
-    address: faker.location.country(),
-    email: faker.internet.email(),
-    fullName: faker.person.fullName(),
-    phone: faker.phone.number(),
+    id: 2,
+    fullName: "Green Valley Farms",
+    email: "orders@greenvalley.example.com",
+    phone: "+963911000002",
+    address: "42 Orchard Lane, Riverside",
   },
 ];
 
 export async function seedSuppliers() {
   for (const item of suppliersData) {
-    await prisma.supplier.create({
-      data: item,
-    });
+    await prisma.supplier.create({ data: item });
   }
 }

@@ -1,21 +1,20 @@
 import { prisma } from "./client-instance";
+
 export const categoryData = [
   {
-    id: 0,
-    description: "Electric Utilities",
+    id: 1,
     name: "electronics",
+    description: "Electric utilities and devices",
   },
   {
-    id: 1,
-    description: "vegetables",
+    id: 2,
     name: "vegetables",
+    description: "Fresh vegetables",
   },
 ];
 
 export async function seedCategory() {
   for (const item of categoryData) {
-    await prisma.category.create({
-      data: item,
-    });
+    await prisma.category.create({ data: item });
   }
 }

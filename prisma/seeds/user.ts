@@ -2,7 +2,7 @@ import { UserRole } from "@/prisma";
 import { getKeyOf } from "@/utils";
 import { prisma } from "./client-instance";
 import { HashingService } from "@/hashing/hashing.service";
-import { faker } from "@faker-js/faker";
+
 export const usersData = {
   admin: {
     id: 1,
@@ -12,7 +12,7 @@ export const usersData = {
     nationalId: "0000000001",
     role: UserRole.ADMIN,
     password: "12345678",
-    departmentId: undefined,
+    employeeId: 1,
   },
   employee: {
     id: 3,
@@ -22,6 +22,7 @@ export const usersData = {
     nationalId: "0000000003",
     role: UserRole.EMPLOYEE,
     password: "12345678",
+    employeeId: 2,
   },
   manager: {
     id: 4,
@@ -31,20 +32,21 @@ export const usersData = {
     nationalId: "0000000004",
     role: UserRole.MANAGER,
     password: "12345678",
+    employeeId: 3,
   },
 };
 
 const customersData = [
   {
     id: 2,
+    customerId: 1,
     email: "customer.user@example.com",
     fullName: "Rose Fritz",
     phoneNumber: "0900000002",
     nationalId: "0000000002",
     role: UserRole.CUSTOMER,
     password: "12345678",
-    departmentId: undefined,
-    address: faker.location.country(),
+    address: "123 Main St, Springfield",
   },
 ];
 
@@ -56,7 +58,7 @@ const employeeProfiles: Record<keyof typeof usersData, string> = {
 
 export async function seedUsers(hashingService: HashingService) {
   for (const key of getKeyOf(usersData)) {
-    const { password, ...userData } = usersData[key];
+    const { password, employeeId, ...userData } = usersData[key];
     const passwordHash = await hashingService.hash(password);
     await prisma.user.create({
       data: {
@@ -68,14 +70,15 @@ export async function seedUsers(hashingService: HashingService) {
     });
     await prisma.employee.create({
       data: {
+        id: employeeId,
         userId: userData.id,
         jobTitle: employeeProfiles[key],
       },
     });
   }
 
-  for (const key of customersData) {
-    const { password, address, ...userData } = key;
+  for (const customer of customersData) {
+    const { password, address, customerId, ...userData } = customer;
     const passwordHash = await hashingService.hash(password);
     await prisma.user.create({
       data: {
@@ -87,8 +90,11 @@ export async function seedUsers(hashingService: HashingService) {
     });
     await prisma.customer.create({
       data: {
+        id: customerId,
         userId: userData.id,
         address,
+        loyaltyPoints: 150,
+        totalSpent: "89.97",
       },
     });
   }
