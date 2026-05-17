@@ -1,11 +1,34 @@
 import { Injectable } from "@nestjs/common";
-import { SignupDto } from "./dto/signinup.dto";
-import { UserRole } from "@/prisma";
+import { EmployeeSignupDto } from "./dto/signinup.dto";
+import { PrismaService, UserRole } from "@/prisma";
 import { AuthenticationService } from "./authentication.service";
+
 @Injectable()
-export class AdminAuthenticationService {
-  constructor(private authenticationService: AuthenticationService) {}
-  async signup(signupDto: SignupDto) {
-    return this.authenticationService.genericSignup(UserRole.ADMIN, signupDto);
+export class EmployeeAuthenticationService {
+  constructor(
+    private authenticationService: AuthenticationService,
+    private prismaService: PrismaService,
+  ) {}
+
+  public get prisma() {
+    return this.prismaService.client;
+  }
+
+  async signup({ jobTitle, ...signupDto }: EmployeeSignupDto) {
+    const res = await this.authenticationService.genericSignup(UserRole.EMPLOYEE, signupDto);
+
+    const { id: userId } = await this.prisma.user.findUniqueOrThrow({
+      select: { id: true },
+      where: { email: signupDto.email },
+    });
+
+    await this.prisma.employee.create({
+      data: {
+        jobTitle,
+        userId,
+      },
+    });
+
+    return res;
   }
 }

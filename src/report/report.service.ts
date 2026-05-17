@@ -1,0 +1,151 @@
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "@/prisma/prisma.service";
+import { ReportSummaryQueryDto } from "./dto/report-summary-query.dto";
+import { Prisma } from "@/prisma";
+
+@Injectable()
+export class ReportService {
+  constructor(private readonly prismaService: PrismaService) {}
+
+  public get prisma() {
+    return this.prismaService.client;
+  }
+
+  async getSummary(query: ReportSummaryQueryDto) {
+    const salesWhere: Prisma.SalesInvoiceWhereInput = { status: "COMPLETED" };
+    const purchaseWhere: Prisma.PurchaseInvoiceWhereInput = { status: "COMPLETED" };
+    const expenseWhere: Prisma.ExpenseWhereInput = {};
+    const orderWhere: Prisma.OrderWhereInput = { status: "DELIVERED" };
+
+    if (query.from != undefined || query.to != undefined) {
+      const createdAt: Prisma.DateTimeFilter = {};
+      const expenseDate: Prisma.DateTimeFilter = {};
+      if (query.from != undefined) {
+        createdAt.gte = query.from;
+        expenseDate.gte = query.from;
+      }
+      if (query.to != undefined) {
+        createdAt.lte = query.to;
+        expenseDate.lte = query.to;
+      }
+      salesWhere.createdAt = createdAt;
+      purchaseWhere.createdAt = createdAt;
+      expenseWhere.expenseDate = expenseDate;
+      orderWhere.createdAt = createdAt;
+    }
+
+    const [
+      salesAgg,
+      purchaseAgg,
+      expenseAgg,
+      salesCount,
+      orderCount,
+      lowStockCount,
+      topProductsAgg,
+      allProductSalesAgg,
+    ] = await Promise.all([
+      this.prisma.salesInvoice.aggregate({
+        where: salesWhere,
+        _sum: { total: true },
+      }),
+      this.prisma.purchaseInvoice.aggregate({
+        where: purchaseWhere,
+        _sum: { total: true },
+      }),
+      this.prisma.expense.aggregate({
+        where: expenseWhere,
+        _sum: { amount: true },
+      }),
+      this.prisma.salesInvoice.count({ where: salesWhere }),
+      this.prisma.order.count({ where: orderWhere }),
+      this.prisma.product.count({
+        where: {
+          quantityInStock: { lte: this.prisma.product.fields.minQuantity },
+        },
+      }),
+      this.prisma.saleItem.groupBy({
+        by: ["productId"],
+        where: { invoice: salesWhere },
+        _sum: { subtotal: true, quantity: true },
+        orderBy: { _sum: { subtotal: "desc" } },
+        take: 10,
+      }),
+      this.prisma.saleItem.groupBy({
+        by: ["productId"],
+        where: { invoice: salesWhere },
+        _sum: { subtotal: true },
+      }),
+    ]);
+
+    const revenue = salesAgg._sum.total ?? new Prisma.Decimal(0);
+    const purchases = purchaseAgg._sum.total ?? new Prisma.Decimal(0);
+    const expenses = expenseAgg._sum.amount ?? new Prisma.Decimal(0);
+    const grossProfit = revenue.sub(purchases);
+    const netProfit = grossProfit.sub(expenses);
+    const [products, productsWithCategory] = await Promise.all([
+      this.prisma.product.findMany({
+        where: { id: { in: topProductsAgg.map((p) => p.productId) } },
+        select: { id: true, name: true },
+      }),
+      this.prisma.product.findMany({
+        where: { id: { in: allProductSalesAgg.map((p) => p.productId) } },
+        select: {
+          id: true,
+          categoryId: true,
+          category: { select: { id: true, name: true } },
+        },
+      }),
+    ]);
+
+    const topProducts = topProductsAgg.map((agg) => {
+      const product = products.find((p) => p.id === agg.productId);
+      return {
+        productId: agg.productId,
+        name: product?.name ?? `Deleted Product (ID: ${agg.productId})`,
+        quantitySold: agg._sum.quantity ?? 0,
+        revenue: (agg._sum.subtotal ?? new Prisma.Decimal(0)).toFixed(2),
+      };
+    });
+    const categoryMap = new Map<number, { categoryId: number; name: string; revenue: Prisma.Decimal }>();
+    for (const agg of allProductSalesAgg) {
+      const product = productsWithCategory.find((p) => p.id === agg.productId);
+      const categoryId = product?.categoryId ?? 0;
+      const categoryName = product?.category?.name ?? "Uncategorized";
+      const revenue = agg._sum.subtotal ?? new Prisma.Decimal(0);
+
+      const existing = categoryMap.get(categoryId);
+      if (existing) {
+        existing.revenue = existing.revenue.add(revenue);
+      } else {
+        categoryMap.set(categoryId, { categoryId, name: categoryName, revenue });
+      }
+    }
+    const salesByCategory = [...categoryMap.values()]
+      .sort((a, b) => {
+        if (b.revenue.equals(a.revenue)) return 0;
+        return b.revenue.gt(a.revenue) ? 1 : -1;
+      })
+      .map((c) => ({
+        ...c,
+        revenue: c.revenue.toFixed(2),
+      }));
+
+    // --- 3. RETURN DATA ---
+    return {
+      period: {
+        from: query.from?.toISOString() ?? null,
+        to: query.to?.toISOString() ?? null,
+      },
+      revenue: revenue.toFixed(2),
+      purchases: purchases.toFixed(2),
+      expenses: expenses.toFixed(2),
+      grossProfit: grossProfit.toFixed(2),
+      netProfit: netProfit.toFixed(2),
+      salesCount,
+      ordersDelivered: orderCount,
+      lowStockProducts: lowStockCount,
+      topProducts,
+      salesByCategory,
+    };
+  }
+}

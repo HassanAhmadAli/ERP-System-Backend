@@ -5,9 +5,10 @@ export const generateSwaggerDocumentation = (app: INestApplication) => {
   const openApiDoc = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
-      .setTitle("Hotel System")
-      .setDescription("Hotel System API description")
-      .setVersion("0.1")
+      .setTitle("ERP Store API")
+      .setDescription("Store management API for dashboard and mobile clients")
+      .setVersion("1.0")
+      .addBearerAuth()
       .build(),
   );
   SwaggerModule.setup("doc", app, cleanupOpenApiDoc(openApiDoc));

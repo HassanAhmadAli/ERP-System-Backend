@@ -26,6 +26,12 @@ import { ProductModule } from "./product/product.module";
 import { CategoryModule } from "./category/category.module";
 import { SupplierModule } from "./supplier/supplier.module";
 import { CustomerModule } from "./customer/customer.module";
+import { DiscountModule } from "./discount/discount.module";
+import { SalesModule } from "./sales/sales.module";
+import { OrderModule } from "./order/order.module";
+import { PurchaseModule } from "./purchase/purchase.module";
+import { ExpenseModule } from "./expense/expense.module";
+import { ReportModule } from "./report/report.module";
 
 @Module({
   imports: [
@@ -74,6 +80,12 @@ import { CustomerModule } from "./customer/customer.module";
     CategoryModule,
     SupplierModule,
     CustomerModule,
+    DiscountModule,
+    SalesModule,
+    OrderModule,
+    PurchaseModule,
+    ExpenseModule,
+    ReportModule,
   ],
   controllers: [],
   providers: [

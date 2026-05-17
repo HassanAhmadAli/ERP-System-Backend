@@ -17,6 +17,8 @@ import { setPermissions } from "@/access-control/decorators/permissions.decorato
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Permissions } from "@/access-control/permission.type";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
+import { SearchQueryDto } from "@/common/dto/search-query.dto";
+import { UpdateStockDto } from "./dto/update-stock.dto";
 
 @ApiTags("Products")
 @Controller("product")
@@ -40,7 +42,7 @@ export class ProductController {
     status: 200,
     description: "Products retrieved successfully",
   })
-  getProducts(@Query() paginationQuery: PaginationQueryDto, @Query("search") search: string | undefined) {
+  getProducts(@Query() { search, ...paginationQuery }: SearchQueryDto) {
     return this.productService.getProducts(paginationQuery, search);
   }
 
@@ -91,7 +93,7 @@ export class ProductController {
   }
 
   @Patch(":id")
-  @setPermissions()
+  @setPermissions(Permissions.manageProduct)
   @ApiOperation({ summary: "Update a product" })
   @ApiResponse({
     status: 200,
@@ -102,13 +104,13 @@ export class ProductController {
   }
 
   @Patch(":id/stock")
-  @setPermissions()
+  @setPermissions(Permissions.manageProduct)
   @ApiOperation({ summary: "Update product stock" })
   @ApiResponse({
     status: 200,
     description: "Stock updated successfully",
   })
-  updateStock(@Param("id", ParseIntPipe) id: number, @Body("quantityInStock", ParseIntPipe) quantityInStock: number) {
+  updateStock(@Param("id", ParseIntPipe) id: number, @Body() { quantityInStock }: UpdateStockDto) {
     if (quantityInStock < 0) {
       throw new BadRequestException("Insufficient stock");
     }
@@ -116,7 +118,7 @@ export class ProductController {
   }
 
   @Delete(":id")
-  @setPermissions()
+  @setPermissions(Permissions.manageProduct)
   @ApiOperation({ summary: "Delete a product" })
   @ApiResponse({
     status: 200,
