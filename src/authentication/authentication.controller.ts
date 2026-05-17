@@ -10,6 +10,7 @@ import { ManagerAuthenticationService } from "./manager.authentication.service";
 import { AdminAuthenticationService } from "./admin.authentication.service";
 import { EmployeeAuthenticationService } from "./employee.authentication.service";
 import { CustomerAuthenticationService } from "./customer.authentication.service";
+import { UserRole } from "@/prisma";
 @Public()
 @Controller("authentication")
 export class AuthenticationController {
@@ -25,28 +26,28 @@ export class AuthenticationController {
   @HttpCode(HttpStatus.OK)
   @Post("customer/signin")
   async customerSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto);
+    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.CUSTOMER);
     return { access_token, refresh_token };
   }
 
   @HttpCode(HttpStatus.OK)
   @Post("employee/signin")
   async employeeSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto);
+    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.EMPLOYEE);
     return { access_token, refresh_token };
   }
 
   @HttpCode(HttpStatus.OK)
   @Post("admin/signin")
   async adminSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto);
+    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.ADMIN);
     return { access_token, refresh_token };
   }
 
   @HttpCode(HttpStatus.OK)
   @Post("manager/signin")
   async managerSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto);
+    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.MANAGER);
     return { access_token, refresh_token };
   }
   // signup

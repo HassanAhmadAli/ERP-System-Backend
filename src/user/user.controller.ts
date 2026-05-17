@@ -4,8 +4,9 @@ import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
 import { Permissions } from "@/access-control/permission.type";
-import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { OptionalUserRoleSchema } from "@/common/schema/role";
+import { viewUsersProfilesQueryDto } from "./dto/view-users-profiles-query.dto";
+
 @Controller("user")
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -50,7 +51,7 @@ export class UserController {
 
   @setPermissions(Permissions.viewUsersProfiles)
   @Get()
-  async viewUsersProfiles(@Query() query: PaginationQueryDto, @Query("role") _role: string | undefined) {
+  async viewUsersProfiles(@Query() { role: _role, ...query }: viewUsersProfilesQueryDto) {
     const role = OptionalUserRoleSchema.parse(_role);
     return await this.userService.viewUsersProfiles(query, role);
   }

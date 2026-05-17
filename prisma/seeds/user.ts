@@ -48,6 +48,12 @@ const customersData = [
   },
 ];
 
+const employeeProfiles: Record<keyof typeof usersData, string> = {
+  admin: "Store Administrator",
+  employee: "Cashier",
+  manager: "Store Manager",
+};
+
 export async function seedUsers(hashingService: HashingService) {
   for (const key of getKeyOf(usersData)) {
     const { password, ...userData } = usersData[key];
@@ -58,6 +64,12 @@ export async function seedUsers(hashingService: HashingService) {
         passwordHash,
         isVerified: true,
         isActive: true,
+      },
+    });
+    await prisma.employee.create({
+      data: {
+        userId: userData.id,
+        jobTitle: employeeProfiles[key],
       },
     });
   }

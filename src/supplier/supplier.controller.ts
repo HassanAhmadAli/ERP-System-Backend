@@ -3,9 +3,9 @@ import { SupplierService } from "./supplier.service";
 import { CreateSupplierDto } from "./dto/create-supplier.dto";
 import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
 import { Permissions } from "@/access-control/permission.type";
+import { SearchQueryDto } from "@/common/dto/search-query.dto";
 
 @ApiTags("Suppliers")
 @Controller("supplier")
@@ -23,7 +23,7 @@ export class SupplierController {
   @Get()
   @ApiOperation({ summary: "Get all suppliers with pagination and search" })
   @ApiResponse({ status: 200, description: "Suppliers retrieved successfully" })
-  findAll(@Query() paginationQuery: PaginationQueryDto, @Query("search") search: string | undefined) {
+  findAll(@Query() { search, ...paginationQuery }: SearchQueryDto) {
     return this.supplierService.findAll(paginationQuery, search);
   }
 

@@ -4,7 +4,7 @@ import { Public } from "@/common/decorators/public.decorator";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { getEntriesOfTrue } from "@/utils";
 import { AppCachingService } from "@/caching/caching.service";
-import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
+import { deletedAt, PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 
 @Public()
 @Injectable()
@@ -90,7 +90,7 @@ export class UserService {
       this.prisma.user.findMany({
         where: {
           role: role, // Prisma ignores this if it's undefined
-          deletedAt: query.deletedAt,
+          deletedAt: deletedAt(query.deleted),
         },
         select: {
           id: true,
@@ -109,7 +109,7 @@ export class UserService {
       this.prisma.user.count({
         where: {
           role: role,
-          deletedAt: query.deletedAt,
+          deletedAt: deletedAt(query.deleted),
         },
       }),
     ]);

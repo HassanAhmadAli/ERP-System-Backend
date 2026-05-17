@@ -3,9 +3,9 @@ import { CategoryService } from "./category.service";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
 import { Permissions } from "@/access-control/permission.type";
+import { SearchQueryDto } from "@/common/dto/search-query.dto";
 
 @ApiTags("Categories")
 @Controller("category")
@@ -23,7 +23,7 @@ export class CategoryController {
   @Get()
   @ApiOperation({ summary: "Get all categories with pagination and search" })
   @ApiResponse({ status: 200, description: "Categories retrieved successfully" })
-  findAll(@Query() paginationQuery: PaginationQueryDto, @Query("search") search: string | undefined) {
+  findAll(@Query() { search, ...paginationQuery }: SearchQueryDto) {
     return this.categoryService.findAll(paginationQuery, search);
   }
 

@@ -65,3 +65,4 @@ prisma/migrations/
 prisma/new.prisma.txt
 prisma/old.prisma.txt
 ignore/
+backups/

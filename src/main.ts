@@ -4,6 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
 import { env } from "./common/env";
 import { RedisIoAdapter } from "@/socketio";
+import { generateSwaggerDocumentation } from "@/openapi/swagger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -14,8 +15,10 @@ async function bootstrap() {
   const redisIoAdapter = new RedisIoAdapter(app);
   await redisIoAdapter.connectToRedis(config.getOrThrow("REDIS_DATABASE_URL"));
   app.useWebSocketAdapter(redisIoAdapter);
+  // app.setGlobalPrefix("api/v1");
   app.enableCors();
   app.enableShutdownHooks();
+  generateSwaggerDocumentation(app);
   await app.listen(config.getOrThrow("PORT", { infer: true }));
 }
 void bootstrap();

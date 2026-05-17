@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import { Injectable, BadRequestException } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { Prisma, DiscountType, DiscountScope } from "@/prisma";
 import { CreateDiscountDto } from "./dto/create-discount.dto";
@@ -24,7 +24,7 @@ export class DiscountService {
     return this.prismaService.client;
   }
 
-  // ─── CRUD ──────────────────────────────────────────────────────
+  // --- CRUD ------------------------------------------------------
 
   async create(userId: number, createDiscountDto: CreateDiscountDto) {
     const discount = await this.prisma.discount.create({
@@ -94,7 +94,7 @@ export class DiscountService {
     });
   }
 
-  // ─── Active / Valid Discounts ──────────────────────────────────
+  // --- Active / Valid Discounts ----------------------------------
 
   async getActiveDiscounts(paginationQuery: PaginationQueryDto) {
     const now = new Date();
@@ -123,7 +123,7 @@ export class DiscountService {
     return { data, total };
   }
 
-  // ─── Discount Calculation Engine ───────────────────────────────
+  // --- Discount Calculation Engine -------------------------------
 
   /**
    * Calculates the discount amount for a given subtotal.
@@ -279,7 +279,7 @@ export class DiscountService {
     return bestResult;
   }
 
-  // ─── Private Helpers ───────────────────────────────────────────
+  // --- Private Helpers -------------------------------------------
 
   private validateScope(scope: DiscountScope, dto: CalculateDiscountDto): void {
     switch (scope) {

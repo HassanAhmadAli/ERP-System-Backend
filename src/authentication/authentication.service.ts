@@ -8,16 +8,14 @@ import { ActiveUserSchema, RefreshTokenPayloadSchema, ActiveUserInput } from "./
 import { randomUUID, randomInt } from "node:crypto";
 import { RefreshTokenIdsStorage } from "./refresh-token-ids.storage";
 import { Prisma, PrismaService, User, UserRole } from "@/prisma";
-import { ErrorMessages, Keys } from "@/common/const";
+import { ErrorMessages } from "@/common/const";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
 import { SignoutDto } from "./dto/signout.dto";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { logger } from "@/utils";
 import { Cache } from "@nestjs/cache-manager";
-import { InjectQueue } from "@nestjs/bullmq";
-import { Queue } from "bullmq";
-import { Notification } from "@/notification/notification.interface";
+import { NotificationsService } from "@/notification/notification.service";
 @Injectable()
 export class AuthenticationService {
   constructor(
@@ -27,7 +25,7 @@ export class AuthenticationService {
     private readonly refreshTokenIdsStorage: RefreshTokenIdsStorage,
     private readonly config: ConfigService<EnvVariables>,
     private cacheManager: Cache,
-    @InjectQueue(Keys.notification) private readonly notificationQueue: Queue<Notification>,
+    private readonly notificationsService: NotificationsService,
   ) {
     this.NODE_ENV = this.config.getOrThrow("NODE_ENV", {
       infer: true,
@@ -64,15 +62,19 @@ export class AuthenticationService {
       logger.debug({ message });
       return { message };
     }
-    await this.notificationQueue.add("send-notification", {
-      title: "Verification Code for the Complaint App",
-      //todo:
-      userId: user.id,
-      email: signupDto.email,
-      message: `Your verification code is: ${verificationCode} , it will expire in 15 minutes`,
-      type: "security",
-      createdAt: new Date(),
-    });
+
+    await this.notificationsService.addNotification(
+      {
+        title: "Verification Code for the Complaint App",
+        //todo:
+        userId: user.id,
+        email: signupDto.email,
+        message: `Your verification code is: ${verificationCode} , it will expire in 15 minutes`,
+        type: "security",
+        createdAt: new Date(),
+      },
+      "send-notification",
+    );
     return {
       message: "User created. Please check your email for verification code.",
     };
@@ -126,19 +128,22 @@ export class AuthenticationService {
       return await this.cacheManager.set(key, 1);
     }
     if (res < 3) return await this.cacheManager.set(key, res + 1);
-    await this.notificationQueue.add("send-notification", {
-      title: "Security Alert!",
-      //todo:
-      userId,
-      email,
-      message: `You have signedin with the wrong password 3 times ${Date()}`,
-      type: "security",
-      createdAt: new Date(),
-    });
+    await this.notificationsService.addNotification(
+      {
+        title: "Security Alert!",
+        //todo:
+        userId,
+        email,
+        message: `You have signedin with the wrong password 3 times ${Date()}`,
+        type: "security",
+        createdAt: new Date(),
+      },
+      "send-notification",
+    );
     return;
   }
 
-  async signIn({ email, password: rawPassword }: SigninDto) {
+  async signIn({ email, password: rawPassword }: SigninDto, expectedRole: UserRole | undefined) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: {
         email,
@@ -150,6 +155,10 @@ export class AuthenticationService {
         isVerified: true,
       },
     });
+
+    if (expectedRole != undefined && user.role !== expectedRole) {
+      throw new UnauthorizedException("Invalid credentials for this account type");
+    }
 
     if (!user.isVerified) {
       throw new UnauthorizedException("Please verify your email before logging in.");

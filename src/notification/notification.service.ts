@@ -6,6 +6,10 @@ import { ActiveUserSchema } from "@/authentication/dto/request-user.dto";
 import { AppCachingService } from "@/caching/caching.service";
 import { NotificationConsumer } from "./notification.consumer";
 import { HashingService } from "@/hashing/hashing.service";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Keys } from "@/common/const";
+import { Queue } from "bullmq";
+import { Notification } from "./notification.interface";
 
 @Injectable()
 export class NotificationsService {
@@ -16,6 +20,7 @@ export class NotificationsService {
     private readonly hashingService: HashingService,
     private readonly cachingService: AppCachingService,
     private readonly notificationConsumer: NotificationConsumer,
+    @InjectQueue(Keys.notification) private readonly notificationQueue: Queue<Notification>,
   ) {}
   get prisma() {
     return this.prismaService.client;
@@ -39,5 +44,8 @@ export class NotificationsService {
   async handleDisconnect(client: Socket) {
     client.disconnect();
     await this.cachingService.socketIo.unRegisterSocket(client.id);
+  }
+  async addNotification(notification: Notification, name: string) {
+    return await this.notificationQueue.add(name, notification);
   }
 }

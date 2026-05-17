@@ -8,6 +8,8 @@ import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Permissions } from "@/access-control/permission.type";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
+import { SearchQueryDto } from "@/common/dto/search-query.dto";
+import { ToggleActiveDiscountDto } from "./dto/toggle-active.dto";
 
 @ApiTags("Discounts")
 @Controller("discount")
@@ -26,7 +28,7 @@ export class DiscountController {
   @setPermissions(Permissions.manageDiscounts)
   @ApiOperation({ summary: "Get all discounts with pagination and search" })
   @ApiResponse({ status: 200, description: "Discounts retrieved successfully" })
-  findAll(@Query() paginationQuery: PaginationQueryDto, @Query("search") search?: string) {
+  findAll(@Query() { search, ...paginationQuery }: SearchQueryDto) {
     return this.discountService.findAll(paginationQuery, search);
   }
 
@@ -57,7 +59,7 @@ export class DiscountController {
   @setPermissions(Permissions.manageDiscounts)
   @ApiOperation({ summary: "Toggle a discount active/inactive" })
   @ApiResponse({ status: 200, description: "Discount toggled successfully" })
-  toggleActive(@Param("id", ParseIntPipe) id: number, @Body("isActive", ParseBoolPipe) isActive: boolean) {
+  toggleActive(@Param("id", ParseIntPipe) id: number, @Body() { isActive }: ToggleActiveDiscountDto) {
     return this.discountService.toggleActive(id, isActive);
   }
 

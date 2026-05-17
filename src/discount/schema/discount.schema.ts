@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DiscountScope, DiscountType, Prisma } from "@/prisma";
+import { stringToDateSchema } from "@/common/schema/date.schema";
 
 export const CreateDiscountSchema = z
   .object({
@@ -16,8 +17,8 @@ export const CreateDiscountSchema = z
       .default(0)
       .transform((x) => new Prisma.Decimal(x)),
     maxUses: z.coerce.number().int().positive().optional(),
-    startDate: z.coerce.date(),
-    endDate: z.coerce.date().optional(),
+    startDate: stringToDateSchema,
+    endDate: stringToDateSchema.optional(),
     isActive: z.boolean().default(true),
   })
   .refine(
@@ -44,9 +45,9 @@ export const UpdateDiscountSchema = z.object({
     .min(0)
     .transform((x) => new Prisma.Decimal(x))
     .optional(),
-  maxUses: z.coerce.number().int().positive().nullable().optional(),
-  startDate: z.coerce.date().optional(),
-  endDate: z.coerce.date().nullable().optional(),
+  maxUses: z.coerce.number().int().positive().nullish(),
+  startDate: stringToDateSchema.optional(),
+  endDate: stringToDateSchema.nullish(),
   isActive: z.boolean().optional(),
 });
 
@@ -54,7 +55,7 @@ export const UpdateDiscountSchema = z.object({
 export const CalculateDiscountSchema = z.object({
   discountId: z.coerce.number().int().positive(),
   subtotal: z.coerce.number().positive(),
-  customerId: z.coerce.number().int().positive().nullable().optional(),
-  productId: z.coerce.number().int().positive().nullable().optional(),
-  categoryId: z.coerce.number().int().positive().nullable().optional(),
+  customerId: z.coerce.number().int().positive().nullish(),
+  productId: z.coerce.number().int().positive().nullish(),
+  categoryId: z.coerce.number().int().positive().nullish(),
 });
