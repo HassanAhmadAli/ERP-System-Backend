@@ -4,6 +4,7 @@ import { DiscountService } from "@/discount/discount.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import { UpdateOrderStatusDto } from "./dto/update-order-status.dto";
 import { OrderQueryDto } from "./dto/order-query.dto";
+import { paginated } from "@/common/types/paginated-response";
 import { OrderStatus, Prisma, UserRole } from "@/prisma";
 import { NotificationsService } from "@/notification/notification.service";
 
@@ -141,7 +142,7 @@ export class OrderService {
       this.prisma.order.count({ where }),
     ]);
 
-    return { data, total };
+    return paginated(data, total);
   }
 
   async findOne(id: number, userId: number, role: UserRole) {

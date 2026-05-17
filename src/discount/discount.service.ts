@@ -5,6 +5,7 @@ import { CreateDiscountDto } from "./dto/create-discount.dto";
 import { UpdateDiscountDto } from "./dto/update-discount.dto";
 import { CalculateDiscountDto } from "./dto/calculate-discount.dto";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
+import { paginated } from "@/common/types/paginated-response";
 
 export interface DiscountCalculationResult {
   discountId: number;
@@ -45,7 +46,7 @@ export class DiscountService {
       where.name = { contains: search, mode: "insensitive" };
     }
 
-    const [data, total] = await Promise.all([
+    const [data, count] = await Promise.all([
       this.prisma.discount.findMany({
         where,
         include: { createdBy: { select: { id: true, fullName: true } } },
@@ -56,7 +57,7 @@ export class DiscountService {
       this.prisma.discount.count({ where }),
     ]);
 
-    return { data, total };
+    return paginated(data, count);
   }
 
   async findOne(id: number) {
@@ -120,7 +121,7 @@ export class DiscountService {
       this.prisma.discount.count({ where }),
     ]);
 
-    return { data, total };
+    return paginated(data, total);
   }
 
   // --- Discount Calculation Engine -------------------------------

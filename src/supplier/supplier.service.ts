@@ -3,6 +3,7 @@ import { PrismaService } from "@/prisma/prisma.service";
 import { CreateSupplierDto } from "./dto/create-supplier.dto";
 import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
+import { paginated } from "@/common/types/paginated-response";
 
 @Injectable()
 export class SupplierService {
@@ -42,7 +43,7 @@ export class SupplierService {
       this.prisma.supplier.count({ where }),
     ]);
 
-    return { data, total };
+    return paginated(data, total);
   }
 
   async findOne(id: number) {

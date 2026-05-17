@@ -5,6 +5,7 @@ import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { getEntriesOfTrue } from "@/utils";
 import { AppCachingService } from "@/caching/caching.service";
 import { deletedAt, PaginationQueryDto } from "@/common/dto/pagination-query.dto";
+import { paginated } from "@/common/types/paginated-response";
 
 @Public()
 @Injectable()
@@ -114,13 +115,6 @@ export class UserService {
       }),
     ]);
 
-    return {
-      data,
-      meta: {
-        total,
-        limit: query.limit,
-        offset: query.offset,
-      },
-    };
+    return paginated(data, total);
   }
 }

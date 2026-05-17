@@ -4,6 +4,7 @@ import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { Prisma } from "@/prisma";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
+import { paginated } from "@/common/types/paginated-response";
 
 @Injectable()
 export class ProductService {
@@ -56,18 +57,21 @@ export class ProductService {
         }
       : {};
 
-    const data = await this.prisma.product.findMany({
-      where,
-      include: {
-        category: true,
-        supplier: true,
-      },
-      skip: paginationQuery.offset,
-      take: paginationQuery.limit,
-      orderBy: { createdAt: "desc" },
-    });
+    const [data, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+          supplier: true,
+        },
+        skip: paginationQuery.offset,
+        take: paginationQuery.limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
 
-    return { data };
+    return paginated(data, total);
   }
 
   async findOne(id: number) {
@@ -183,20 +187,23 @@ export class ProductService {
       where: { id: categoryId },
     });
 
-    const data = await this.prisma.product.findMany({
-      where: { categoryId },
-      include: {
-        category: true,
-        supplier: true,
-      },
-      skip: paginationQuery.offset,
-      take: paginationQuery.limit,
-      orderBy: { createdAt: "desc" },
-    });
+    const where = { categoryId };
 
-    return {
-      data,
-    };
+    const [data, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+          supplier: true,
+        },
+        skip: paginationQuery.offset,
+        take: paginationQuery.limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return paginated(data, total);
   }
 
   async getProductsBySupplier(supplierId: number, paginationQuery: PaginationQueryDto) {
@@ -204,39 +211,47 @@ export class ProductService {
       where: { id: supplierId },
     });
 
-    const data = await this.prisma.product.findMany({
-      where: { supplierId },
-      include: {
-        category: true,
-        supplier: true,
-      },
-      skip: paginationQuery.offset,
-      take: paginationQuery.limit,
-      orderBy: { createdAt: "desc" },
-    });
+    const where = { supplierId };
 
-    return {
-      data,
-    };
+    const [data, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+          supplier: true,
+        },
+        skip: paginationQuery.offset,
+        take: paginationQuery.limit,
+        orderBy: { createdAt: "desc" },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return paginated(data, total);
   }
 
   async getLowStockProducts(paginationQuery: PaginationQueryDto) {
-    const data = await this.prisma.product.findMany({
-      where: {
-        quantityInStock: {
-          lte: this.prisma.product.fields.minQuantity,
-        },
+    const where = {
+      quantityInStock: {
+        lte: this.prisma.product.fields.minQuantity,
       },
-      include: {
-        category: true,
-        supplier: true,
-      },
-      skip: paginationQuery.offset,
-      take: paginationQuery.limit,
-      orderBy: { quantityInStock: "asc" },
-    });
+    };
 
-    return { data };
+    const [data, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        include: {
+          category: true,
+          supplier: true,
+        },
+        skip: paginationQuery.offset,
+        take: paginationQuery.limit,
+        orderBy: { quantityInStock: "asc" },
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return paginated(data, total);
   }
 
   async updateStock(id: number, quantityInStock: number) {

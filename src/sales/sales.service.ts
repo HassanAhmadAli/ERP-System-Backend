@@ -4,6 +4,7 @@ import { DiscountService } from "@/discount/discount.service";
 import { CreateSalesInvoiceDto } from "./dto/create-sales-invoice.dto";
 import { UpdateSalesInvoiceStatusDto } from "./dto/update-sales-invoice-status.dto";
 import { SalesInvoiceQueryDto } from "./dto/sales-invoice-query.dto";
+import { paginated } from "@/common/types/paginated-response";
 import { InvoiceStatus, Prisma } from "@/prisma";
 import { NotificationsService } from "../notification/notification.service";
 
@@ -128,7 +129,7 @@ export class SalesService {
       this.prisma.salesInvoice.count({ where }),
     ]);
 
-    return { data, total };
+    return paginated(data, total);
   }
 
   async findOne(id: number) {

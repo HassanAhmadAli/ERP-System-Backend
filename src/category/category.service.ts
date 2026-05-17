@@ -3,6 +3,7 @@ import { PrismaService } from "@/prisma/prisma.service";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
+import { paginated } from "@/common/types/paginated-response";
 
 @Injectable()
 export class CategoryService {
@@ -43,7 +44,7 @@ export class CategoryService {
       this.prisma.category.count({ where }),
     ]);
 
-    return { data, total };
+    return paginated(data, total);
   }
 
   async findOne(id: number) {

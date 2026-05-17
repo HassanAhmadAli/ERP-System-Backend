@@ -3,6 +3,7 @@ import { PrismaService } from "@/prisma/prisma.service";
 import { CreateExpenseDto } from "./dto/create-expense.dto";
 import { UpdateExpenseDto } from "./dto/update-expense.dto";
 import { ExpenseQueryDto } from "./dto/expense-query.dto";
+import { paginated } from "@/common/types/paginated-response";
 import { Prisma } from "@/prisma";
 
 @Injectable()
@@ -54,7 +55,7 @@ export class ExpenseService {
       this.prisma.expense.count({ where }),
     ]);
 
-    return { data, total };
+    return paginated(data, total);
   }
 
   async findOne(id: number) {

@@ -3,6 +3,7 @@ import { PrismaService } from "@/prisma/prisma.service";
 import { CreatePurchaseInvoiceDto } from "./dto/create-purchase-invoice.dto";
 import { UpdatePurchaseInvoiceStatusDto } from "./dto/update-purchase-invoice-status.dto";
 import { PurchaseInvoiceQueryDto } from "./dto/purchase-invoice-query.dto";
+import { paginated } from "@/common/types/paginated-response";
 import { InvoiceStatus, Prisma } from "@/prisma";
 
 type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
@@ -93,7 +94,7 @@ export class PurchaseService {
       this.prisma.purchaseInvoice.count({ where }),
     ]);
 
-    return { data, total };
+    return paginated(data, total);
   }
 
   async findOne(id: number) {
