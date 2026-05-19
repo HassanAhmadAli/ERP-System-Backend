@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FinancialDateRangeSchema } from "./shared.schemas";
+import { FinancialDateRangeSchema } from "./shared.schema";
 import { createZodDto } from "nestjs-zod";
 
 export const SupplierReportQuerySchema = FinancialDateRangeSchema.extend({

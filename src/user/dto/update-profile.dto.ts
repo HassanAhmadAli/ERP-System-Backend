@@ -1,5 +1,7 @@
 import { createZodDto } from "nestjs-zod";
-import { CreateUserSchema } from "../schema/user";
+import "@/common/env";
+import { CreateUserSchema } from "./shared.schema";
+
 export const UpdateProfileSchema = CreateUserSchema.omit({
   password: true,
 })

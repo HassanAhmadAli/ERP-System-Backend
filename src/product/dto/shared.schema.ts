@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { createZodDto } from "nestjs-zod";
 import { Prisma } from "@/prisma";
 
 export const CreateProductSchema = z.object({
@@ -16,12 +15,7 @@ export const CreateProductSchema = z.object({
     .transform((x) => new Prisma.Decimal(x)),
   quantityInStock: z.coerce.number().int().min(0),
   minQuantity: z.coerce.number().int().min(0),
-  categoryId: z.coerce.number().int(),
-  supplierId: z.coerce.number().int(),
+  categoryId: z.coerce.number().int().positive(),
+  supplierId: z.coerce.number().int().positive(),
   imageUrl: z.url().optional(),
 });
-
-export const UpdateProductSchema = CreateProductSchema.partial();
-
-export class CreateProductDto extends createZodDto(CreateProductSchema) {}
-export class UpdateProductDto extends createZodDto(UpdateProductSchema) {}

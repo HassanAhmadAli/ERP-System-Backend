@@ -1,3 +1,3 @@
 import z from "zod";
-export const emptyToUndefined = <T extends z.ZodTypeAny>(schema: T) =>
-  z.preprocess((val) => (val === "" ? undefined : val), schema.optional());
+export const emptyStringToUndefined = <T extends z.ZodTypeAny>(schema: T) =>
+  z.preprocess((val) => (typeof val === "string" && val.trim() === "" ? undefined : val), schema.optional());

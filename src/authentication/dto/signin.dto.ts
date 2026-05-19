@@ -1,4 +1,4 @@
-import { CreateUserSchema } from "@/user/schema/user";
+import { CreateUserSchema } from "@/user/dto/shared.schema";
 import { createZodDto } from "nestjs-zod";
 
 export const SigninSchema = CreateUserSchema.pick({

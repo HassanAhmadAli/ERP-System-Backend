@@ -6,13 +6,13 @@ import {
   formatProductImportZodError,
   PRODUCT_IMPORT_CSV_COLUMNS,
   ProductImportCsvFileSchema,
-  ProductImportRowToCreateSchema,
-  type ProductImportCsvColumn,
+  ProductImportCsvRowSchema,
+  type PRODUCT_IMPORT_CSV_COLUMNS,
   type ProductImportCsvFile,
-} from "./schema/product-import.schema";
+} from "./dto/product-import.schema";
 
 const REQUIRED_CSV_HEADERS = PRODUCT_IMPORT_CSV_COLUMNS.filter(
-  (column): column is Exclude<ProductImportCsvColumn, "description"> => column !== "description",
+  (column): column is Exclude<PRODUCT_IMPORT_CSV_COLUMNS, "description"> => column !== "description",
 );
 
 /** Max rows per `createMany` call to stay within DB/driver limits. */
@@ -89,7 +89,7 @@ export class ProductImportService {
 
     for (let i = 0; i < rows.length; i++) {
       const rowNum = i + 2;
-      const rowResult = ProductImportRowToCreateSchema.safeParse(rows[i]);
+      const rowResult = ProductImportCsvRowSchema.safeParse(rows[i]);
 
       if (!rowResult.success) {
         errors.push({ row: rowNum, message: formatProductImportZodError(rowResult.error) });

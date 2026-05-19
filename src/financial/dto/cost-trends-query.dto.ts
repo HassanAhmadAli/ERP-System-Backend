@@ -1,6 +1,6 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { FinancialDateRangeSchema } from "./shared.schemas";
+import { FinancialDateRangeSchema } from "./shared.schema";
 
 export const CostTrendsQuerySchema = FinancialDateRangeSchema.extend({
   productId: z.coerce.number().int().optional(),

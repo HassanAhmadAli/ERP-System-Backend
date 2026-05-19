@@ -1,4 +1,4 @@
-import { CreateCustomerSchema, CreateUserSchema, CreateEmployeeSchema } from "@/user/schema/user";
+import { CreateCustomerSchema, CreateUserSchema, CreateEmployeeSchema } from "@/user/dto/shared.schema";
 import { createZodDto } from "nestjs-zod";
 
 export class SignupDto extends createZodDto(CreateUserSchema) {}

@@ -1,4 +1,5 @@
 import { createZodDto } from "nestjs-zod";
-import { CreateUserSchema } from "../schema/user";
+import "@/common/env";
+import { CreateUserSchema } from "./shared.schema";
 
 export class CreateUserDto extends createZodDto(CreateUserSchema) {}

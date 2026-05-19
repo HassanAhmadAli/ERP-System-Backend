@@ -1,5 +1,5 @@
 import { UserRole } from "@/prisma";
 import z from "zod";
-import { emptyToUndefined } from "./helper";
+import { emptyStringToUndefined } from "./helper";
 export const UserRoleSchema = z.enum(UserRole);
-export const OptionalUserRoleSchema = emptyToUndefined(UserRoleSchema.optional());
+export const OptionalUserRoleSchema = emptyStringToUndefined(UserRoleSchema.optional());

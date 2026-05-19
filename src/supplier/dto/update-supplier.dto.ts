@@ -1,4 +1,4 @@
 import { createZodDto } from "nestjs-zod";
-import { UpdateSupplierSchema } from "../schema/supplier.schema";
+import { UpdateSupplierSchema } from "./shared.schema";
 
 export class UpdateSupplierDto extends createZodDto(UpdateSupplierSchema) {}

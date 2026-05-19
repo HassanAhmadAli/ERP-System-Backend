@@ -1,4 +1,7 @@
 import { createZodDto } from "nestjs-zod";
-import { UpdateOrderStatusSchema } from "../schema/order.schema";
-
+import { z } from "zod";
+import { OrderStatus } from "@/prisma";
+export const UpdateOrderStatusSchema = z.object({
+  status: z.enum(OrderStatus),
+});
 export class UpdateOrderStatusDto extends createZodDto(UpdateOrderStatusSchema) {}
