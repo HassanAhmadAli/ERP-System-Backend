@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { ReportSummaryQueryDto } from "./dto/report-summary-query.dto";
-import { Prisma } from "@/prisma";
+import { OrderStatus, Prisma } from "@/prisma";
 
 @Injectable()
 export class ReportService {
@@ -146,6 +146,88 @@ export class ReportService {
       lowStockProducts: lowStockCount,
       topProducts,
       salesByCategory,
+    };
+  }
+
+  async getDashboard() {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const salesTodayWhere: Prisma.SalesInvoiceWhereInput = {
+      status: "COMPLETED",
+      createdAt: { gte: startOfToday, lte: endOfToday },
+    };
+
+    const pendingOrderStatuses: OrderStatus[] = ["PENDING", "PREPARING", "OUT_FOR_DELIVERY"];
+
+    const [salesTodayAgg, salesTodayCount, pendingOrders, lowStockProducts] = await Promise.all([
+      this.prisma.salesInvoice.aggregate({
+        where: salesTodayWhere,
+        _sum: { total: true },
+      }),
+      this.prisma.salesInvoice.count({ where: salesTodayWhere }),
+      this.prisma.order.count({
+        where: { status: { in: pendingOrderStatuses } },
+      }),
+      this.prisma.product.count({
+        where: {
+          quantityInStock: { lte: this.prisma.product.fields.minQuantity },
+        },
+      }),
+    ]);
+
+    const revenueToday = salesTodayAgg._sum.total ?? new Prisma.Decimal(0);
+
+    return {
+      date: startOfToday.toISOString().slice(0, 10),
+      lowStockProducts,
+      salesToday: {
+        count: salesTodayCount,
+        revenue: revenueToday.toFixed(2),
+      },
+      pendingOrders,
+    };
+  }
+
+  async getInventoryReport() {
+    const [products, lowStockCount, outOfStockCount] = await Promise.all([
+      this.prisma.product.findMany({
+        include: {
+          category: { select: { id: true, name: true } },
+          supplier: { select: { id: true, fullName: true } },
+        },
+        orderBy: { name: "asc" },
+      }),
+      this.prisma.product.count({
+        where: { quantityInStock: { lte: this.prisma.product.fields.minQuantity, gt: 0 } },
+      }),
+      this.prisma.product.count({ where: { quantityInStock: 0 } }),
+    ]);
+
+    const stockValue = products.reduce(
+      (sum, p) => sum.add(p.purchasePrice.mul(p.quantityInStock)),
+      new Prisma.Decimal(0),
+    );
+
+    return {
+      totalProducts: products.length,
+      lowStockCount,
+      outOfStockCount,
+      stockValue: stockValue.toFixed(2),
+      products: products.map((p) => ({
+        id: p.id,
+        name: p.name,
+        barcode: p.barcode,
+        category: p.category.name,
+        supplier: p.supplier.fullName,
+        quantityInStock: p.quantityInStock,
+        minQuantity: p.minQuantity,
+        purchasePrice: p.purchasePrice.toFixed(2),
+        sellingPrice: p.sellingPrice.toFixed(2),
+        stockStatus: p.quantityInStock === 0 ? "out_of_stock" : p.quantityInStock <= p.minQuantity ? "low" : "ok",
+      })),
     };
   }
 }

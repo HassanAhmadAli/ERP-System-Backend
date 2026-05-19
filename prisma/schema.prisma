@@ -27,6 +27,20 @@ enum UserRole {
   EMPLOYEE
   CUSTOMER
   MANAGER
+  ACCOUNTANT
+}
+
+enum ProductImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum AdPlacement {
+  HOME
+  CHECKOUT
+  SIDEBAR
 }
 
 enum InvoiceStatus {
@@ -88,6 +102,7 @@ model User {
   notificationRecipients NotificationRecipient[]
   recordedExpenses       Expense[]
   createdDiscounts       Discount[]
+  productImportJobs      ProductImportJob[]
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
   deletedAt              DateTime?
@@ -298,10 +313,48 @@ model Notification {
   title      String
   body       String
   targetType NotificationTargetType
+  targetRole UserRole?
   sentAt     DateTime               @default(now())
 
   sender     User                    @relation("SentBy", fields: [senderId], references: [id])
   recipients NotificationRecipient[]
+}
+
+model Advertisement {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String?
+  imageUrl    String?
+  linkUrl     String?
+  placement   AdPlacement @default(HOME)
+  isActive    Boolean     @default(true)
+  startDate   DateTime
+  endDate     DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+// used for storing one row, hoding the loyality policy of the store
+model LoyaltyPolicy {
+  id                Int      @id @default(1)
+  pointsPerCurrency Decimal  @default(1) @db.Decimal(10, 4)
+  currencyPerPoint  Decimal  @default(1) @db.Decimal(10, 4)
+  updatedAt         DateTime @updatedAt
+}
+
+model ProductImportJob {
+  id           Int                 @id @default(autoincrement())
+  uploadedById Int
+  fileName     String
+  status       ProductImportStatus @default(PENDING)
+  totalRows    Int                 @default(0)
+  successCount Int                 @default(0)
+  errorCount   Int                 @default(0)
+  errors       Json?
+  createdAt    DateTime            @default(now())
+  completedAt  DateTime?
+
+  uploadedBy User @relation(fields: [uploadedById], references: [id])
 }
 
 model NotificationRecipient {

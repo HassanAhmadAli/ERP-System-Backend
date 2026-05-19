@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { DiscountService } from "@/discount/discount.service";
 import { CreateSalesInvoiceDto } from "./dto/create-sales-invoice.dto";
@@ -7,6 +7,7 @@ import { SalesInvoiceQueryDto } from "./dto/sales-invoice-query.dto";
 import { paginated } from "@/common/types/paginated-response";
 import { InvoiceStatus, Prisma } from "@/prisma";
 import { NotificationsService } from "../notification/notification.service";
+import { LoyaltyPolicyService } from "@/loyalty-reward/loyalty-policy.service";
 
 type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
 
@@ -23,6 +24,7 @@ export class SalesService {
     private readonly prismaService: PrismaService,
     private readonly discountService: DiscountService,
     private readonly notificationsService: NotificationsService,
+    private readonly loyaltyPolicyService: LoyaltyPolicyService,
   ) {}
 
   public get prisma() {
@@ -30,13 +32,9 @@ export class SalesService {
   }
 
   async create(userId: number, dto: CreateSalesInvoiceDto) {
-    const employee = await this.prisma.employee.findUnique({
+    const employee = await this.prisma.employee.findUniqueOrThrow({
       where: { userId },
     });
-
-    if (!employee) {
-      throw new BadRequestException("User is not registered as an employee");
-    }
 
     if (dto.customerId != undefined) {
       await this.prisma.customer.findUniqueOrThrow({ where: { id: dto.customerId } });
@@ -140,14 +138,10 @@ export class SalesService {
   }
 
   async updateStatus(id: number, { status }: UpdateSalesInvoiceStatusDto) {
-    const invoice = await this.prisma.salesInvoice.findUnique({
+    const invoice = await this.prisma.salesInvoice.findUniqueOrThrow({
       where: { id },
       include: { items: true },
     });
-
-    if (!invoice) {
-      throw new NotFoundException(`Sales invoice with ID ${id} not found`);
-    }
 
     if (invoice.status === "CANCELLED" || invoice.status === "REFUNDED") {
       throw new BadRequestException(`Cannot update invoice in ${invoice.status} status`);
@@ -269,7 +263,7 @@ export class SalesService {
     }
 
     if (invoice.customerId != undefined) {
-      const loyaltyPoints = Math.floor(invoice.total.toNumber());
+      const loyaltyPoints = await this.loyaltyPolicyService.calculateEarnedPoints(invoice.total);
       await tx.customer.update({
         where: { id: invoice.customerId },
         data: {
@@ -307,7 +301,7 @@ export class SalesService {
     }
 
     if (invoice.customerId != undefined) {
-      const loyaltyPoints = Math.floor(invoice.total.toNumber());
+      const loyaltyPoints = await this.loyaltyPolicyService.calculateEarnedPoints(invoice.total);
       await tx.customer.update({
         where: { id: invoice.customerId },
         data: {

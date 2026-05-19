@@ -32,6 +32,11 @@ import { OrderModule } from "./order/order.module";
 import { PurchaseModule } from "./purchase/purchase.module";
 import { ExpenseModule } from "./expense/expense.module";
 import { ReportModule } from "./report/report.module";
+import { HealthController } from "./health/health.controller";
+import { LoyaltyRewardModule } from "./loyalty-reward/loyalty-reward.module";
+import { AuditLogModule } from "./audit-log/audit-log.module";
+import { AdModule } from "./ad/ad.module";
+import { FinancialModule } from "./financial/financial.module";
 
 @Module({
   imports: [
@@ -86,8 +91,12 @@ import { ReportModule } from "./report/report.module";
     PurchaseModule,
     ExpenseModule,
     ReportModule,
+    LoyaltyRewardModule,
+    AuditLogModule,
+    AdModule,
+    FinancialModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [
     {
       provide: APP_GUARD,

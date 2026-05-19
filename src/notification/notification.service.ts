@@ -48,4 +48,12 @@ export class NotificationsService {
   async addNotification(notification: Notification, name: string) {
     return await this.notificationQueue.add(name, notification);
   }
+  async addNotifications(notifications: Notification[], name: string) {
+    const jobs = notifications.map((notification) => ({
+      name: name,
+      data: notification,
+    }));
+
+    return await this.notificationQueue.addBulk(jobs);
+  }
 }

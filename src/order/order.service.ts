@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { DiscountService } from "@/discount/discount.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
@@ -7,6 +7,7 @@ import { OrderQueryDto } from "./dto/order-query.dto";
 import { paginated } from "@/common/types/paginated-response";
 import { OrderStatus, Prisma, UserRole } from "@/prisma";
 import { NotificationsService } from "@/notification/notification.service";
+import { LoyaltyPolicyService } from "@/loyalty-reward/loyalty-policy.service";
 
 type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
 
@@ -16,7 +17,11 @@ const orderInclude = {
   appliedDiscount: { select: { id: true, name: true } },
 } satisfies Prisma.OrderInclude;
 
-const STOCK_RESERVED_STATUSES: OrderStatus[] = ["PREPARING", "OUT_FOR_DELIVERY", "DELIVERED"];
+const STOCK_RESERVED_STATUSES: OrderStatus[] = [
+  OrderStatus.PREPARING,
+  OrderStatus.OUT_FOR_DELIVERY,
+  OrderStatus.DELIVERED,
+];
 
 @Injectable()
 export class OrderService {
@@ -24,6 +29,7 @@ export class OrderService {
     private readonly prismaService: PrismaService,
     private readonly discountService: DiscountService,
     private readonly notificationsService: NotificationsService,
+    private readonly loyaltyPolicyService: LoyaltyPolicyService,
   ) {}
 
   public get prisma() {
@@ -165,16 +171,12 @@ export class OrderService {
   }
 
   async updateStatus(id: number, dto: UpdateOrderStatusDto) {
-    const order = await this.prisma.order.findUnique({
+    const order = await this.prisma.order.findUniqueOrThrow({
       where: { id },
       include: { items: true, customer: { include: { user: true } } },
     });
 
-    if (!order) {
-      throw new NotFoundException(`Order with ID ${id} not found`);
-    }
-
-    if (order.status === "DELIVERED" || order.status === "CANCELLED") {
+    if (order.status === OrderStatus.DELIVERED || order.status === OrderStatus.CANCELLED) {
       throw new BadRequestException(`Cannot update order in ${order.status} status`);
     }
 
@@ -189,11 +191,11 @@ export class OrderService {
 
     return this.prisma.$transaction(async (tx) => {
       const wasStockReserved = STOCK_RESERVED_STATUSES.includes(order.status);
-      const willReserveStock = dto.status === "PREPARING";
-      const willReleaseStock = dto.status === "CANCELLED" && wasStockReserved;
-      const willComplete = dto.status === "DELIVERED";
+      const willReserveStock = dto.status === OrderStatus.PREPARING;
+      const willReleaseStock = dto.status === OrderStatus.CANCELLED && wasStockReserved;
+      const willComplete = dto.status === OrderStatus.DELIVERED;
 
-      if (willReserveStock && order.status === "PENDING") {
+      if (willReserveStock && order.status === OrderStatus.PENDING) {
         for (const item of order.items) {
           const product = await tx.product.findUniqueOrThrow({ where: { id: item.productId } });
           if (product.quantityInStock < item.quantity) {
@@ -216,7 +218,7 @@ export class OrderService {
       });
 
       if (willComplete) {
-        const loyaltyEarned = Math.floor(order.total.toNumber());
+        const loyaltyEarned = await this.loyaltyPolicyService.calculateEarnedPoints(order.total);
         await tx.customer.update({
           where: { id: order.customerId },
           data: {
@@ -239,7 +241,7 @@ export class OrderService {
         }
       }
 
-      if (dto.status === "CANCELLED" && order.loyaltyPointsUsed > 0) {
+      if (dto.status === OrderStatus.CANCELLED && order.loyaltyPointsUsed > 0) {
         await tx.customer.update({
           where: { id: order.customerId },
           data: { loyaltyPoints: { increment: order.loyaltyPointsUsed } },
@@ -277,9 +279,9 @@ export class OrderService {
 
   private validateStatusTransition(current: OrderStatus, next: OrderStatus) {
     const allowed: Record<OrderStatus, OrderStatus[]> = {
-      PENDING: ["PREPARING", "CANCELLED"],
-      PREPARING: ["OUT_FOR_DELIVERY", "CANCELLED"],
-      OUT_FOR_DELIVERY: ["DELIVERED", "CANCELLED"],
+      PENDING: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+      PREPARING: [OrderStatus.OUT_FOR_DELIVERY, OrderStatus.CANCELLED],
+      OUT_FOR_DELIVERY: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
       DELIVERED: [],
       CANCELLED: [],
     };

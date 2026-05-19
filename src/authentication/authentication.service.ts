@@ -130,11 +130,10 @@ export class AuthenticationService {
     if (res < 3) return await this.cacheManager.set(key, res + 1);
     await this.notificationsService.addNotification(
       {
-        title: "Security Alert!",
-        //todo:
+        title: "ERP Store — security alert",
         userId,
         email,
-        message: `You have signedin with the wrong password 3 times ${Date()}`,
+        message: `Multiple failed sign-in attempts were detected for your account at ${new Date().toISOString()}. If this was not you, change your password immediately.`,
         type: "security",
         createdAt: new Date(),
       },

@@ -1,0 +1,6 @@
+name,barcode,purchasePrice,sellingPrice,quantityInStock,minQuantity,categoryId,supplierId,description
+USB-C Hub 7-in-1,200000000001,22.50,44.99,35,10,1,1,Multi-port USB-C hub with HDMI and SD card reader
+Mechanical Keyboard,200000000002,45.00,89.99,18,5,1,1,Compact mechanical keyboard with RGB backlight
+Organic Tomatoes,200000000003,1.80,3.49,200,30,2,2,Fresh vine tomatoes per kg
+Baby Spinach,200000000004,2.20,4.29,85,15,2,2,Pre-washed baby spinach 250g pack
+LED Desk Lamp,200000000005,12.00,24.99,42,8,1,1,Adjustable LED desk lamp with touch dimmer

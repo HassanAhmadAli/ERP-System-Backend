@@ -9,6 +9,7 @@ import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { ManagerAuthenticationService } from "./manager.authentication.service";
 import { AdminAuthenticationService } from "./admin.authentication.service";
 import { EmployeeAuthenticationService } from "./employee.authentication.service";
+import { AccountantAuthenticationService } from "./accountant.authentication.service";
 import { CustomerAuthenticationService } from "./customer.authentication.service";
 import { UserRole } from "@/prisma";
 @Public()
@@ -18,6 +19,7 @@ export class AuthenticationController {
     private readonly authenticationService: AuthenticationService,
     private readonly managerAuthenticationService: ManagerAuthenticationService,
     private readonly employeeAuthenticationService: EmployeeAuthenticationService,
+    private readonly accountantAuthenticationService: AccountantAuthenticationService,
     private readonly customerAuthenticationService: CustomerAuthenticationService,
     private readonly adminAuthenticationService: AdminAuthenticationService,
   ) {}
@@ -50,6 +52,13 @@ export class AuthenticationController {
     const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.MANAGER);
     return { access_token, refresh_token };
   }
+
+  @HttpCode(HttpStatus.OK)
+  @Post("accountant/signin")
+  async accountantSignin(@Body() signinDto: SigninDto) {
+    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.ACCOUNTANT);
+    return { access_token, refresh_token };
+  }
   // signup
 
   @Post("customer/signup")
@@ -69,6 +78,11 @@ export class AuthenticationController {
   @Post("employee/signup")
   async employeeSignup(@Body() signUpDto: EmployeeSignupDto) {
     return await this.employeeAuthenticationService.signup(signUpDto);
+  }
+
+  @Post("accountant/signup")
+  async accountantSignup(@Body() signUpDto: EmployeeSignupDto) {
+    return await this.accountantAuthenticationService.signup(signUpDto);
   }
 
   @Post("verify")

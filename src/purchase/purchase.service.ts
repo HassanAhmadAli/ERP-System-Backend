@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreatePurchaseInvoiceDto } from "./dto/create-purchase-invoice.dto";
 import { UpdatePurchaseInvoiceStatusDto } from "./dto/update-purchase-invoice-status.dto";
@@ -23,10 +23,7 @@ export class PurchaseService {
   }
 
   async create(userId: number, dto: CreatePurchaseInvoiceDto) {
-    const employee = await this.prisma.employee.findUnique({ where: { userId } });
-    if (!employee) {
-      throw new BadRequestException("User is not registered as an employee");
-    }
+    const employee = await this.prisma.employee.findUniqueOrThrow({ where: { userId } });
 
     await this.prisma.supplier.findUniqueOrThrow({ where: { id: dto.supplierId } });
 
@@ -105,14 +102,10 @@ export class PurchaseService {
   }
 
   async updateStatus(id: number, { status }: UpdatePurchaseInvoiceStatusDto) {
-    const invoice = await this.prisma.purchaseInvoice.findUnique({
+    const invoice = await this.prisma.purchaseInvoice.findUniqueOrThrow({
       where: { id },
       include: { items: true },
     });
-
-    if (!invoice) {
-      throw new NotFoundException(`Purchase invoice with ID ${id} not found`);
-    }
 
     if (invoice.status === "CANCELLED" || invoice.status === "REFUNDED") {
       throw new BadRequestException(`Cannot update purchase invoice in ${invoice.status} status`);

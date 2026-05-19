@@ -1,0 +1,7 @@
+import { stringToDateSchema } from "@/common/schema/date.schema";
+import z from "zod";
+
+export const FinancialDateRangeSchema = z.object().extend({
+  from: stringToDateSchema.optional(),
+  to: stringToDateSchema.optional(),
+});

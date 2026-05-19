@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Controller, Delete, Get, Param, ParseIntPipe, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ProductPhotoService } from "./product-photo.service";
 import { Public } from "@/common/decorators/public.decorator";
@@ -20,6 +20,18 @@ export class ProductPhotoController {
     @UploadedFile(new FileMimeStandarizingPipe()) file: Express.Multer.File,
   ) {
     return this.productPhotoService.uploadProductPhoto(productId, creatorId, file);
+  }
+
+  @setPermissions(Permissions.manageProduct)
+  @Get("product/:productId")
+  listByProduct(@Param("productId", ParseIntPipe) productId: number) {
+    return this.productPhotoService.listByProduct(productId);
+  }
+
+  @setPermissions(Permissions.manageProduct)
+  @Delete(":id")
+  deleteProductPhoto(@Param("id", ParseIntPipe) id: number) {
+    return this.productPhotoService.deleteProductPhoto(id);
   }
 
   @Public()

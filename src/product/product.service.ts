@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from "@nestjs/common";
+import { Injectable, BadRequestException, ConflictException } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
@@ -15,8 +15,6 @@ export class ProductService {
   }
 
   async create(createProductDto: CreateProductDto) {
-    // Verify category and supplierexists
-    console.log("ok");
     const [_category, _supplier, existingProduct] = await Promise.all([
       this.prisma.category.findUniqueOrThrow({
         select: { id: true },
@@ -80,6 +78,15 @@ export class ProductService {
       include: {
         category: true,
         supplier: true,
+        productPhotos: {
+          select: {
+            id: true,
+            storedFileId: true,
+            createdAt: true,
+            storedFile: { select: { id: true, originalname: true, mimetype: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
         saleItems: {
           select: {
             id: true,
@@ -154,13 +161,9 @@ export class ProductService {
   }
 
   async remove(id: number) {
-    const product = await this.prisma.product.findUnique({
+    await this.prisma.product.findUniqueOrThrow({
       where: { id },
     });
-
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
 
     // Check if product has been sold or is in orders
     const saleItems = await this.prisma.saleItem.count({

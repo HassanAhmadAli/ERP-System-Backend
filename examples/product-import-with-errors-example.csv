@@ -1,0 +1,4 @@
+name,barcode,purchasePrice,sellingPrice,quantityInStock,minQuantity,categoryId,supplierId,description
+Valid Product A,300000000001,10.00,19.99,50,5,1,1,This row should import successfully
+Valid Product B,300000000002,8.50,16.99,30,5,2,2,This row should also succeed
+Duplicate Barcode,100000000001,5.00,9.99,10,2,1,1,Fails if barcode 100000000001 already exists in DB from seed

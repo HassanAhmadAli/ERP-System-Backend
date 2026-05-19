@@ -8,6 +8,7 @@ import { CustomerAuthenticationService } from "./customer.authentication.service
 import { ManagerAuthenticationService } from "./manager.authentication.service";
 import { AdminAuthenticationService } from "./admin.authentication.service";
 import { EmployeeAuthenticationService } from "./employee.authentication.service";
+import { AccountantAuthenticationService } from "./accountant.authentication.service";
 
 @Module({
   controllers: [AuthenticationController],
@@ -17,6 +18,7 @@ import { EmployeeAuthenticationService } from "./employee.authentication.service
     AuthenticationService,
     ManagerAuthenticationService,
     EmployeeAuthenticationService,
+    AccountantAuthenticationService,
     AdminAuthenticationService,
   ],
   imports: [HashingModule, NotificationsModule],

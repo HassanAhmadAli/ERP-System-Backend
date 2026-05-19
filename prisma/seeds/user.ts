@@ -34,6 +34,16 @@ export const usersData = {
     password: "12345678",
     employeeId: 3,
   },
+  accountant: {
+    id: 5,
+    email: "accountant.user@example.com",
+    fullName: "Annie Leonhart",
+    phoneNumber: "0900000005",
+    nationalId: "0000000005",
+    role: UserRole.ACCOUNTANT,
+    password: "12345678",
+    employeeId: 4,
+  },
 };
 
 const customersData = [
@@ -54,6 +64,7 @@ const employeeProfiles: Record<keyof typeof usersData, string> = {
   admin: "Store Administrator",
   employee: "Cashier",
   manager: "Store Manager",
+  accountant: "Accountant",
 };
 
 export async function seedUsers(hashingService: HashingService) {

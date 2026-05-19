@@ -22,7 +22,7 @@ export class ExpenseController {
   }
 
   @Get()
-  @setPermissions(Permissions.manageExpenses)
+  @setPermissions(Permissions.viewExpenses)
   @ApiOperation({ summary: "List expenses" })
   @ApiResponse({ status: 200, description: "Expenses retrieved successfully" })
   findAll(@Query() query: ExpenseQueryDto) {
@@ -30,7 +30,7 @@ export class ExpenseController {
   }
 
   @Get(":id")
-  @setPermissions(Permissions.manageExpenses)
+  @setPermissions(Permissions.viewExpenses)
   @ApiOperation({ summary: "Get an expense by ID" })
   @ApiResponse({ status: 200, description: "Expense retrieved successfully" })
   findOne(@Param("id", ParseIntPipe) id: number) {

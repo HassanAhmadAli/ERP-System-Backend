@@ -4,9 +4,10 @@ import { SalesController } from "./sales.controller";
 import { PrismaModule } from "@/prisma/prisma.module";
 import { DiscountModule } from "@/discount/discount.module";
 import { NotificationsModule } from "@/notification/notification.module";
+import { LoyaltyRewardModule } from "@/loyalty-reward/loyalty-reward.module";
 
 @Module({
-  imports: [PrismaModule, DiscountModule, NotificationsModule],
+  imports: [PrismaModule, DiscountModule, NotificationsModule, LoyaltyRewardModule],
   controllers: [SalesController],
   providers: [SalesService],
   exports: [SalesService],

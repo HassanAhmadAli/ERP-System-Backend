@@ -26,7 +26,7 @@ export class UserController {
     return this.userService.getProfile(userId);
   }
 
-  @setPermissions(Permissions.updateEmployeeProfile)
+  @setPermissions(Permissions.updateEmployeeProfile, Permissions.manageEmployees)
   @Patch("employee/profile/:id")
   async updateEmployeeProfile(
     @Param("id", ParseIntPipe)
@@ -49,7 +49,7 @@ export class UserController {
     return await this.userService.deleteAccount(userId);
   }
 
-  @setPermissions(Permissions.viewUsersProfiles)
+  @setPermissions(Permissions.viewUsersProfiles, Permissions.manageEmployees)
   @Get()
   async viewUsersProfiles(@Query() { role: _role, ...query }: viewUsersProfilesQueryDto) {
     const role = OptionalUserRoleSchema.parse(_role);

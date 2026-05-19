@@ -6,10 +6,24 @@
   "configurations": [
     {
       "type": "node-terminal",
+      "name": "Run Script: prisma studio",
+      "request": "launch",
+      "command": "pnpm prisma studio --browser none",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "node-terminal",
       "name": "Run Script: start:dev",
       "request": "launch",
       "command": "pnpm run start:dev",
       "cwd": "${workspaceFolder}"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Launch App & Prisma Studio",
+      "configurations": ["Run Script: start:dev", "Run Script: prisma studio"],
+      "preLaunchTask": "npm: reset:dev"
     }
   ]
 }

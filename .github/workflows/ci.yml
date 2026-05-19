@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password123
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://postgres:password123@localhost:5432/postgres
+      REDIS_DATABASE_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-secret
+      APP_EMAIL_HOST: localhost
+      APP_EMAIL_User: ci@example.com
+      APP_EMAIL_Password: ci-password
+      ENABLE_CRON_JOBS: "false"
+      ENABLE_Devtools: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm run db:generate
+
+      - name: Apply migrations
+        run: pnpm exec prisma migrate deploy
+
+      - name: Seed database
+        run: pnpm exec prisma db seed
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query, ParseBoolPipe } from "@nestjs/common";
+import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, Query } from "@nestjs/common";
 import { DiscountService } from "./discount.service";
 import { CreateDiscountDto } from "./dto/create-discount.dto";
 import { UpdateDiscountDto } from "./dto/update-discount.dto";

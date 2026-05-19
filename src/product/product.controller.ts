@@ -9,8 +9,14 @@ import {
   ParseIntPipe,
   Query,
   BadRequestException,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { readFileSync } from "node:fs";
 import { ProductService } from "./product.service";
+import { ProductImportService } from "./product-import.service";
+import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
@@ -23,7 +29,10 @@ import { UpdateStockDto } from "./dto/update-stock.dto";
 @ApiTags("Products")
 @Controller("product")
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly productImportService: ProductImportService,
+  ) {}
 
   @Post()
   @setPermissions(Permissions.addProduct)
@@ -70,6 +79,35 @@ export class ProductController {
     @Query() paginationQuery: PaginationQueryDto,
   ) {
     return this.productService.getProductsBySupplier(supplierId, paginationQuery);
+  }
+
+  @Post("import")
+  @setPermissions(Permissions.importProducts)
+  @UseInterceptors(FileInterceptor("file"))
+  @ApiOperation({ summary: "Bulk import products from CSV" })
+  importCsv(@ActiveUser("sub") userId: number, @UploadedFile() file: Express.Multer.File) {
+    if (!file?.buffer && !file?.path) {
+      throw new BadRequestException("CSV file is required");
+    }
+    const content = file.buffer?.toString("utf-8") ?? (file.path ? readFileSync(file.path, "utf-8") : "");
+    if (!content) {
+      throw new BadRequestException("Could not read CSV file contents");
+    }
+    return this.productImportService.importFromCsv(userId, file.originalname, content);
+  }
+
+  @Get("import/jobs")
+  @setPermissions(Permissions.importProducts)
+  @ApiOperation({ summary: "List recent product import jobs" })
+  listImportJobs() {
+    return this.productImportService.listJobs();
+  }
+
+  @Get("import/:jobId")
+  @setPermissions(Permissions.importProducts)
+  @ApiOperation({ summary: "Get product import job status" })
+  getImportJob(@Param("jobId", ParseIntPipe) jobId: number) {
+    return this.productImportService.getJob(jobId);
   }
 
   @Get("low-stock")

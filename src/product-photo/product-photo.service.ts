@@ -2,7 +2,12 @@ import { PrismaService } from "@/prisma";
 import { normalizeUploadPath, resolveUploadPath } from "@/upload/resolve-upload-path";
 import { Injectable, NotFoundException, StreamableFile } from "@nestjs/common";
 import { createReadStream } from "node:fs";
+import { unlink } from "node:fs/promises";
 import path from "node:path";
+
+function downloadUrl(storedFileId: string) {
+  return `/product-photo/download/${storedFileId}`;
+}
 
 @Injectable()
 export class ProductPhotoService {
@@ -12,8 +17,19 @@ export class ProductPhotoService {
     return this.prismaService.client;
   }
 
-  async uploadProductPhoto(productId: number, creatorId: number, file: Express.Multer.File) {
+  async listByProduct(productId: number) {
     await this.prisma.product.findUniqueOrThrow({ where: { id: productId } });
+    const where = { productId };
+
+    return await this.prisma.productPhoto.findMany({
+      where,
+      include: { storedFile: true },
+      orderBy: { createdAt: "asc" },
+    });
+  }
+
+  async uploadProductPhoto(productId: number, creatorId: number, file: Express.Multer.File) {
+    const product = await this.prisma.product.findUniqueOrThrow({ where: { id: productId } });
 
     const storedFile = await this.prisma.storedFile.create({
       data: {
@@ -25,7 +41,7 @@ export class ProductPhotoService {
       },
     });
 
-    return this.prisma.productPhoto.create({
+    const photo = await this.prisma.productPhoto.create({
       data: {
         productId,
         creatorId,
@@ -33,6 +49,58 @@ export class ProductPhotoService {
       },
       include: { storedFile: true },
     });
+
+    if (product.imageUrl == null) {
+      await this.prisma.product.update({
+        where: { id: productId },
+        data: { imageUrl: downloadUrl(storedFile.id) },
+      });
+    }
+
+    return photo;
+  }
+
+  async deleteProductPhoto(photoId: number) {
+    const photo = await this.prisma.productPhoto.findUniqueOrThrow({
+      where: { id: photoId },
+      include: { storedFile: true, product: { select: { id: true, imageUrl: true } } },
+    });
+
+    const deletedUrl = downloadUrl(photo.storedFileId);
+    const resolvedPath =
+      resolveUploadPath(photo.storedFile.path) ?? resolveUploadPath(path.posix.join("uploads", photo.storedFileId));
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.productPhoto.update({
+        where: { id: photoId },
+        data: { deletedAt: new Date() },
+      });
+      await tx.storedFile.update({
+        where: { id: photo.storedFileId },
+        data: { deletedAt: new Date() },
+      });
+
+      if (photo.product.imageUrl === deletedUrl) {
+        const nextPhoto = await tx.productPhoto.findFirst({
+          where: { productId: photo.productId, id: { not: photoId }, deletedAt: null },
+          orderBy: { createdAt: "asc" },
+        });
+        await tx.product.update({
+          where: { id: photo.productId },
+          data: { imageUrl: nextPhoto ? downloadUrl(nextPhoto.storedFileId) : null },
+        });
+      }
+    });
+
+    if (resolvedPath != undefined) {
+      try {
+        await unlink(resolvedPath);
+      } catch {
+        // file may already be missing on disk
+      }
+    }
+
+    return { message: `Product photo ${photoId} deleted successfully` };
   }
 
   async downloadProductPhoto(storedFileId: string) {

@@ -15,12 +15,15 @@ import { seedSales } from "./sales";
 import { seedOrders } from "./orders";
 import { seedExpenses } from "./expenses";
 import { seedLoyaltyRewards } from "./loyalty-rewards";
+import { seedLoyaltyPolicy } from "./loyalty-policy";
 import { seedNotifications } from "./notifications";
 import { seedAuditLogs } from "./audit-logs";
 import { seedProductPhotos } from "./product-photos";
 import { resetSequences } from "./reset-sequences";
+import { clearDatabase } from "./clear-database";
 
 async function seed(hashingService: HashingService) {
+  await clearDatabase();
   await seedCategory();
   await seedSuppliers();
   await seedProducts();
@@ -31,6 +34,7 @@ async function seed(hashingService: HashingService) {
   await seedOrders();
   await seedExpenses();
   await seedLoyaltyRewards();
+  await seedLoyaltyPolicy();
   await seedNotifications();
   await seedAuditLogs();
   await seedProductPhotos();
