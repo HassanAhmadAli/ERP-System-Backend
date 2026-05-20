@@ -7,7 +7,6 @@ import {
   PRODUCT_IMPORT_CSV_COLUMNS,
   ProductImportCsvFileSchema,
   ProductImportCsvRowSchema,
-  type PRODUCT_IMPORT_CSV_COLUMNS,
   type ProductImportCsvFile,
 } from "./dto/product-import.schema";
 

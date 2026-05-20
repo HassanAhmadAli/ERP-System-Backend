@@ -86,13 +86,13 @@ export class ReportExportService {
         }));
       }
       case "profit-margins":
-        return this.financialService.getProfitMargins();
+        return [this.financialService.getProfitMargins()];
       default:
         throw new BadRequestException(`Unsupported report type: ${reportType as string}`);
     }
   }
 
-  private toCsv(rows: Record<string, unknown>[]): string {
+  private toCsv(rows: object[]): string {
     if (rows.length === 0) return "";
     const parser = new Parser();
     return parser.parse(rows);
