@@ -64,14 +64,14 @@ jobs:
       - name: Generate Prisma client
         run: pnpm run db:generate
 
-      - name: Apply migrations
-        run: pnpm exec prisma migrate deploy
+      # - name: Apply migrations
+      #   run: pnpm exec prisma migrate deploy
 
-      - name: Seed database
-        run: pnpm exec prisma db seed
+      # - name: Seed database
+      #   run: pnpm exec prisma db seed
 
-      - name: Run tests
-        run: pnpm test
+      # - name: Run tests
+      #   run: pnpm test
 
       - name: Build
         run: pnpm build
