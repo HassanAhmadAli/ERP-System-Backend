@@ -6,7 +6,7 @@ import { ReportSummaryQueryDto } from "./dto/report-summary-query.dto";
 import { PrismaService } from "@/prisma/prisma.service";
 
 export type ExportFormat = "csv" | "excel" | "pdf";
-export type ExportReportType = "summary" | "inventory" | "sales" | "profit-margins";
+export type ExportReportType = "summary" | "inventory" | "sales" | "purchases" | "profit-margins";
 
 @Injectable()
 export class ReportExportService {
@@ -83,6 +83,42 @@ export class ReportExportService {
           name: p.name,
           quantitySold: p.quantitySold,
           revenue: p.revenue,
+        }));
+      }
+      case "purchases": {
+        const where: { createdAt?: { gte?: Date; lte?: Date } } = {};
+        if (query.from != undefined || query.to != undefined) {
+          where.createdAt = {};
+          if (query.from != undefined) {
+            where.createdAt.gte = query.from;
+          }
+          if (query.to != undefined) {
+            where.createdAt.lte = query.to;
+          }
+        }
+
+        const invoices = await this.prisma.purchaseInvoice.findMany({
+          where,
+          select: {
+            id: true,
+            total: true,
+            status: true,
+            invoiceDate: true,
+            createdAt: true,
+            supplier: { select: { fullName: true } },
+            accountant: { include: { user: { select: { fullName: true } } } },
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+        return invoices.map((inv) => ({
+          id: inv.id,
+          supplier: inv.supplier.fullName,
+          accountant: inv.accountant.user.fullName,
+          total: inv.total.toFixed(2),
+          status: inv.status,
+          invoiceDate: inv.invoiceDate.toISOString(),
+          createdAt: inv.createdAt.toISOString(),
         }));
       }
       case "profit-margins":

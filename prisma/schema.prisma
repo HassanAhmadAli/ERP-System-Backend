@@ -23,11 +23,11 @@ enum LoyaltyReason {
 //////////////////////////
 
 enum UserRole {
-  ADMIN
-  EMPLOYEE
   CUSTOMER
-  MANAGER
+  CASHIER
+  STORE_MANAGER
   ACCOUNTANT
+  WAREHOUSE_WORKER
 }
 
 enum ProductImportStatus {

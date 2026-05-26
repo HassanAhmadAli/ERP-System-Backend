@@ -1,11 +1,11 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { DiscountService } from "@/discount/discount.service";
 import { CreateSalesInvoiceDto } from "./dto/create-sales-invoice.dto";
 import { UpdateSalesInvoiceStatusDto } from "./dto/update-sales-invoice-status.dto";
 import { SalesInvoiceQueryDto } from "./dto/sales-invoice-query.dto";
 import { paginated } from "@/common/types/paginated-response";
-import { InvoiceStatus, Prisma } from "@/prisma";
+import { InvoiceStatus, Prisma, UserRole } from "@/prisma";
 import { NotificationsService } from "../notification/notification.service";
 import { LoyaltyPolicyService } from "@/loyalty-reward/loyalty-policy.service";
 
@@ -137,11 +137,21 @@ export class SalesService {
     });
   }
 
-  async updateStatus(id: number, { status }: UpdateSalesInvoiceStatusDto) {
+  async updateStatus(id: number, { status }: UpdateSalesInvoiceStatusDto, userId: number, role: UserRole) {
     const invoice = await this.prisma.salesInvoice.findUniqueOrThrow({
       where: { id },
       include: { items: true },
     });
+
+    if (role === UserRole.CASHIER) {
+      const employee = await this.prisma.employee.findUniqueOrThrow({
+        where: { userId },
+        select: { id: true },
+      });
+      if (invoice.cashierId !== employee.id) {
+        throw new ForbiddenException("You can only update invoices that you created");
+      }
+    }
 
     if (invoice.status === "CANCELLED" || invoice.status === "REFUNDED") {
       throw new BadRequestException(`Cannot update invoice in ${invoice.status} status`);
@@ -241,17 +251,22 @@ export class SalesService {
       });
 
       if (updatedProduct.quantityInStock <= updatedProduct.minQuantity) {
-        const cashier = await tx.employee.findUnique({
-          where: { id: invoice.cashierId },
-          select: { user: { select: { id: true, email: true } } },
+        const warehouseWorkers = await tx.user.findMany({
+          where: {
+            role: UserRole.WAREHOUSE_WORKER,
+            isActive: true,
+            deletedAt: null,
+          },
+          select: { id: true, email: true },
         });
 
-        if (cashier?.user.email) {
+        for (const worker of warehouseWorkers) {
+          if (!worker.email) continue;
           await this.notificationsService.addNotification(
             {
               title: "Low stock alert",
-              userId: cashier.user.id,
-              email: cashier.user.email,
+              userId: worker.id,
+              email: worker.email,
               message: `Product "${updatedProduct.name}" is low on stock (${updatedProduct.quantityInStock} remaining)`,
               type: "warning",
               createdAt: new Date(),

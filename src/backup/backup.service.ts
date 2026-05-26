@@ -1,45 +1,26 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
-import { exec } from "child_process";
-import fs from "node:fs";
-import path from "node:path";
-import { logger } from "@/utils";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Keys } from "@/common/const";
+import { Queue } from "bullmq";
+import { BackupInterface } from "./backup.interface";
 @Injectable()
 export class BackupService implements OnModuleInit {
-  constructor(private readonly configService: ConfigService<EnvVariables>) {}
+  constructor(
+    private readonly configService: ConfigService<EnvVariables>,
+    @InjectQueue(Keys.backupQueue) private readonly backupQueue: Queue<BackupInterface>,
+  ) {}
   onModuleInit() {}
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  handleCron() {
+  async handleCron() {
     if (!this.configService.getOrThrow("ENABLE_CRON_JOBS", { infer: true })) {
       return;
     }
-    logger.info({ caller: BackupService.name, msg: "Starting database backup..." });
-    this.backupDatabase();
+    await this.addBackupOperationToQueue();
   }
-  private backupDatabase() {
-    const backupDir = this.configService.getOrThrow("backupDir", { infer: true });
-    if (!fs.existsSync(backupDir)) {
-      fs.mkdirSync(backupDir, { recursive: true });
-    }
-    const fileName = `backup-${new Date().toISOString().replace(/:/g, "-")}.sql`;
-    const filePath = path.join(backupDir, fileName);
-
-    const command = `pg_dump -d ${this.configService.getOrThrow("DATABASE_URL")} -F c -b -v -f "${filePath}"`;
-
-    exec(command, (error, _stdout, stderr) => {
-      if (error) {
-        logger.error({ caller: BackupService.name, msg: `Backup failed: ${error.message}` });
-        if (stderr) {
-          logger.error({ caller: BackupService.name, msg: `pg_dump stderr: ${stderr}` });
-        }
-        return;
-      }
-      if (stderr) {
-        logger.info({ caller: BackupService.name, msg: `Backup stderr (verbose output): ${stderr}` });
-      }
-      logger.info({ caller: BackupService.name, msg: `Backup successful! File created at: ${filePath}` });
-    });
+  public async addBackupOperationToQueue() {
+    await this.backupQueue.add("create-backup", { "backup-start-time": new Date().toISOString() });
   }
 }

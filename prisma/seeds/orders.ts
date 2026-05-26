@@ -53,4 +53,30 @@ export async function seedOrders() {
       },
     },
   });
+
+  await prisma.order.create({
+    data: {
+      id: 3,
+      customerId: 1,
+      appliedDiscountId: null,
+      subtotal: "14.97",
+      discountAmount: "0.00",
+      total: "14.97",
+      loyaltyPointsUsed: 0,
+      deliveryAddress: "123 Main St, Springfield",
+      status: OrderStatus.CANCELLED,
+      createdAt: new Date("2025-04-22T09:00:00.000Z"),
+      items: {
+        create: [
+          {
+            id: 3,
+            productId: 2,
+            quantity: 3,
+            unitPrice: "4.99",
+            subtotal: "14.97",
+          },
+        ],
+      },
+    },
+  });
 }

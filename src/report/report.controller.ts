@@ -39,7 +39,7 @@ export class ReportController {
   }
 
   @Get("export")
-  @setPermissions(Permissions.exportReports)
+  @setPermissions(Permissions.viewReports)
   @ApiOperation({ summary: "Export report as CSV, Excel, or PDF" })
   async exportReport(@Query() { type: reportType, ...query }: ReportExportQueryDto) {
     const { buffer, contentType, filename } = await this.reportExportService.export(reportType, query);

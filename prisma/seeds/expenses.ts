@@ -11,7 +11,7 @@ export const expensesData = [
   },
   {
     id: 2,
-    recordedById: 4,
+    recordedById: 5,
     description: "Store cleaning supplies",
     category: "Operations",
     amount: "85.25",

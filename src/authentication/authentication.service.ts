@@ -16,6 +16,7 @@ import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { logger } from "@/utils";
 import { Cache } from "@nestjs/cache-manager";
 import { NotificationsService } from "@/notification/notification.service";
+import { CreateStaffDto } from "@/user/dto/create-staff.dto";
 @Injectable()
 export class AuthenticationService {
   constructor(
@@ -39,6 +40,37 @@ export class AuthenticationService {
   public get prisma() {
     return this.prismaService.client;
   }
+  async createVerifiedStaff({ role, password: rawPassword, jobTitle, ...signupDto }: CreateStaffDto) {
+    const passwordHash = await this.hashingService.hash(rawPassword);
+
+    const user = await this.prisma.user.create({
+      data: {
+        role,
+        ...signupDto,
+        passwordHash,
+        isVerified: true,
+        verificationCode: null,
+        verificationCodeExpiresAt: null,
+        employee: {
+          create: {
+            jobTitle,
+          },
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+      },
+    });
+
+    return {
+      message: "Staff account created successfully",
+      user,
+    };
+  }
+
   async genericSignup(role: UserRole, { password: rawPassword, ...signupDto }: SignupDto) {
     const passwordHash = await this.hashingService.hash(rawPassword);
     const verificationCode = (this.NODE_ENV === "production" ? randomInt(10000000, 99999999) : 12345678).toString();
@@ -173,12 +205,12 @@ export class AuthenticationService {
       await this.handlePasswordNotMatch({ email, userId });
       throw new UnauthorizedException(ErrorMessages.PASSWORD_INCORRECT);
     }
-    const signedData = {
+
+    const { refreshTokenId, ...generatedTokens } = await this.generateTokens({
       email,
       sub: user.id,
       role: user.role,
-    };
-    const { refreshTokenId, ...generatedTokens } = await this.generateTokens(signedData);
+    });
     await this.refreshTokenIdsStorage.insert(user.id, refreshTokenId);
     return generatedTokens;
   }

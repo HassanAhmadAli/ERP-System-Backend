@@ -41,8 +41,7 @@ export class AdService {
   }
 
   async findOne(id: number) {
-    const ad = await this.prisma.advertisement.findUniqueOrThrow({ where: { id } });
-    return ad;
+    return await this.prisma.advertisement.findUniqueOrThrow({ where: { id } });
   }
 
   update(id: number, dto: UpdateAdDto) {

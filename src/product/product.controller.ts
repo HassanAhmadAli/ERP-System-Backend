@@ -82,7 +82,7 @@ export class ProductController {
   }
 
   @Post("import")
-  @setPermissions(Permissions.importProducts)
+  @setPermissions(Permissions.manageProduct)
   @UseInterceptors(FileInterceptor("file"))
   @ApiOperation({ summary: "Bulk import products from CSV" })
   importCsv(@ActiveUser("sub") userId: number, @UploadedFile() file: Express.Multer.File) {
@@ -97,20 +97,21 @@ export class ProductController {
   }
 
   @Get("import/jobs")
-  @setPermissions(Permissions.importProducts)
+  @setPermissions(Permissions.manageProduct)
   @ApiOperation({ summary: "List recent product import jobs" })
   listImportJobs() {
     return this.productImportService.listJobs();
   }
 
   @Get("import/:jobId")
-  @setPermissions(Permissions.importProducts)
+  @setPermissions(Permissions.manageProduct)
   @ApiOperation({ summary: "Get product import job status" })
   getImportJob(@Param("jobId", ParseIntPipe) jobId: number) {
     return this.productImportService.getJob(jobId);
   }
 
   @Get("low-stock")
+  @setPermissions(Permissions.manageProduct)
   @ApiOperation({ summary: "Get products with low stock" })
   @ApiResponse({
     status: 200,

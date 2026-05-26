@@ -5,23 +5,11 @@ import { AuthenticationService } from "./authentication.service";
 import { NotificationsModule } from "@/notification/notification.module";
 import { HashingModule } from "@/hashing/hashing.module";
 import { CustomerAuthenticationService } from "./customer.authentication.service";
-import { ManagerAuthenticationService } from "./manager.authentication.service";
-import { AdminAuthenticationService } from "./admin.authentication.service";
-import { EmployeeAuthenticationService } from "./employee.authentication.service";
-import { AccountantAuthenticationService } from "./accountant.authentication.service";
 
 @Module({
   controllers: [AuthenticationController],
-  providers: [
-    RefreshTokenIdsStorage,
-    CustomerAuthenticationService,
-    AuthenticationService,
-    ManagerAuthenticationService,
-    EmployeeAuthenticationService,
-    AccountantAuthenticationService,
-    AdminAuthenticationService,
-  ],
+  providers: [RefreshTokenIdsStorage, CustomerAuthenticationService, AuthenticationService],
   imports: [HashingModule, NotificationsModule],
-  exports: [HashingModule],
+  exports: [HashingModule, AuthenticationService],
 })
 export class AuthenticationModule {}

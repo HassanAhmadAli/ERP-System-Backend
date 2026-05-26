@@ -1,67 +1,67 @@
 import { Injectable } from "@nestjs/common";
 import { Prisma, PrismaService, UserRole } from "@/prisma";
-import { Public } from "@/common/decorators/public.decorator";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
-import { getEntriesOfTrue } from "@/utils";
 import { AppCachingService } from "@/caching/caching.service";
 import { deletedAt, PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { paginated } from "@/common/types/paginated-response";
+import { AuthenticationService } from "@/authentication/authentication.service";
+import { CreateStaffDto } from "./dto/create-staff.dto";
 
-@Public()
+const STAFF_ROLES: UserRole[] = [UserRole.CASHIER, UserRole.ACCOUNTANT, UserRole.WAREHOUSE_WORKER];
+const staff_profile_select = {
+  fullName: true,
+  role: true,
+  nationalId: true,
+  phoneNumber: true,
+  email: true,
+} satisfies Prisma.UserSelect;
 @Injectable()
 export class UserService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly cachingService: AppCachingService,
+    private readonly authenticationService: AuthenticationService,
   ) {}
   get prisma() {
     return this.prismaService.client;
   }
-  async updateAdminProfile(updateUserDto: UpdateProfileDto, userId: number) {
-    console.log({ userId, updateUserDto });
+
+  async createStaff(dto: CreateStaffDto) {
+    return await this.authenticationService.createVerifiedStaff(dto);
+  }
+
+  async updateStoreManagerProfile(updateUserDto: UpdateProfileDto, userId: number) {
     const res = await this.prisma.user.update({
       where: {
         id: userId,
-        role: UserRole.ADMIN,
+        role: UserRole.STORE_MANAGER,
       },
       data: updateUserDto,
-      select: {
-        ...getEntriesOfTrue(updateUserDto),
-        phoneNumber: true,
-        email: true,
-        passwordHash: false,
-      } satisfies Prisma.UserSelect,
+      select: staff_profile_select,
     });
     await this.cachingService.users.removeCachedUserData(userId);
     return res;
   }
+
   async getProfile(userId: number) {
     return await this.prisma.user.findUniqueOrThrow({
       where: {
         id: userId,
       },
-      select: {
-        fullName: true,
-        email: true,
-        phoneNumber: true,
-        nationalId: true,
-        role: true,
-      },
+      select: staff_profile_select,
     });
   }
-  async updateEmployeeProfile(updateUserDto: UpdateProfileDto, userId: number) {
+
+  async updateStaffProfile(updateUserDto: UpdateProfileDto, userId: number) {
     const user = await this.prisma.user.update({
       where: {
         id: userId,
-        role: UserRole.EMPLOYEE,
+        role: { in: STAFF_ROLES },
       },
       data: updateUserDto,
-      select: {
-        ...getEntriesOfTrue(updateUserDto),
-        email: true,
-        phoneNumber: true,
-      } satisfies Prisma.UserSelect,
+      select: staff_profile_select,
     });
+    await this.cachingService.users.removeCachedUserData(userId);
     return user;
   }
 
@@ -75,6 +75,7 @@ export class UserService {
       },
     });
   }
+
   async deleteAccount(userId: number) {
     return await this.prisma.user.update({
       where: {
@@ -85,19 +86,18 @@ export class UserService {
       },
     });
   }
+
   async viewUsersProfiles(query: PaginationQueryDto, role: UserRole | undefined) {
-    // We use findMany with the transformed DTO values
+    const where = {
+      role: role,
+      deletedAt: deletedAt(query.deleted),
+    } as const;
     const [data, total] = await Promise.all([
       this.prisma.user.findMany({
-        where: {
-          role: role, // Prisma ignores this if it's undefined
-          deletedAt: deletedAt(query.deleted),
-        },
+        where,
         select: {
+          ...staff_profile_select,
           id: true,
-          fullName: true,
-          email: true,
-          role: true,
           createdAt: true,
           deletedAt: query.deleted,
         },
@@ -108,10 +108,7 @@ export class UserService {
         },
       }),
       this.prisma.user.count({
-        where: {
-          role: role,
-          deletedAt: deletedAt(query.deleted),
-        },
+        where,
       }),
     ]);
 

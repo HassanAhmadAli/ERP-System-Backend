@@ -21,7 +21,7 @@ export class CustomerController {
     return this.customerService.getProfile(userId);
   }
 
-  @setPermissions(Permissions.updatePersonalProfile)
+  @setPermissions(Permissions.updateCustomerPersonalProfile)
   @Patch("me")
   @ApiOperation({ summary: "Update current customer profile" })
   updateProfile(@ActiveUser("sub") userId: number, @Body() dto: UpdateCustomerProfileDto) {

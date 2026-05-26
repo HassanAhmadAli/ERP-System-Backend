@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
@@ -6,19 +6,26 @@ import { setPermissions } from "@/access-control/decorators/permissions.decorato
 import { Permissions } from "@/access-control/permission.type";
 import { OptionalUserRoleSchema } from "@/common/schema/role";
 import { viewUsersProfilesQueryDto } from "./dto/view-users-profiles-query.dto";
+import { CreateStaffDto } from "./dto/create-staff.dto";
 
 @Controller("user")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @setPermissions(Permissions.updateAdminProfile)
-  @Patch("admin/me")
-  updatePersonalAdminProfile(
+  @setPermissions(Permissions.manageEmployees)
+  @Post("staff")
+  async createStaff(@Body() createStaffDto: CreateStaffDto) {
+    return await this.userService.createStaff(createStaffDto);
+  }
+
+  @setPermissions(Permissions.updateStoreManagerProfile)
+  @Patch("store-manager/me")
+  updateStoreManagerProfile(
     @Body()
     updateUserDto: UpdateProfileDto,
     @ActiveUser("sub") id: number,
   ) {
-    return this.userService.updateAdminProfile(updateUserDto, id);
+    return this.userService.updateStoreManagerProfile(updateUserDto, id);
   }
 
   @Get("me")
@@ -26,15 +33,15 @@ export class UserController {
     return this.userService.getProfile(userId);
   }
 
-  @setPermissions(Permissions.updateEmployeeProfile, Permissions.manageEmployees)
-  @Patch("employee/profile/:id")
-  async updateEmployeeProfile(
+  @setPermissions(Permissions.manageEmployees)
+  @Patch("staff/profile/:id")
+  async updateStaffProfile(
     @Param("id", ParseIntPipe)
     userId: number,
     @Body()
     updateUserDto: UpdateProfileDto,
   ) {
-    return await this.userService.updateEmployeeProfile(updateUserDto, userId);
+    return await this.userService.updateStaffProfile(updateUserDto, userId);
   }
 
   @setPermissions(Permissions.archiveAccount)

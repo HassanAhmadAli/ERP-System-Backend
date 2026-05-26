@@ -4,6 +4,7 @@ export const Keys = {
   User: Symbol("User_Key"),
   Permissions: Symbol("Permissions_KEY"),
   notification: "notification",
+  backupQueue: "backup",
   socketio: "socketio",
 } as const;
 

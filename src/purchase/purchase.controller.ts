@@ -14,7 +14,7 @@ export class PurchaseController {
   constructor(private readonly purchaseService: PurchaseService) {}
 
   @Post()
-  @setPermissions(Permissions.createPurchase)
+  @setPermissions(Permissions.managePurchases)
   @ApiOperation({ summary: "Create a purchase invoice" })
   @ApiResponse({ status: 201, description: "Purchase invoice created successfully" })
   create(@ActiveUser("sub") userId: number, @Body() dto: CreatePurchaseInvoiceDto) {

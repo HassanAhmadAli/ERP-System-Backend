@@ -19,6 +19,8 @@ const TABLES_WITH_SERIAL_ID = [
   "AuditLog",
   "Expense",
   "ProductPhoto",
+  "Advertisement",
+  "ProductImportJob",
   "errors",
 ] as const;
 

@@ -1,30 +1,22 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { SigninDto } from "./dto/signin.dto";
-import { CustomerSignupDto, EmployeeSignupDto, SignupDto } from "./dto/signinup.dto";
+import { CustomerSignupDto } from "./dto/customer-signup.dto";
 import { AuthenticationService } from "./authentication.service";
 import { Public } from "@/common/decorators/public.decorator";
 import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { SignoutDto } from "./dto/signout.dto";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
-import { ManagerAuthenticationService } from "./manager.authentication.service";
-import { AdminAuthenticationService } from "./admin.authentication.service";
-import { EmployeeAuthenticationService } from "./employee.authentication.service";
-import { AccountantAuthenticationService } from "./accountant.authentication.service";
 import { CustomerAuthenticationService } from "./customer.authentication.service";
 import { UserRole } from "@/prisma";
+
 @Public()
 @Controller("authentication")
 export class AuthenticationController {
   constructor(
     private readonly authenticationService: AuthenticationService,
-    private readonly managerAuthenticationService: ManagerAuthenticationService,
-    private readonly employeeAuthenticationService: EmployeeAuthenticationService,
-    private readonly accountantAuthenticationService: AccountantAuthenticationService,
     private readonly customerAuthenticationService: CustomerAuthenticationService,
-    private readonly adminAuthenticationService: AdminAuthenticationService,
   ) {}
 
-  // # sign in
   @HttpCode(HttpStatus.OK)
   @Post("customer/signin")
   async customerSignin(@Body() signinDto: SigninDto) {
@@ -33,23 +25,16 @@ export class AuthenticationController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @Post("employee/signin")
-  async employeeSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.EMPLOYEE);
+  @Post("cashier/signin")
+  async cashierSignin(@Body() signinDto: SigninDto) {
+    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.CASHIER);
     return { access_token, refresh_token };
   }
 
   @HttpCode(HttpStatus.OK)
-  @Post("admin/signin")
-  async adminSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.ADMIN);
-    return { access_token, refresh_token };
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Post("manager/signin")
-  async managerSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.MANAGER);
+  @Post("store-manager/signin")
+  async storeManagerSignin(@Body() signinDto: SigninDto) {
+    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.STORE_MANAGER);
     return { access_token, refresh_token };
   }
 
@@ -59,30 +44,20 @@ export class AuthenticationController {
     const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.ACCOUNTANT);
     return { access_token, refresh_token };
   }
-  // signup
+
+  @HttpCode(HttpStatus.OK)
+  @Post("warehouse-worker/signin")
+  async warehouseWorkerSignin(@Body() signinDto: SigninDto) {
+    const { access_token, refresh_token } = await this.authenticationService.signIn(
+      signinDto,
+      UserRole.WAREHOUSE_WORKER,
+    );
+    return { access_token, refresh_token };
+  }
 
   @Post("customer/signup")
   async customerSignup(@Body() signUpDto: CustomerSignupDto) {
     return await this.customerAuthenticationService.signup(signUpDto);
-  }
-
-  @Post("manager/signup")
-  async managerSignup(@Body() signUpDto: SignupDto) {
-    return await this.managerAuthenticationService.signup(signUpDto);
-  }
-
-  @Post("admin/signup")
-  async adminSignup(@Body() signUpDto: SignupDto) {
-    return await this.adminAuthenticationService.signup(signUpDto);
-  }
-  @Post("employee/signup")
-  async employeeSignup(@Body() signUpDto: EmployeeSignupDto) {
-    return await this.employeeAuthenticationService.signup(signUpDto);
-  }
-
-  @Post("accountant/signup")
-  async accountantSignup(@Body() signUpDto: EmployeeSignupDto) {
-    return await this.accountantAuthenticationService.signup(signUpDto);
   }
 
   @Post("verify")

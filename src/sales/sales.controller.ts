@@ -7,6 +7,7 @@ import { SalesInvoiceQueryDto } from "./dto/sales-invoice-query.dto";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
 import { Permissions } from "@/access-control/permission.type";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
+import { UserRole } from "@/prisma";
 
 @ApiTags("Sales")
 @Controller("sales/invoices")
@@ -41,7 +42,12 @@ export class SalesController {
   @setPermissions(Permissions.manageSales)
   @ApiOperation({ summary: "Update sales invoice status" })
   @ApiResponse({ status: 200, description: "Invoice status updated successfully" })
-  updateStatus(@Param("id", ParseIntPipe) id: number, @Body() dto: UpdateSalesInvoiceStatusDto) {
-    return this.salesService.updateStatus(id, dto);
+  updateStatus(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: UpdateSalesInvoiceStatusDto,
+    @ActiveUser("sub") userId: number,
+    @ActiveUser("role") role: UserRole,
+  ) {
+    return this.salesService.updateStatus(id, dto, userId, role);
   }
 }

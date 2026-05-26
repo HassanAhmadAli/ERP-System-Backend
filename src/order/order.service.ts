@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { DiscountService } from "@/discount/discount.service";
-import { CreateOrderDto } from "./dto/create-order.dto";
+import { CreateCashierOrderDto, CreateOrderDto } from "./dto/create-order.dto";
 import { UpdateOrderStatusDto } from "./dto/update-order-status.dto";
 import { OrderQueryDto } from "./dto/order-query.dto";
 import { paginated } from "@/common/types/paginated-response";
@@ -36,8 +36,15 @@ export class OrderService {
     return this.prismaService.client;
   }
 
-  async create(userId: number, role: UserRole, dto: CreateOrderDto) {
-    const customerId = await this.resolveCustomerId(userId, role, dto.customerId);
+  async createCustomerOrder(userId: number, dto: CreateOrderDto) {
+    const customer = await this.prisma.customer.findUniqueOrThrow({
+      where: { userId },
+      select: { id: true },
+    });
+    return await this.createOrder(customer.id, dto);
+  }
+
+  async createOrder(customerId: number, dto: CreateOrderDto) {
     const customer = await this.prisma.customer.findUniqueOrThrow({
       where: { id: customerId },
       include: { user: { select: { id: true, email: true } } },
@@ -112,13 +119,11 @@ export class OrderService {
     const where: Prisma.OrderWhereInput = {};
 
     if (role === UserRole.CUSTOMER) {
-      const customer = await this.prisma.customer.findUnique({
+      const customer = await this.prisma.customer.findUniqueOrThrow({
         where: { userId },
         select: { id: true },
       });
-      if (!customer) {
-        throw new BadRequestException("Customer profile not found");
-      }
+
       where.customerId = customer.id;
     } else if (query.customerId != undefined) {
       where.customerId = query.customerId;
@@ -168,6 +173,28 @@ export class OrderService {
     }
 
     return order;
+  }
+
+  async cancelOwn(userId: number, id: number) {
+    const customer = await this.prisma.customer.findUniqueOrThrow({
+      where: { userId },
+      select: { id: true },
+    });
+
+    const order = await this.prisma.order.findUniqueOrThrow({
+      where: { id },
+      select: { customerId: true, status: true },
+    });
+
+    if (order.customerId !== customer.id) {
+      throw new ForbiddenException("You can only cancel your own orders");
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException("Only pending orders can be cancelled");
+    }
+
+    return this.updateStatus(id, { status: OrderStatus.CANCELLED });
   }
 
   async updateStatus(id: number, dto: UpdateOrderStatusDto) {
@@ -254,29 +281,6 @@ export class OrderService {
     });
   }
 
-  private async resolveCustomerId(userId: number, role: UserRole, customerId?: number) {
-    if (role === UserRole.CUSTOMER) {
-      const customer = await this.prisma.customer.findUnique({
-        where: { userId },
-        select: { id: true },
-      });
-      if (!customer) {
-        throw new BadRequestException("Customer profile not found");
-      }
-      if (customerId != undefined && customerId !== customer.id) {
-        throw new ForbiddenException("Customers can only create orders for themselves");
-      }
-      return customer.id;
-    }
-
-    if (customerId == undefined) {
-      throw new BadRequestException("customerId is required when creating orders for customers");
-    }
-
-    await this.prisma.customer.findUniqueOrThrow({ where: { id: customerId } });
-    return customerId;
-  }
-
   private validateStatusTransition(current: OrderStatus, next: OrderStatus) {
     const allowed: Record<OrderStatus, OrderStatus[]> = {
       PENDING: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
@@ -291,7 +295,7 @@ export class OrderService {
     }
   }
 
-  private async buildLineItems(tx: PrismaTransaction, items: CreateOrderDto["items"], validateStock: boolean) {
+  private async buildLineItems(tx: PrismaTransaction, items: CreateCashierOrderDto["items"], validateStock: boolean) {
     const productIds = items.map((i) => i.productId);
     const products = await tx.product.findMany({
       where: { id: { in: productIds } },

@@ -4,33 +4,43 @@ import { prisma } from "./client-instance";
 import { HashingService } from "@/hashing/hashing.service";
 
 export const usersData = {
-  admin: {
+  storeManager: {
     id: 1,
-    email: "admin.user@example.com",
+    email: "store.manager@example.com",
     fullName: "Maria Fritz",
     phoneNumber: "0900000001",
     nationalId: "0000000001",
-    role: UserRole.ADMIN,
+    role: UserRole.STORE_MANAGER,
     password: "12345678",
     employeeId: 1,
   },
-  employee: {
+  cashier: {
     id: 3,
-    email: "employee.user@example.com",
+    email: "cashier.user@example.com",
     fullName: "Sina Fritz",
     phoneNumber: "0900000003",
     nationalId: "0000000003",
-    role: UserRole.EMPLOYEE,
+    role: UserRole.CASHIER,
     password: "12345678",
     employeeId: 2,
   },
-  manager: {
+  cashier2: {
+    id: 6,
+    email: "cashier2@example.com",
+    fullName: "Levi Ackerman",
+    phoneNumber: "0900000006",
+    nationalId: "0000000006",
+    role: UserRole.CASHIER,
+    password: "12345678",
+    employeeId: 5,
+  },
+  warehouseWorker: {
     id: 4,
-    email: "manager.user@example.com",
+    email: "warehouse.user@example.com",
     fullName: "Ymir Fritz",
     phoneNumber: "0900000004",
     nationalId: "0000000004",
-    role: UserRole.MANAGER,
+    role: UserRole.WAREHOUSE_WORKER,
     password: "12345678",
     employeeId: 3,
   },
@@ -61,9 +71,10 @@ const customersData = [
 ];
 
 const employeeProfiles: Record<keyof typeof usersData, string> = {
-  admin: "Store Administrator",
-  employee: "Cashier",
-  manager: "Store Manager",
+  storeManager: "Store Manager",
+  cashier: "Cashier",
+  cashier2: "Cashier",
+  warehouseWorker: "Warehouse Worker",
   accountant: "Accountant",
 };
 
@@ -77,13 +88,12 @@ export async function seedUsers(hashingService: HashingService) {
         passwordHash,
         isVerified: true,
         isActive: true,
-      },
-    });
-    await prisma.employee.create({
-      data: {
-        id: employeeId,
-        userId: userData.id,
-        jobTitle: employeeProfiles[key],
+        employee: {
+          create: {
+            id: employeeId,
+            jobTitle: employeeProfiles[key],
+          },
+        },
       },
     });
   }
@@ -97,15 +107,14 @@ export async function seedUsers(hashingService: HashingService) {
         passwordHash,
         isVerified: true,
         isActive: true,
-      },
-    });
-    await prisma.customer.create({
-      data: {
-        id: customerId,
-        userId: userData.id,
-        address,
-        loyaltyPoints: 150,
-        totalSpent: "89.97",
+        customer: {
+          create: {
+            id: customerId,
+            address,
+            loyaltyPoints: 150,
+            totalSpent: "89.97",
+          },
+        },
       },
     });
   }

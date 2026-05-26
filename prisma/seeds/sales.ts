@@ -55,4 +55,31 @@ export async function seedSales() {
       },
     },
   });
+
+  await prisma.salesInvoice.create({
+    data: {
+      id: 3,
+      cashierId: 5,
+      customerId: 1,
+      appliedDiscountId: null,
+      subtotal: "4.99",
+      discountAmount: "0.00",
+      total: "4.99",
+      amountPaid: "4.99",
+      status: InvoiceStatus.REFUNDED,
+      createdAt: new Date("2025-04-19T15:00:00.000Z"),
+      items: {
+        create: [
+          {
+            id: 3,
+            productId: 2,
+            quantity: 1,
+            unitPrice: "4.99",
+            discount: "0.00",
+            subtotal: "4.99",
+          },
+        ],
+      },
+    },
+  });
 }

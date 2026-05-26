@@ -19,6 +19,8 @@ import { seedLoyaltyPolicy } from "./loyalty-policy";
 import { seedNotifications } from "./notifications";
 import { seedAuditLogs } from "./audit-logs";
 import { seedProductPhotos } from "./product-photos";
+import { seedAds } from "./ads";
+import { seedProductImportJobs } from "./product-import-jobs";
 import { resetSequences } from "./reset-sequences";
 import { clearDatabase } from "./clear-database";
 
@@ -35,6 +37,8 @@ async function seed(hashingService: HashingService) {
   await seedExpenses();
   await seedLoyaltyRewards();
   await seedLoyaltyPolicy();
+  await seedAds();
+  await seedProductImportJobs();
   await seedNotifications();
   await seedAuditLogs();
   await seedProductPhotos();

@@ -8,6 +8,7 @@ import { UpdateLoyaltyPolicyDto } from "./dto/update-loyalty-policy.dto";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
 import { Permissions } from "@/access-control/permission.type";
+import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
 
 @ApiTags("Loyalty Rewards")
 @Controller("loyalty-rewards")
@@ -29,6 +30,13 @@ export class LoyaltyRewardController {
   @ApiOperation({ summary: "Update loyalty points policy" })
   updatePolicy(@Body() dto: UpdateLoyaltyPolicyDto) {
     return this.loyaltyPolicyService.updatePolicy(dto);
+  }
+
+  @Get("available")
+  @setPermissions(Permissions.viewAvailableLoyaltyRewards)
+  @ApiOperation({ summary: "List active loyalty rewards (customer catalog)" })
+  findAvailable(@ActiveUser("sub") userId: number, @Query() query: PaginationQueryDto) {
+    return this.loyaltyRewardService.findAvailableForCustomer(userId, query);
   }
 
   @Post()
