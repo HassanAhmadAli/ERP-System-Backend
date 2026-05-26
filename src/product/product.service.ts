@@ -45,7 +45,7 @@ export class ProductService {
     return product;
   }
 
-  async getProducts(paginationQuery: PaginationQueryDto, search: string | undefined) {
+  async getProducts(query: PaginationQueryDto, search: string | undefined) {
     const where: Prisma.ProductWhereInput = search
       ? {
           OR: [
@@ -62,14 +62,14 @@ export class ProductService {
           category: true,
           supplier: true,
         },
-        skip: paginationQuery.offset,
-        take: paginationQuery.limit,
+        skip: query.offset,
+        take: query.limit,
         orderBy: { createdAt: "desc" },
       }),
       this.prisma.product.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
   async findOne(id: number) {
@@ -185,7 +185,7 @@ export class ProductService {
     return { message: `Product with ID ${id} has been deleted successfully` };
   }
 
-  async getProductsByCategory(categoryId: number, paginationQuery: PaginationQueryDto) {
+  async getProductsByCategory(categoryId: number, query: PaginationQueryDto) {
     const _category = await this.prisma.category.findUniqueOrThrow({
       where: { id: categoryId },
     });
@@ -199,17 +199,17 @@ export class ProductService {
           category: true,
           supplier: true,
         },
-        skip: paginationQuery.offset,
-        take: paginationQuery.limit,
+        skip: query.offset,
+        take: query.limit,
         orderBy: { createdAt: "desc" },
       }),
       this.prisma.product.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
-  async getProductsBySupplier(supplierId: number, paginationQuery: PaginationQueryDto) {
+  async getProductsBySupplier(supplierId: number, query: PaginationQueryDto) {
     const _supplier = await this.prisma.supplier.findUniqueOrThrow({
       where: { id: supplierId },
     });
@@ -223,17 +223,17 @@ export class ProductService {
           category: true,
           supplier: true,
         },
-        skip: paginationQuery.offset,
-        take: paginationQuery.limit,
+        skip: query.offset,
+        take: query.limit,
         orderBy: { createdAt: "desc" },
       }),
       this.prisma.product.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
-  async getLowStockProducts(paginationQuery: PaginationQueryDto) {
+  async getLowStockProducts(query: PaginationQueryDto) {
     const where = {
       quantityInStock: {
         lte: this.prisma.product.fields.minQuantity,
@@ -247,14 +247,14 @@ export class ProductService {
           category: true,
           supplier: true,
         },
-        skip: paginationQuery.offset,
-        take: paginationQuery.limit,
+        skip: query.offset,
+        take: query.limit,
         orderBy: { quantityInStock: "asc" },
       }),
       this.prisma.product.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
   async updateStock(id: number, quantityInStock: number) {

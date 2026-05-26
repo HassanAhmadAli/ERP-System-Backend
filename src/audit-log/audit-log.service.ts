@@ -44,6 +44,6 @@ export class AuditLogService {
       this.prisma.auditLog.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 }

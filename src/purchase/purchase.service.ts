@@ -91,7 +91,7 @@ export class PurchaseService {
       this.prisma.purchaseInvoice.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
   async findOne(id: number) {

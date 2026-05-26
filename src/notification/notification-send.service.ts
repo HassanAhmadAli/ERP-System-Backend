@@ -83,6 +83,8 @@ export class NotificationSendService {
         recipientCount: n._count.recipients,
       })),
       total,
+      query.limit,
+      query.offset,
     );
   }
 

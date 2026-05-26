@@ -112,6 +112,6 @@ export class UserService {
       }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 }

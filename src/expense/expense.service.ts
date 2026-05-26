@@ -55,7 +55,7 @@ export class ExpenseService {
       this.prisma.expense.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
   async findOne(id: number) {

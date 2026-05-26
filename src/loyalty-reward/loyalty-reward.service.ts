@@ -32,7 +32,7 @@ export class LoyaltyRewardService {
       this.prisma.loyaltyReward.count(),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
   async findAvailableForCustomer(userId: number, query: PaginationQueryDto) {
@@ -61,6 +61,8 @@ export class LoyaltyRewardService {
         canRedeem: loyaltyPoints >= reward.pointsThreshold,
       })),
       total,
+      query.limit,
+      query.offset,
     );
   }
 

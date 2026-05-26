@@ -49,7 +49,7 @@ export class FinancialService {
         quantityInStock: p.quantityInStock,
       };
     });
-    return paginated(data, total);
+    return paginated(data, total, query?.limit || null, query?.offset || null);
   }
 
   async getCostBreakdown(query: FinancialDateRangeDto) {

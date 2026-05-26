@@ -18,7 +18,7 @@ export class AdService {
     return this.prisma.advertisement.create({ data });
   }
 
-  async findAll(paginationQuery: PaginationQueryDto, activeOnly: boolean) {
+  async findAll({ limit, offset }: PaginationQueryDto, activeOnly: boolean) {
     const where: Prisma.AdvertisementWhereInput = {};
     if (activeOnly) {
       const now = new Date();
@@ -30,14 +30,14 @@ export class AdService {
     const [data, total] = await Promise.all([
       this.prisma.advertisement.findMany({
         where,
-        skip: paginationQuery.offset,
-        take: paginationQuery.limit,
+        skip: offset,
+        take: limit,
         orderBy: { createdAt: "desc" },
       }),
       this.prisma.advertisement.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, limit, offset);
   }
 
   async findOne(id: number) {

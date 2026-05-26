@@ -39,7 +39,7 @@ export class DiscountService {
     return discount;
   }
 
-  async findAll(paginationQuery: PaginationQueryDto, search?: string) {
+  async findAll(query: PaginationQueryDto, search?: string) {
     const where: Prisma.DiscountWhereInput = {};
 
     if (search) {
@@ -50,14 +50,14 @@ export class DiscountService {
       this.prisma.discount.findMany({
         where,
         include: { createdBy: { select: { id: true, fullName: true } } },
-        skip: paginationQuery.offset,
-        take: paginationQuery.limit,
+        skip: query.offset,
+        take: query.limit,
         orderBy: { createdAt: "desc" },
       }),
       this.prisma.discount.count({ where }),
     ]);
 
-    return paginated(data, count);
+    return paginated(data, count, query.limit, query.offset);
   }
 
   async findOne(id: number) {
@@ -97,7 +97,7 @@ export class DiscountService {
 
   // --- Active / Valid Discounts ----------------------------------
 
-  async getActiveDiscounts(paginationQuery: PaginationQueryDto) {
+  async getActiveDiscounts(query: PaginationQueryDto) {
     const now = new Date();
 
     const where: Prisma.DiscountWhereInput = {
@@ -114,14 +114,14 @@ export class DiscountService {
     const [data, total] = await Promise.all([
       this.prisma.discount.findMany({
         where,
-        skip: paginationQuery.offset,
-        take: paginationQuery.limit,
+        skip: query.offset,
+        take: query.limit,
         orderBy: { createdAt: "desc" },
       }),
       this.prisma.discount.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
   // --- Discount Calculation Engine -------------------------------

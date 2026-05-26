@@ -28,14 +28,14 @@ export class CategoryService {
     });
   }
 
-  async findAll(paginationQuery: PaginationQueryDto, search: string | undefined) {
+  async findAll(query: PaginationQueryDto, search: string | undefined) {
     const where = search ? { name: { contains: search, mode: "insensitive" as const } } : {};
 
     const [data, total] = await Promise.all([
       this.prisma.category.findMany({
         where,
-        skip: paginationQuery.offset,
-        take: paginationQuery.limit,
+        skip: query.offset,
+        take: query.limit,
         include: {
           _count: { select: { products: true } },
         },
@@ -44,7 +44,7 @@ export class CategoryService {
       this.prisma.category.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
   async findOne(id: number) {

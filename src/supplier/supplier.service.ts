@@ -19,7 +19,7 @@ export class SupplierService {
     });
   }
 
-  async findAll(paginationQuery: PaginationQueryDto, search: string | undefined) {
+  async findAll(query: PaginationQueryDto, search: string | undefined) {
     const where = search
       ? {
           OR: [
@@ -33,8 +33,8 @@ export class SupplierService {
     const [data, total] = await Promise.all([
       this.prisma.supplier.findMany({
         where,
-        skip: paginationQuery.offset,
-        take: paginationQuery.limit,
+        skip: query.offset,
+        take: query.limit,
         include: {
           _count: { select: { products: true, purchaseInvoices: true } },
         },
@@ -43,7 +43,7 @@ export class SupplierService {
       this.prisma.supplier.count({ where }),
     ]);
 
-    return paginated(data, total);
+    return paginated(data, total, query.limit, query.offset);
   }
 
   async findOne(id: number) {
