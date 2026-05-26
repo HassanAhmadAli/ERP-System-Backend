@@ -1,8 +1,9 @@
+import { openapiMeta } from "@/openapi/meta";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 import { NotificationTargetType, UserRole } from "@/prisma";
 
-export const SendNotificationSchema = z
+const SendNotificationBaseSchema = z
   .object({
     title: z.string().min(1).max(200),
     body: z.string().min(1).max(5000),
@@ -18,4 +19,12 @@ export const SendNotificationSchema = z
       ctx.addIssue({ code: "custom", message: "targetRole required when targetType is ROLE", path: ["targetRole"] });
     }
   });
+
+export const SendNotificationSchema = openapiMeta(SendNotificationBaseSchema, "SendNotificationDto", {
+  title: "Store announcement",
+  body: "Extended hours this weekend.",
+  targetType: NotificationTargetType.ROLE,
+  targetRole: UserRole.CASHIER,
+});
+
 export class SendNotificationDto extends createZodDto(SendNotificationSchema) {}

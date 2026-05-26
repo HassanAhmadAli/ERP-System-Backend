@@ -14,19 +14,29 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { readFileSync } from "node:fs";
+import { ApiTags } from "@nestjs/swagger";
 import { ProductService } from "./product.service";
 import { ProductImportService } from "./product-import.service";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { Permissions } from "@/access-control/permission.type";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { SearchQueryDto } from "@/common/dto/search-query.dto";
 import { UpdateStockDto } from "./dto/update-stock.dto";
+import {
+  ApiAuth,
+  DocumentBody,
+  DocumentCreatedResponse,
+  DocumentCsvUpload,
+  DocumentOkResponse,
+  DocumentOperation,
+  DocumentParam,
+} from "@/openapi/decorators";
 
 @ApiTags("Products")
+@ApiAuth()
 @Controller("product")
 export class ProductController {
   constructor(
@@ -36,31 +46,24 @@ export class ProductController {
 
   @Post()
   @setPermissions(Permissions.addProduct)
-  @ApiOperation({ summary: "Create a new product" })
-  @ApiResponse({
-    status: 201,
-    description: "Product created successfully",
-  })
+  @DocumentOperation("Create a new product")
+  @DocumentBody(CreateProductDto)
+  @DocumentCreatedResponse("Product created")
   create(@Body() createProductDto: CreateProductDto) {
     return this.productService.create(createProductDto);
   }
 
   @Get()
-  @ApiOperation({ summary: "Get all products with pagination and search" })
-  @ApiResponse({
-    status: 200,
-    description: "Products retrieved successfully",
-  })
+  @DocumentOperation("List products", "Paginated catalog with optional search term.")
+  @DocumentOkResponse("Paginated products")
   getProducts(@Query() { search, ...paginationQuery }: SearchQueryDto) {
     return this.productService.getProducts(paginationQuery, search);
   }
 
   @Get("category/:categoryId")
-  @ApiOperation({ summary: "Get products by category" })
-  @ApiResponse({
-    status: 200,
-    description: "Products retrieved successfully",
-  })
+  @DocumentOperation("List products by category")
+  @DocumentParam("categoryId", "Category ID")
+  @DocumentOkResponse("Paginated products in category")
   getProductsByCategory(
     @Param("categoryId", ParseIntPipe) categoryId: number,
     @Query() paginationQuery: PaginationQueryDto,
@@ -69,11 +72,9 @@ export class ProductController {
   }
 
   @Get("supplier/:supplierId")
-  @ApiOperation({ summary: "Get products by supplier" })
-  @ApiResponse({
-    status: 200,
-    description: "Products retrieved successfully",
-  })
+  @DocumentOperation("List products by supplier")
+  @DocumentParam("supplierId", "Supplier ID")
+  @DocumentOkResponse("Paginated products from supplier")
   getProductsBySupplier(
     @Param("supplierId", ParseIntPipe) supplierId: number,
     @Query() paginationQuery: PaginationQueryDto,
@@ -84,7 +85,9 @@ export class ProductController {
   @Post("import")
   @setPermissions(Permissions.manageProduct)
   @UseInterceptors(FileInterceptor("file"))
-  @ApiOperation({ summary: "Bulk import products from CSV" })
+  @DocumentOperation("Bulk import products from CSV")
+  @DocumentCsvUpload()
+  @DocumentCreatedResponse("Import job started")
   importCsv(@ActiveUser("sub") userId: number, @UploadedFile() file: Express.Multer.File) {
     if (!file?.buffer && !file?.path) {
       throw new BadRequestException("CSV file is required");
@@ -98,57 +101,53 @@ export class ProductController {
 
   @Get("import/jobs")
   @setPermissions(Permissions.manageProduct)
-  @ApiOperation({ summary: "List recent product import jobs" })
+  @DocumentOperation("List recent product import jobs")
+  @DocumentOkResponse("Import jobs")
   listImportJobs() {
     return this.productImportService.listJobs();
   }
 
   @Get("import/:jobId")
   @setPermissions(Permissions.manageProduct)
-  @ApiOperation({ summary: "Get product import job status" })
+  @DocumentOperation("Get product import job status")
+  @DocumentParam("jobId", "Import job ID")
+  @DocumentOkResponse("Import job details")
   getImportJob(@Param("jobId", ParseIntPipe) jobId: number) {
     return this.productImportService.getJob(jobId);
   }
 
   @Get("low-stock")
   @setPermissions(Permissions.manageProduct)
-  @ApiOperation({ summary: "Get products with low stock" })
-  @ApiResponse({
-    status: 200,
-    description: "Low stock products retrieved successfully",
-  })
+  @DocumentOperation("List low-stock products")
+  @DocumentOkResponse("Paginated low-stock products")
   getLowStockProducts(@Query() paginationQuery: PaginationQueryDto) {
     return this.productService.getLowStockProducts(paginationQuery);
   }
 
   @Get(":id")
-  @ApiOperation({ summary: "Get a product by ID" })
-  @ApiResponse({
-    status: 200,
-    description: "Product retrieved successfully",
-  })
+  @DocumentOperation("Get product by ID")
+  @DocumentParam("id", "Product ID")
+  @DocumentOkResponse("Product details")
   findOne(@Param("id", ParseIntPipe) id: number) {
     return this.productService.findOne(id);
   }
 
   @Patch(":id")
   @setPermissions(Permissions.manageProduct)
-  @ApiOperation({ summary: "Update a product" })
-  @ApiResponse({
-    status: 200,
-    description: "Product updated successfully",
-  })
+  @DocumentOperation("Update product")
+  @DocumentParam("id", "Product ID")
+  @DocumentBody(UpdateProductDto)
+  @DocumentOkResponse("Product updated")
   update(@Param("id", ParseIntPipe) id: number, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(id, updateProductDto);
   }
 
   @Patch(":id/stock")
   @setPermissions(Permissions.manageProduct)
-  @ApiOperation({ summary: "Update product stock" })
-  @ApiResponse({
-    status: 200,
-    description: "Stock updated successfully",
-  })
+  @DocumentOperation("Update product stock quantity")
+  @DocumentParam("id", "Product ID")
+  @DocumentBody(UpdateStockDto)
+  @DocumentOkResponse("Stock updated")
   updateStock(@Param("id", ParseIntPipe) id: number, @Body() { quantityInStock }: UpdateStockDto) {
     if (quantityInStock < 0) {
       throw new BadRequestException("Insufficient stock");
@@ -158,11 +157,9 @@ export class ProductController {
 
   @Delete(":id")
   @setPermissions(Permissions.manageProduct)
-  @ApiOperation({ summary: "Delete a product" })
-  @ApiResponse({
-    status: 200,
-    description: "Product deleted successfully",
-  })
+  @DocumentOperation("Delete product")
+  @DocumentParam("id", "Product ID")
+  @DocumentOkResponse("Product deleted")
   remove(@Param("id", ParseIntPipe) id: number) {
     return this.productService.remove(id);
   }

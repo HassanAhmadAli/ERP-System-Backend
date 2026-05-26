@@ -1,0 +1,15 @@
+export const SEED = {
+  password: "12345678",
+  storeManagerEmail: "store.manager@example.com",
+  cashierEmail: "customer.user@example.com",
+  cashier2Email: "cashier2@example.com",
+  customerEmail: "customer.user@example.com",
+  accountantEmail: "accountant.user@example.com",
+  warehouseEmail: "warehouse.user@example.com",
+  customerId: 1,
+  productId: 1,
+  productId2: 2,
+  categoryId: 1,
+  supplierId: 1,
+  discountId: 1,
+} as const;

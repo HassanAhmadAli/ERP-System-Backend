@@ -1,18 +1,38 @@
+import { SEED } from "@/openapi/examples";
+import { openapiMeta } from "@/openapi/meta";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
+
 export const OrderItemInputSchema = z.object({
   productId: z.coerce.number().int().positive(),
   quantity: z.coerce.number().int().positive(),
 });
-const CreateOrderSchema = z.object({
+
+const CreateOrderBaseSchema = z.object({
   discountId: z.coerce.number().int().positive().nullish(),
   loyaltyPointsUsed: z.coerce.number().int().min(0).default(0),
   deliveryAddress: z.string().min(1).optional(),
   items: z.array(OrderItemInputSchema).min(1),
 });
 
-const CreateCashierOrderSchema = CreateOrderSchema.extend({
-  customerId: z.coerce.number().int().positive(),
+export const CreateOrderSchema = openapiMeta(CreateOrderBaseSchema, "CreateOrderDto", {
+  discountId: SEED.discountId,
+  loyaltyPointsUsed: 0,
+  deliveryAddress: "123 Main St, Springfield",
+  items: [{ productId: SEED.productId2, quantity: 2 }],
 });
+
+export const CreateCashierOrderSchema = openapiMeta(
+  CreateOrderBaseSchema.extend({
+    customerId: z.coerce.number().int().positive(),
+  }),
+  "CreateCashierOrderDto",
+  {
+    customerId: SEED.customerId,
+    loyaltyPointsUsed: 0,
+    items: [{ productId: SEED.productId, quantity: 1 }],
+  },
+);
+
 export class CreateCashierOrderDto extends createZodDto(CreateCashierOrderSchema) {}
 export class CreateOrderDto extends createZodDto(CreateOrderSchema) {}

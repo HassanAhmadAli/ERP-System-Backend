@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from "@nestjs/common";
-import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiTags } from "@nestjs/swagger";
 import { SalesService } from "./sales.service";
 import { CreateSalesInvoiceDto } from "./dto/create-sales-invoice.dto";
 import { UpdateSalesInvoiceStatusDto } from "./dto/update-sales-invoice-status.dto";
@@ -8,40 +8,56 @@ import { setPermissions } from "@/access-control/decorators/permissions.decorato
 import { Permissions } from "@/access-control/permission.type";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
 import { UserRole } from "@/prisma";
+import {
+  ApiAuth,
+  DocumentBody,
+  DocumentCreatedResponse,
+  DocumentOkResponse,
+  DocumentOperation,
+  DocumentParam,
+} from "@/openapi/decorators";
 
 @ApiTags("Sales")
+@ApiAuth()
 @Controller("sales/invoices")
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
   @Post()
   @setPermissions(Permissions.createSales)
-  @ApiOperation({ summary: "Create a sales invoice (POS)" })
-  @ApiResponse({ status: 201, description: "Invoice created successfully" })
+  @DocumentOperation("Create sales invoice (POS)", "Set complete=true to finalize payment and deduct stock.")
+  @DocumentBody(CreateSalesInvoiceDto)
+  @DocumentCreatedResponse("Invoice created")
   create(@ActiveUser("sub") userId: number, @Body() dto: CreateSalesInvoiceDto) {
     return this.salesService.create(userId, dto);
   }
 
   @Get()
   @setPermissions(Permissions.viewSales)
-  @ApiOperation({ summary: "List sales invoices" })
-  @ApiResponse({ status: 200, description: "Invoices retrieved successfully" })
+  @DocumentOperation("List sales invoices")
+  @DocumentOkResponse("Paginated invoices")
   findAll(@Query() query: SalesInvoiceQueryDto) {
     return this.salesService.findAll(query);
   }
 
   @Get(":id")
   @setPermissions(Permissions.viewSales)
-  @ApiOperation({ summary: "Get a sales invoice by ID" })
-  @ApiResponse({ status: 200, description: "Invoice retrieved successfully" })
+  @DocumentOperation("Get sales invoice by ID", "Use response for printing receipts.")
+  @DocumentParam("id", "Invoice ID")
+  @DocumentOkResponse("Invoice with line items")
   findOne(@Param("id", ParseIntPipe) id: number) {
     return this.salesService.findOne(id);
   }
 
   @Patch(":id/status")
   @setPermissions(Permissions.manageSales)
-  @ApiOperation({ summary: "Update sales invoice status" })
-  @ApiResponse({ status: 200, description: "Invoice status updated successfully" })
+  @DocumentOperation(
+    "Update invoice status",
+    "Cashier may only update own invoices. COMPLETED deducts stock; REFUNDED restores stock and loyalty.",
+  )
+  @DocumentParam("id", "Invoice ID")
+  @DocumentBody(UpdateSalesInvoiceStatusDto)
+  @DocumentOkResponse("Invoice updated")
   updateStatus(
     @Param("id", ParseIntPipe) id: number,
     @Body() dto: UpdateSalesInvoiceStatusDto,
