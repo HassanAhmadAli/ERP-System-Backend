@@ -36,7 +36,6 @@ export class ProductPhotoController {
     return this.productPhotoService.uploadProductPhoto(productId, creatorId, file);
   }
 
-  @setPermissions(Permissions.manageProduct)
   @Get("product/:productId")
   @DocumentOperation("List photos for a product")
   @DocumentParam("productId", "Product ID")
