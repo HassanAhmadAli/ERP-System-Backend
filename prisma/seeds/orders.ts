@@ -64,7 +64,7 @@ export async function seedOrders() {
       total: "14.97",
       loyaltyPointsUsed: 0,
       deliveryAddress: "123 Main St, Springfield",
-      status: OrderStatus.CANCELLED,
+      status: OrderStatus.PENDING,
       createdAt: new Date("2025-04-22T09:00:00.000Z"),
       items: {
         create: [
