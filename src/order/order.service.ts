@@ -58,27 +58,17 @@ export class OrderService {
       const lineItems = await this.buildLineItems(tx, dto.items, true);
       const subtotal = lineItems.reduce((sum, item) => sum.add(item.subtotal), new Prisma.Decimal(0));
 
-      let discountAmount = new Prisma.Decimal(0);
       let appliedDiscountId: number | undefined;
-
+      let discountAmount = new Prisma.Decimal(0);
       if (dto.discountId != undefined) {
-        const discountResult = await this.discountService.calculateDiscount({
+        discountAmount = await this.discountService.calculateOrderDiscount({
           discountId: dto.discountId,
-          subtotal: subtotal.toNumber(),
-          customerId,
+          items: dto.items,
         });
-        discountAmount = new Prisma.Decimal(discountResult.discountAmount);
-        appliedDiscountId = dto.discountId;
-      }
-
-      let total = subtotal.sub(discountAmount);
-
-      if (dto.loyaltyPointsUsed > 0) {
-        const loyaltyCredit = new Prisma.Decimal(dto.loyaltyPointsUsed);
-        if (loyaltyCredit.gt(total)) {
-          throw new BadRequestException("Loyalty points cannot exceed order total");
+        if (discountAmount.gt(0)) {
+          appliedDiscountId = dto.discountId;
+          await this.discountService.validateDiscountUsable(dto.discountId);
         }
-        total = total.sub(loyaltyCredit);
       }
 
       const order = await tx.order.create({
@@ -86,8 +76,6 @@ export class OrderService {
           customerId,
           appliedDiscountId,
           subtotal,
-          discountAmount,
-          total,
           loyaltyPointsUsed: dto.loyaltyPointsUsed,
           deliveryAddress: dto.deliveryAddress ?? customer.address,
           items: {
@@ -102,16 +90,8 @@ export class OrderService {
         include: orderInclude,
       });
 
-      if (dto.loyaltyPointsUsed > 0) {
-        await tx.customer.update({
-          where: { id: customerId },
-          data: { loyaltyPoints: { decrement: dto.loyaltyPointsUsed } },
-        });
-      }
-
       await this.notifyOrderStatus(customer.user.id, customer.user.email, order.id, order.status);
-
-      return order;
+      return { ...order, discountAmount };
     });
   }
 
@@ -190,8 +170,14 @@ export class OrderService {
       throw new ForbiddenException("You can only cancel your own orders");
     }
 
-    if (order.status !== OrderStatus.PENDING) {
-      throw new BadRequestException("Only pending orders can be cancelled");
+    if (
+      order.status !== OrderStatus.PENDING &&
+      order.status !== OrderStatus.PREPARING &&
+      order.status !== OrderStatus.OUT_FOR_DELIVERY
+    ) {
+      throw new BadRequestException(
+        "Only orders in 'pending', 'preparing' or 'out for delivery' status can be cancelled",
+      );
     }
 
     return this.updateStatus(id, { status: OrderStatus.CANCELLED });
@@ -221,6 +207,7 @@ export class OrderService {
       const willReserveStock = dto.status === OrderStatus.PREPARING;
       const willReleaseStock = dto.status === OrderStatus.CANCELLED && wasStockReserved;
       const willComplete = dto.status === OrderStatus.DELIVERED;
+      const wasCompleted = order.status === OrderStatus.DELIVERED;
 
       if (willReserveStock && order.status === OrderStatus.PENDING) {
         for (const item of order.items) {
@@ -245,29 +232,63 @@ export class OrderService {
       });
 
       if (willComplete) {
-        const loyaltyEarned = await this.loyaltyPolicyService.calculateEarnedPoints(order.total);
+        let discountAmount = new Prisma.Decimal(0);
+        if (order.appliedDiscountId != undefined) {
+          discountAmount = await this.discountService.calculateOrderDiscount({
+            discountId: order.appliedDiscountId,
+            items: order.items,
+          });
+        }
+
+        const total = order.subtotal.sub(discountAmount);
+        const loyaltyEarned = await this.loyaltyPolicyService.calculateEarnedPoints(total);
         await tx.customer.update({
           where: { id: order.customerId },
           data: {
-            totalSpent: { increment: order.total },
+            totalSpent: { increment: total },
             loyaltyPoints: { increment: loyaltyEarned },
           },
         });
 
+        // Increment discount usage count
         if (order.appliedDiscountId != undefined) {
-          const discount = await tx.discount.findUniqueOrThrow({
-            where: { id: order.appliedDiscountId },
+          await this.discountService.incrementUsage(order.appliedDiscountId);
+        }
+      }
+
+      // Handle cancellation after delivery (refund scenario)
+      if (dto.status === OrderStatus.CANCELLED && wasCompleted) {
+        // Recalculate discount to reverse customer totals accurately
+        let discountAmount = new Prisma.Decimal(0);
+        if (order.appliedDiscountId != undefined) {
+          discountAmount = await this.discountService.calculateOrderDiscount({
+            discountId: order.appliedDiscountId,
+            items: order.items,
           });
-          if (discount.maxUses !== null && discount.usedCount >= discount.maxUses) {
-            throw new BadRequestException("This discount has reached its maximum number of uses");
-          }
+        }
+
+        const total = order.subtotal.sub(discountAmount);
+
+        // Reverse customer totals and loyalty points
+        const loyaltyEarned = await this.loyaltyPolicyService.calculateEarnedPoints(total);
+        await tx.customer.update({
+          where: { id: order.customerId },
+          data: {
+            totalSpent: { decrement: total },
+            loyaltyPoints: { decrement: loyaltyEarned },
+          },
+        });
+
+        // Decrement discount usage count
+        if (order.appliedDiscountId != undefined) {
           await tx.discount.update({
             where: { id: order.appliedDiscountId },
-            data: { usedCount: { increment: 1 } },
+            data: { usedCount: { decrement: 1 } },
           });
         }
       }
 
+      // Restore loyalty points used for any cancellation
       if (dto.status === OrderStatus.CANCELLED && order.loyaltyPointsUsed > 0) {
         await tx.customer.update({
           where: { id: order.customerId },
@@ -310,7 +331,6 @@ export class OrderService {
 
     return items.map((item) => {
       const product = productMap.get(item.productId)!;
-
       if (validateStock && product.quantityInStock < item.quantity) {
         throw new BadRequestException(
           `Insufficient stock for product "${product.name}" (available: ${product.quantityInStock})`,
@@ -325,6 +345,7 @@ export class OrderService {
         quantity: item.quantity,
         unitPrice,
         subtotal,
+        categoryId: product.categoryId,
       };
     });
   }

@@ -121,7 +121,7 @@ export class CustomerService {
           select: {
             id: true,
             status: true,
-            total: true,
+            subtotal: true,
             createdAt: true,
           },
         },

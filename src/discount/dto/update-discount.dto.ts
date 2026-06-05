@@ -20,5 +20,7 @@ export const UpdateDiscountSchema = z.object({
   startDate: stringToDateSchema.optional(),
   endDate: stringToDateSchema.nullish(),
   isActive: z.boolean().optional(),
+  productId: z.coerce.number().int().positive().nullish(),
+  categoryId: z.coerce.number().int().positive().nullish(),
 });
 export class UpdateDiscountDto extends createZodDto(UpdateDiscountSchema) {}

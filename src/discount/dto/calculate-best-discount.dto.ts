@@ -4,15 +4,13 @@ import { openapiMeta } from "@/openapi/meta";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 
-export const CalculateDiscountSchema = openapiMeta(
+export const CalculateBestDiscountSchema = openapiMeta(
   z.object({
-    discountId: z.coerce.number().int().positive(),
     subtotal: z.coerce.number().transform((x) => new Prisma.Decimal(x)),
-    // customerId: z.coerce.number().int().positive().nullish(),
     productId: z.coerce.number().int().positive().nullish(),
     categoryId: z.coerce.number().int().positive().nullish(),
   }),
-  "CalculateDiscountDto",
+  "CalculateBestDiscountDto",
   {
     discountId: SEED.discountId,
     subtotal: 29.99,
@@ -21,4 +19,4 @@ export const CalculateDiscountSchema = openapiMeta(
   },
 );
 
-export class CalculateDiscountDto extends createZodDto(CalculateDiscountSchema) {}
+export class CalculateBestDiscountDto extends createZodDto(CalculateBestDiscountSchema) {}

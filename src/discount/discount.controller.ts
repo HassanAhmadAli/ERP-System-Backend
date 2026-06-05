@@ -18,6 +18,7 @@ import {
   DocumentOperation,
   DocumentParam,
 } from "@/openapi/decorators";
+import { CalculateBestDiscountDto } from "./dto/calculate-best-discount.dto";
 
 @ApiTags("Discounts")
 @ApiAuth()
@@ -99,9 +100,8 @@ export class DiscountController {
   @DocumentOperation("Find best applicable discount", "Evaluates scope rules for customer/product/category.")
   @DocumentBody(CalculateDiscountDto)
   @DocumentOkResponse("Best discount or null")
-  getBestDiscount(@Body() calculateDiscountDto: CalculateDiscountDto) {
+  getBestDiscount(@Body() calculateDiscountDto: CalculateBestDiscountDto) {
     return this.discountService.getBestDiscount(calculateDiscountDto.subtotal, {
-      customerId: calculateDiscountDto.customerId,
       productId: calculateDiscountDto.productId,
       categoryId: calculateDiscountDto.categoryId,
     });

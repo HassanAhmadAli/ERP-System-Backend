@@ -21,6 +21,8 @@ export const CreateDiscountSchema = z
     startDate: stringToDateSchema,
     endDate: stringToDateSchema.optional(),
     isActive: z.boolean().default(true),
+    productId: z.coerce.number().int().positive().nullish(),
+    categoryId: z.coerce.number().int().positive().nullish(),
   })
   .refine(
     (data) => {
@@ -30,5 +32,47 @@ export const CreateDiscountSchema = z
       return true;
     },
     { message: "endDate must be after startDate", path: ["endDate"] },
+  )
+  .refine(
+    (data) => {
+      if (data.scope === DiscountScope.PRODUCT && data.productId == undefined) {
+        return false;
+      }
+      if (data.scope !== DiscountScope.PRODUCT && data.productId != undefined) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "productId is required for PRODUCT scope and must not be provided for other scopes",
+      path: ["productId"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.scope === DiscountScope.CATEGORY && data.categoryId == undefined) {
+        return false;
+      }
+      if (data.scope !== DiscountScope.CATEGORY && data.categoryId != undefined) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "categoryId is required for CATEGORY scope and must not be provided for other scopes",
+      path: ["categoryId"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.type === "PERCENTAGE" && data.value.gt(100)) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "Percentage discount value cannot be greater than 100",
+      path: ["value"],
+    },
   );
 export class CreateDiscountDto extends createZodDto(CreateDiscountSchema) {}

@@ -48,16 +48,20 @@ export class SalesService {
       const subtotal = lineItems.reduce((sum, item) => sum.add(item.subtotal), new Prisma.Decimal(0));
 
       let discountAmount = new Prisma.Decimal(0);
-      let appliedDiscountId: number | undefined;
+      let appliedDiscountId: number | null = null;
 
       if (dto.discountId != undefined) {
-        const discountResult = await this.discountService.calculateDiscount({
+        discountAmount = await this.discountService.calculateOrderDiscount({
           discountId: dto.discountId,
-          subtotal: subtotal.toNumber(),
-          customerId: dto.customerId ?? null,
+          items: dto.items,
         });
-        discountAmount = new Prisma.Decimal(discountResult.discountAmount);
-        appliedDiscountId = dto.discountId;
+
+        // If discount is applicable (non-zero), validate and save the reference
+        if (discountAmount.gt(0)) {
+          appliedDiscountId = dto.discountId;
+          // Validate the discount is still usable before finalizing
+          await this.discountService.validateDiscountUsable(dto.discountId);
+        }
       }
 
       const total = subtotal.sub(discountAmount);
@@ -70,7 +74,7 @@ export class SalesService {
         data: {
           cashierId: employee.id,
           customerId: dto.customerId,
-          appliedDiscountId,
+          appliedDiscountId: appliedDiscountId,
           subtotal,
           discountAmount,
           total,
@@ -236,6 +240,7 @@ export class SalesService {
         unitPrice,
         discount: new Prisma.Decimal(0),
         subtotal,
+        categoryId: product.categoryId,
       };
     });
   }
@@ -289,18 +294,7 @@ export class SalesService {
     }
 
     if (invoice.appliedDiscountId != undefined) {
-      const discount = await tx.discount.findUniqueOrThrow({
-        where: { id: invoice.appliedDiscountId },
-      });
-
-      if (discount.maxUses !== null && discount.usedCount >= discount.maxUses) {
-        throw new BadRequestException("This discount has reached its maximum number of uses");
-      }
-
-      await tx.discount.update({
-        where: { id: invoice.appliedDiscountId },
-        data: { usedCount: { increment: 1 } },
-      });
+      await this.discountService.incrementUsage(invoice.appliedDiscountId);
     }
   }
 
@@ -323,6 +317,14 @@ export class SalesService {
           totalSpent: { decrement: invoice.total },
           loyaltyPoints: { decrement: loyaltyPoints },
         },
+      });
+    }
+
+    // Decrement discount usage count if a discount was applied
+    if (invoice.appliedDiscountId != undefined) {
+      await tx.discount.update({
+        where: { id: invoice.appliedDiscountId },
+        data: { usedCount: { decrement: 1 } },
       });
     }
   }
