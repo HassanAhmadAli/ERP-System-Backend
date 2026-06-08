@@ -19,7 +19,6 @@ export const Permissions = {
   manageAds: "ads:manage",
   manageCategories: "category:manage",
   viewReports: "reports:view",
-
   viewCustomers: "customers:view",
   manageCustomerStatus: "customers:manage-status",
   manageCustomerLoyalty: "customers:manage-loyalty",
@@ -91,6 +90,7 @@ const CUSTOMER_PERMISSIONS: Permissions[] = [
   Permissions.viewCustomerPersonalOrders,
   Permissions.cancelOwnOrder,
   Permissions.viewAvailableLoyaltyRewards,
+  Permissions.updateCustomerPersonalProfile,
 ];
 
 const STORE_MANAGER_PERMISSIONS: Permissions[] = [
