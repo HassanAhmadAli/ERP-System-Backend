@@ -72,7 +72,7 @@ const ACCOUNTANT_PERMISSIONS: Permissions[] = [
   Permissions.manageFinancials,
   Permissions.viewAuditLogs,
   Permissions.sendNotifications,
-
+  Permissions.manageSales,
   Permissions.manageDiscounts,
   Permissions.manageAds,
   Permissions.manageLoyaltyRewards,
