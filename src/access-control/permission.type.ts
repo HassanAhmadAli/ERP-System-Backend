@@ -1,4 +1,4 @@
-import { UserRole } from "@/prisma";
+import { UserRole } from "@/prisma/client";
 export const Permissions = {
   updatePersonalProfile: "any:update-self-profile",
   updateCustomerPersonalProfile: "customer:update-self-profile",

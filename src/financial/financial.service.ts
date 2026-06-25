@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 import { FinancialDateRangeDto } from "./dto/financial-date-range.dto";
 import { CostTrendsQueryDto } from "./dto/cost-trends-query.dto";
 import { SupplierReportQueryDto } from "./dto/supplier-report-query.dto";

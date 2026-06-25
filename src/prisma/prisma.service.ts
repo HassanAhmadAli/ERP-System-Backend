@@ -4,6 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
 import { softDeletePrismaExtension } from "./soft-delete";
+import { auditPrismaExtension } from "./audit-extension";
 
 export const createPrismaClient = ({ DATABASE_URL }: { DATABASE_URL: string }) => {
   const adapter = new PrismaPg({
@@ -13,7 +14,9 @@ export const createPrismaClient = ({ DATABASE_URL }: { DATABASE_URL: string }) =
   const prisma = new PrismaClient({
     adapter,
     // log: ["query"],
-  }).$extends(softDeletePrismaExtension);
+  })
+    .$extends(softDeletePrismaExtension)
+    .$extends(auditPrismaExtension);
   return prisma;
 };
 @Injectable()

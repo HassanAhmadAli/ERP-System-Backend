@@ -1,7 +1,7 @@
 import { SEED } from "@/openapi/examples";
 import { openapiMeta } from "@/openapi/meta";
 import { z } from "zod";
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 
 export const CreateProductSchema = openapiMeta(
   z.object({

@@ -1,4 +1,4 @@
-import { UserRole } from "@/prisma";
+import { UserRole } from "@/prisma/client";
 import { getKeyOf } from "@/utils";
 import { prisma } from "./client-instance";
 import { HashingService } from "@/hashing/hashing.service";

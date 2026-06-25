@@ -1,4 +1,4 @@
-import { OrderStatus } from "@/prisma";
+import { OrderStatus } from "@/prisma/client";
 import { prisma } from "./client-instance";
 
 export async function seedOrders() {
@@ -8,7 +8,6 @@ export async function seedOrders() {
       customerId: 1,
       appliedDiscountId: 2,
       subtotal: "9.98",
-      loyaltyPointsUsed: 0,
       deliveryAddress: "123 Main St, Springfield",
       status: OrderStatus.DELIVERED,
       createdAt: new Date("2025-04-10T16:00:00.000Z"),
@@ -32,7 +31,6 @@ export async function seedOrders() {
       customerId: 1,
       appliedDiscountId: null,
       subtotal: "29.99",
-      loyaltyPointsUsed: 50,
       deliveryAddress: "123 Main St, Springfield",
       status: OrderStatus.PREPARING,
       createdAt: new Date("2025-04-21T08:00:00.000Z"),
@@ -56,7 +54,6 @@ export async function seedOrders() {
       customerId: 1,
       appliedDiscountId: null,
       subtotal: "14.97",
-      loyaltyPointsUsed: 0,
       deliveryAddress: "123 Main St, Springfield",
       status: OrderStatus.PENDING,
       createdAt: new Date("2025-04-22T09:00:00.000Z"),

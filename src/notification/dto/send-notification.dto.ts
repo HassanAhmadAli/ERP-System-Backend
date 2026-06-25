@@ -1,7 +1,7 @@
 import { openapiMeta } from "@/openapi/meta";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { NotificationTargetType, UserRole } from "@/prisma";
+import { NotificationTargetType, UserRole } from "@/prisma/client";
 
 const SendNotificationBaseSchema = z
   .object({

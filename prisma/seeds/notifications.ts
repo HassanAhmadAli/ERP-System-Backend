@@ -1,4 +1,4 @@
-import { NotificationTargetType, UserRole } from "@/prisma";
+import { NotificationTargetType, UserRole } from "@/prisma/client";
 import { prisma } from "./client-instance";
 
 export async function seedNotifications() {

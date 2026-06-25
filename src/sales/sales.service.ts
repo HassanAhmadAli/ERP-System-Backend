@@ -5,9 +5,8 @@ import { CreateSalesInvoiceDto } from "./dto/create-sales-invoice.dto";
 import { UpdateSalesInvoiceStatusDto } from "./dto/update-sales-invoice-status.dto";
 import { SalesInvoiceQueryDto } from "./dto/sales-invoice-query.dto";
 import { paginated } from "@/common/types/paginated-response";
-import { InvoiceStatus, Prisma, UserRole } from "@/prisma";
+import { InvoiceStatus, Prisma, UserRole } from "@/prisma/client";
 import { NotificationsService } from "../notification/notification.service";
-import { LoyaltyPolicyService } from "@/loyalty-reward/loyalty-policy.service";
 
 type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
 
@@ -24,7 +23,6 @@ export class SalesService {
     private readonly prismaService: PrismaService,
     private readonly discountService: DiscountService,
     private readonly notificationsService: NotificationsService,
-    private readonly loyaltyPolicyService: LoyaltyPolicyService,
   ) {}
 
   public get prisma() {
@@ -53,6 +51,7 @@ export class SalesService {
       if (dto.discountId != undefined) {
         discountAmount = await this.discountService.calculateOrderDiscount({
           discountId: dto.discountId,
+          customerId: dto.customerId,
           items: dto.items,
         });
 
@@ -66,10 +65,6 @@ export class SalesService {
 
       const total = subtotal.sub(discountAmount);
 
-      if (dto.complete && dto.amountPaid.lt(total)) {
-        throw new BadRequestException("amountPaid must be greater than or equal to the invoice total");
-      }
-
       const invoice = await tx.salesInvoice.create({
         data: {
           cashierId: employee.id,
@@ -78,7 +73,6 @@ export class SalesService {
           subtotal,
           discountAmount,
           total,
-          amountPaid: dto.complete ? dto.amountPaid : new Prisma.Decimal(0),
           status,
           items: {
             create: lineItems.map((item) => ({
@@ -283,12 +277,12 @@ export class SalesService {
     }
 
     if (invoice.customerId != undefined) {
-      const loyaltyPoints = await this.loyaltyPolicyService.calculateEarnedPoints(invoice.total);
+      const total = invoice.total;
       await tx.customer.update({
         where: { id: invoice.customerId },
         data: {
           totalSpent: { increment: invoice.total },
-          loyaltyPoints: { increment: loyaltyPoints },
+          loyaltyPoints: { increment: total.toNumber() },
         },
       });
     }
@@ -310,12 +304,12 @@ export class SalesService {
     }
 
     if (invoice.customerId != undefined) {
-      const loyaltyPoints = await this.loyaltyPolicyService.calculateEarnedPoints(invoice.total);
+      const total = invoice.total;
       await tx.customer.update({
         where: { id: invoice.customerId },
         data: {
           totalSpent: { decrement: invoice.total },
-          loyaltyPoints: { decrement: loyaltyPoints },
+          loyaltyPoints: { decrement: total.toNumber() },
         },
       });
     }

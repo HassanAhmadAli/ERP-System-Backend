@@ -1,15 +1,34 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { AuditLogQueryDto } from "./dto/audit-log-query.dto";
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 import { paginated } from "@/common/types/paginated-response";
+import { setAuditRecorder, AuditRecordParams } from "./audit-context";
+import { convertObjecttoDbJson } from "@/utils";
 
 @Injectable()
-export class AuditLogService {
+export class AuditLogService implements OnModuleInit {
   constructor(private readonly prismaService: PrismaService) {}
 
   public get prisma() {
     return this.prismaService.client;
+  }
+
+  onModuleInit() {
+    setAuditRecorder((params) => this.record(params));
+  }
+
+  async record({ userId, action, entity, entityId, oldValue, newValue }: AuditRecordParams) {
+    await this.prisma.auditLog.create({
+      data: {
+        userId,
+        action,
+        entity,
+        entityId,
+        oldValue: convertObjecttoDbJson(oldValue),
+        newValue: convertObjecttoDbJson(newValue),
+      },
+    });
   }
 
   async findAll(query: AuditLogQueryDto) {
@@ -20,6 +39,9 @@ export class AuditLogService {
     }
     if (query.entity != undefined) {
       where.entity = { contains: query.entity, mode: "insensitive" };
+    }
+    if (query.action != undefined) {
+      where.action = { contains: query.action, mode: "insensitive" };
     }
     if (query.from != undefined || query.to != undefined) {
       where.performedAt = {};

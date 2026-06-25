@@ -4,7 +4,7 @@ import { CreateAdDto } from "./dto/create-ad.dto";
 import { UpdateAdDto } from "./dto/update-ad.dto";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { paginated } from "@/common/types/paginated-response";
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 
 @Injectable()
 export class AdService {

@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, UnprocessableEntityException } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
-import { Prisma, DiscountType, DiscountScope, Discount } from "@/prisma";
+import { Prisma, DiscountType, DiscountScope, Discount } from "@/prisma/client";
 import { CreateDiscountDto } from "./dto/create-discount.dto";
 import { UpdateDiscountDto } from "./dto/update-discount.dto";
 import { CalculateDiscountDto } from "./dto/calculate-discount.dto";
@@ -43,6 +43,15 @@ export class DiscountService {
       });
       if (!category) {
         throw new BadRequestException(`Category with ID ${createDiscountDto.categoryId} does not exist`);
+      }
+    }
+
+    if (createDiscountDto.customerId) {
+      const customer = await this.prisma.customer.findUnique({
+        where: { id: createDiscountDto.customerId },
+      });
+      if (!customer) {
+        throw new BadRequestException(`Customer with ID ${createDiscountDto.customerId} does not exist`);
       }
     }
 
@@ -117,6 +126,11 @@ export class DiscountService {
       finalCategoryId = updateDiscountDto.categoryId;
     }
 
+    let finalCustomerId = current.customerId;
+    if (updateDiscountDto.customerId != undefined) {
+      finalCustomerId = updateDiscountDto.customerId;
+    }
+
     if (finalScope === "PRODUCT") {
       if (finalProductId == undefined) {
         throw new BadRequestException("productId is required for PRODUCT scope");
@@ -136,6 +150,16 @@ export class DiscountService {
         throw new BadRequestException("categoryId must not be provided for non-CATEGORY scope");
       }
       updateDiscountDto.categoryId = null;
+    }
+    if (finalScope === "CUSTOMER") {
+      if (finalCustomerId == undefined) {
+        throw new BadRequestException("customerId is required for CUSTOMER scope");
+      }
+    } else {
+      if (finalCustomerId != undefined) {
+        throw new BadRequestException("customerId must not be provided for non-CUSTOMER scope");
+      }
+      updateDiscountDto.customerId = null;
     }
 
     let finalType = current.type;
@@ -191,7 +215,7 @@ export class DiscountService {
 
   // --- Active / Valid Discounts ----------------------------------
 
-  async getActiveDiscounts(query: PaginationQueryDto) {
+  async getActiveDiscounts(query: PaginationQueryDto, customerId?: number) {
     const now = new Date();
 
     const where: Prisma.DiscountWhereInput = {
@@ -204,6 +228,17 @@ export class DiscountService {
         },
       ],
     };
+
+    if (customerId != undefined) {
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : []),
+        {
+          OR: [{ scope: { not: DiscountScope.CUSTOMER } }, { scope: DiscountScope.CUSTOMER, customerId }],
+        },
+      ];
+    } else {
+      where.scope = { not: DiscountScope.CUSTOMER };
+    }
 
     const [data, total] = await Promise.all([
       this.prisma.discount.findMany({
@@ -349,14 +384,14 @@ export class DiscountService {
   async getBestDiscount(
     subtotal: Prisma.Decimal,
     context: {
-      // customerId: number | undefined | null;
+      customerId: number | undefined | null;
       productId: number | undefined | null;
       categoryId: number | undefined | null;
     },
   ): Promise<DiscountCalculationResult | null> {
     const now = new Date();
 
-    const scopeConditions: Partial<Discount>[] = [{ scope: DiscountScope.GLOBAL }];
+    const scopeConditions: Prisma.DiscountWhereInput[] = [{ scope: DiscountScope.GLOBAL }];
     if (context.productId) {
       scopeConditions.push({
         scope: DiscountScope.PRODUCT,
@@ -367,6 +402,12 @@ export class DiscountService {
       scopeConditions.push({
         scope: DiscountScope.CATEGORY,
         categoryId: context.categoryId,
+      });
+    }
+    if (context.customerId) {
+      scopeConditions.push({
+        scope: DiscountScope.CUSTOMER,
+        customerId: context.customerId,
       });
     }
     const where: Prisma.DiscountWhereInput = {
@@ -415,9 +456,11 @@ export class DiscountService {
   // --- Public Helpers -------------------------------------------
   public async calculateOrderDiscount({
     discountId,
+    customerId,
     items: items,
   }: {
     discountId: number | undefined | null;
+    customerId?: number | null;
     items: {
       productId: number;
       quantity: number;
@@ -433,20 +476,21 @@ export class DiscountService {
       where: { id: { in: items.map((x) => x.productId) } },
     });
     let matchingItems = items;
-    if (discount.scope === DiscountScope.PRODUCT || discount.scope === DiscountScope.CATEGORY) {
-      if (discount.scope === DiscountScope.PRODUCT) {
-        if (discount.productId == null) {
-          throw new UnprocessableEntityException(
-            "Discount Type is Product, but the discount does not have Product Id Saved",
-          );
-        }
-        matchingItems = items.filter((item) => item.productId === discount.productId);
-      } else if (discount.scope === DiscountScope.CATEGORY) {
-        matchingItems = items.filter((item) => {
-          const product = products.find((x) => x.id === item.productId);
-          return product?.categoryId === discount.categoryId;
-        });
+    if (discount.scope === DiscountScope.PRODUCT) {
+      if (discount.productId == null) {
+        throw new UnprocessableEntityException(
+          "Discount Type is Product, but the discount does not have Product Id Saved",
+        );
       }
+      matchingItems = items.filter((item) => item.productId === discount.productId);
+      if (matchingItems.length === 0) {
+        throw new BadRequestException("Discount is not applicable because the required product is not in the order");
+      }
+    } else if (discount.scope === DiscountScope.CATEGORY) {
+      matchingItems = items.filter((item) => {
+        const product = products.find((x) => x.id === item.productId);
+        return product?.categoryId === discount.categoryId;
+      });
       if (matchingItems.length === 0) {
         throw new BadRequestException(
           "Discount is not applicable because no products from the required category are in the order",
@@ -463,6 +507,7 @@ export class DiscountService {
       subtotal,
       productId: discount.productId,
       categoryId: discount.categoryId,
+      customerId: customerId ?? discount.customerId,
     });
 
     return new Prisma.Decimal(discountAmount);
@@ -489,6 +534,14 @@ export class DiscountService {
         break;
       case DiscountScope.GLOBAL:
         // No additional context needed
+        break;
+      case DiscountScope.CUSTOMER:
+        if (!dto.customerId) {
+          throw new BadRequestException("customerId is required when applying a CUSTOMER-scoped discount");
+        }
+        if (discount.customerId != null && discount.customerId !== dto.customerId) {
+          throw new BadRequestException("This discount is not applicable to the specified customer");
+        }
         break;
     }
   }

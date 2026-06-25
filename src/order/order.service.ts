@@ -5,9 +5,8 @@ import { CreateCashierOrderDto, CreateOrderDto } from "./dto/create-order.dto";
 import { UpdateOrderStatusDto } from "./dto/update-order-status.dto";
 import { OrderQueryDto } from "./dto/order-query.dto";
 import { paginated } from "@/common/types/paginated-response";
-import { OrderStatus, Prisma, UserRole } from "@/prisma";
+import { OrderStatus, Prisma, UserRole } from "@/prisma/client";
 import { NotificationsService } from "@/notification/notification.service";
-import { LoyaltyPolicyService } from "@/loyalty-reward/loyalty-policy.service";
 
 type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
 
@@ -29,7 +28,6 @@ export class OrderService {
     private readonly prismaService: PrismaService,
     private readonly discountService: DiscountService,
     private readonly notificationsService: NotificationsService,
-    private readonly loyaltyPolicyService: LoyaltyPolicyService,
   ) {}
 
   public get prisma() {
@@ -50,10 +48,6 @@ export class OrderService {
       include: { user: { select: { id: true, email: true } } },
     });
 
-    if (dto.loyaltyPointsUsed > customer.loyaltyPoints) {
-      throw new BadRequestException("Insufficient loyalty points");
-    }
-
     return this.prisma.$transaction(async (tx) => {
       const lineItems = await this.buildLineItems(tx, dto.items, true);
       const subtotal = lineItems.reduce((sum, item) => sum.add(item.subtotal), new Prisma.Decimal(0));
@@ -63,6 +57,7 @@ export class OrderService {
       if (dto.discountId != undefined) {
         discountAmount = await this.discountService.calculateOrderDiscount({
           discountId: dto.discountId,
+          customerId,
           items: dto.items,
         });
         if (discountAmount.gt(0)) {
@@ -76,7 +71,6 @@ export class OrderService {
           customerId,
           appliedDiscountId,
           subtotal,
-          loyaltyPointsUsed: dto.loyaltyPointsUsed,
           deliveryAddress: dto.deliveryAddress ?? customer.address,
           items: {
             create: lineItems.map((item) => ({
@@ -91,7 +85,7 @@ export class OrderService {
       });
 
       await this.notifyOrderStatus(customer.user.id, customer.user.email, order.id, order.status);
-      return { ...order, discountAmount };
+      return { ...order, discountAmount: discountAmount };
     });
   }
 
@@ -236,19 +230,10 @@ export class OrderService {
         if (order.appliedDiscountId != undefined) {
           discountAmount = await this.discountService.calculateOrderDiscount({
             discountId: order.appliedDiscountId,
+            customerId: order.customerId,
             items: order.items,
           });
         }
-
-        const total = order.subtotal.sub(discountAmount);
-        const loyaltyEarned = await this.loyaltyPolicyService.calculateEarnedPoints(total);
-        await tx.customer.update({
-          where: { id: order.customerId },
-          data: {
-            totalSpent: { increment: total },
-            loyaltyPoints: { increment: loyaltyEarned },
-          },
-        });
 
         // Increment discount usage count
         if (order.appliedDiscountId != undefined) {
@@ -263,21 +248,10 @@ export class OrderService {
         if (order.appliedDiscountId != undefined) {
           discountAmount = await this.discountService.calculateOrderDiscount({
             discountId: order.appliedDiscountId,
+            customerId: order.customerId,
             items: order.items,
           });
         }
-
-        const total = order.subtotal.sub(discountAmount);
-
-        // Reverse customer totals and loyalty points
-        const loyaltyEarned = await this.loyaltyPolicyService.calculateEarnedPoints(total);
-        await tx.customer.update({
-          where: { id: order.customerId },
-          data: {
-            totalSpent: { decrement: total },
-            loyaltyPoints: { decrement: loyaltyEarned },
-          },
-        });
 
         // Decrement discount usage count
         if (order.appliedDiscountId != undefined) {
@@ -286,14 +260,6 @@ export class OrderService {
             data: { usedCount: { decrement: 1 } },
           });
         }
-      }
-
-      // Restore loyalty points used for any cancellation
-      if (dto.status === OrderStatus.CANCELLED && order.loyaltyPointsUsed > 0) {
-        await tx.customer.update({
-          where: { id: order.customerId },
-          data: { loyaltyPoints: { increment: order.loyaltyPointsUsed } },
-        });
       }
 
       await this.notifyOrderStatus(order.customer.user.id, order.customer.user.email, updated.id, updated.status);

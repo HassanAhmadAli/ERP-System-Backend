@@ -1,4 +1,4 @@
-import { InvoiceStatus } from "@/prisma";
+import { InvoiceStatus } from "@/prisma/client";
 import { prisma } from "./client-instance";
 
 export async function seedPurchases() {

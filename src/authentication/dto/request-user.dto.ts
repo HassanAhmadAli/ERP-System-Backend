@@ -1,4 +1,4 @@
-import { UserRole } from "@/prisma";
+import { UserRole } from "@/prisma/client";
 import { z } from "zod";
 
 export const RefreshTokenPayloadSchema = z.object({

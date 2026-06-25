@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { parse } from "csv-parse/sync";
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 import {
   formatProductImportZodError,
   PRODUCT_IMPORT_CSV_COLUMNS,

@@ -2,7 +2,7 @@ import "@/common/env";
 import { phoneNumberSchema } from "@/common/schema/phone-number.schema";
 import { SEED } from "@/openapi/examples";
 import { openapiMeta } from "@/openapi/meta";
-import { UserRole } from "@/prisma";
+import { UserRole } from "@/prisma/client";
 import { z } from "zod";
 import _ from "lodash";
 const staffRoles = _.omit(UserRole, ["CUSTOMER"]);

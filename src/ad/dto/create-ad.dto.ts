@@ -1,6 +1,6 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { AdPlacement } from "@/prisma";
+import { AdPlacement } from "@/prisma/client";
 import { stringToDateSchema } from "@/common/schema/date.schema";
 
 export const CreateAdSchema = z.object({

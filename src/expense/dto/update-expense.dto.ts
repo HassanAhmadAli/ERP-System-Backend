@@ -1,6 +1,6 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 import { stringToDateSchema } from "@/common/schema/date.schema";
 
 export const UpdateExpenseSchema = z.object({

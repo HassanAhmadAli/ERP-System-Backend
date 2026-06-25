@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
 import { NotificationInboxQueryDto } from "./dto/notification-inbox-query.dto";
 import { paginated } from "@/common/types/paginated-response";
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 
 @Injectable()
 export class NotificationInboxService {

@@ -14,8 +14,7 @@ import { seedPurchases } from "./purchases";
 import { seedSales } from "./sales";
 import { seedOrders } from "./orders";
 import { seedExpenses } from "./expenses";
-import { seedLoyaltyRewards } from "./loyalty-rewards";
-import { seedLoyaltyPolicy } from "./loyalty-policy";
+import { seedLoyaltyDiscountOffers } from "./loyalty-offers";
 import { seedNotifications } from "./notifications";
 import { seedAuditLogs } from "./audit-logs";
 import { seedProductPhotos } from "./product-photos";
@@ -35,8 +34,8 @@ async function seed(hashingService: HashingService) {
   await seedSales();
   await seedOrders();
   await seedExpenses();
-  await seedLoyaltyRewards();
-  await seedLoyaltyPolicy();
+  await seedLoyaltyDiscountOffers();
+
   await seedAds();
   await seedProductImportJobs();
   await seedNotifications();

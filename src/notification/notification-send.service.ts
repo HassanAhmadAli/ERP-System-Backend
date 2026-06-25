@@ -3,7 +3,7 @@ import { PrismaService } from "@/prisma/prisma.service";
 import { SendNotificationDto } from "./dto/send-notification.dto";
 import { paginated } from "@/common/types/paginated-response";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
-import { NotificationTargetType, UserRole } from "@/prisma";
+import { NotificationTargetType, UserRole } from "@/prisma/client";
 import { NotificationsService } from "./notification.service";
 import { Notification } from "./notification.interface";
 @Injectable()

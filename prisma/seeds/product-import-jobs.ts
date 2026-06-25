@@ -1,4 +1,4 @@
-import { ProductImportStatus } from "@/prisma";
+import { ProductImportStatus } from "@/prisma/client";
 import { prisma } from "./client-instance";
 
 export const productImportJobsData = [

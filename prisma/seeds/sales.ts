@@ -1,4 +1,4 @@
-import { InvoiceStatus } from "@/prisma";
+import { InvoiceStatus } from "@/prisma/client";
 import { prisma } from "./client-instance";
 
 export async function seedSales() {
@@ -11,7 +11,6 @@ export async function seedSales() {
       subtotal: "29.99",
       discountAmount: "3.00",
       total: "26.99",
-      amountPaid: "26.99",
       status: InvoiceStatus.COMPLETED,
       createdAt: new Date("2025-04-01T14:30:00.000Z"),
       items: {
@@ -38,7 +37,6 @@ export async function seedSales() {
       subtotal: "9.98",
       discountAmount: "0.00",
       total: "9.98",
-      amountPaid: "0.00",
       status: InvoiceStatus.PENDING,
       createdAt: new Date("2025-04-20T11:00:00.000Z"),
       items: {
@@ -65,7 +63,6 @@ export async function seedSales() {
       subtotal: "4.99",
       discountAmount: "0.00",
       total: "4.99",
-      amountPaid: "4.99",
       status: InvoiceStatus.REFUNDED,
       createdAt: new Date("2025-04-19T15:00:00.000Z"),
       items: {

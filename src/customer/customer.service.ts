@@ -1,12 +1,13 @@
-import { PrismaService, UserRole } from "@/prisma";
+import { UserRole, DiscountScope, Prisma } from "@/prisma/client";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { UpdateCustomerProfileDto } from "./dto/update-profile.dto";
 import { CustomerListQueryDto } from "./dto/customer-list-query.dto";
 import { AdjustCustomerLoyaltyDto } from "./dto/adjust-customer-loyalty.dto";
 import { UpdateCustomerStatusDto } from "./dto/update-customer-status.dto";
-import { Prisma } from "@/prisma";
 import { paginated } from "@/common/types/paginated-response";
 import { deletedAt } from "@/common/dto/pagination-query.dto";
+import { AuditAction } from "@/common/const";
+import { PrismaService } from "@/prisma/prisma.service";
 
 @Injectable()
 export class CustomerService {
@@ -25,6 +26,7 @@ export class CustomerService {
         customer: {
           where: { userId },
           select: {
+            id: true,
             address: true,
             loyaltyPoints: true,
             totalSpent: true,
@@ -32,7 +34,38 @@ export class CustomerService {
         },
       },
     });
-    return user;
+
+    const customerId = user.customer?.id;
+    const activeDiscounts =
+      customerId != undefined
+        ? await this.prisma.discount.findMany({
+            where: {
+              scope: DiscountScope.CUSTOMER,
+              customerId,
+              isActive: true,
+              startDate: { lte: new Date() },
+              OR: [{ endDate: null }, { endDate: { gte: new Date() } }],
+              AND: [
+                {
+                  OR: [{ maxUses: null }, { usedCount: { lt: this.prisma.discount.fields.maxUses } }],
+                },
+              ],
+            },
+            select: {
+              id: true,
+              name: true,
+              type: true,
+              value: true,
+              maxUses: true,
+              usedCount: true,
+              startDate: true,
+              endDate: true,
+            },
+            orderBy: { endDate: "asc" },
+          })
+        : [];
+
+    return { ...user, activeDiscounts };
   }
 
   async updateProfile(userId: number, dto: UpdateCustomerProfileDto) {
@@ -166,9 +199,9 @@ export class CustomerService {
       await tx.auditLog.create({
         data: {
           userId: actorUserId,
-          action: "LOYALTY_ADJUSTMENT",
+          action: AuditAction.LOYALTY_ADJUSTMENT,
           entity: UserRole.CUSTOMER,
-          entityId: customerId,
+          entityId: String(customerId),
           oldValue: { loyaltyPoints: customer.loyaltyPoints, reason: dto.reason ?? null },
           newValue: { loyaltyPoints: nextPoints, delta: dto.points, reason: dto.reason ?? null },
         },

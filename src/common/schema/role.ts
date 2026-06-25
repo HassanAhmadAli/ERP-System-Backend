@@ -1,4 +1,4 @@
-import { UserRole } from "@/prisma";
+import { UserRole } from "@/prisma/client";
 import z from "zod";
 import { emptyStringToUndefined } from "./helper";
 export const UserRoleSchema = z.enum(UserRole);

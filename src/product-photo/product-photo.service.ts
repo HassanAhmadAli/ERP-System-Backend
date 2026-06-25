@@ -1,4 +1,4 @@
-import { PrismaService } from "@/prisma";
+import { PrismaService } from "@/prisma/prisma.service";
 import { normalizeUploadPath, resolveUploadPath } from "@/upload/resolve-upload-path";
 import { Injectable, NotFoundException, StreamableFile } from "@nestjs/common";
 import { createReadStream } from "node:fs";

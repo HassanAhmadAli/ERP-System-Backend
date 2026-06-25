@@ -1,4 +1,4 @@
-import { AdPlacement } from "@/prisma";
+import { AdPlacement } from "@/prisma/client";
 import { prisma } from "./client-instance";
 
 export const adsData = [

@@ -59,6 +59,7 @@ enum DiscountScope {
   GLOBAL
   CATEGORY
   PRODUCT
+  CUSTOMER
 }
 
 enum OrderStatus {
@@ -131,17 +132,23 @@ model Customer {
 
   salesInvoices SalesInvoice[]
   orders        Order[]
+
+  discounts          Discount[]
+  loyaltyRedemptions LoyaltyRedemption[]
 }
 
 //// Products
 
 model Category {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
-  description String?
+  id           Int     @id @default(autoincrement())
+  name         String  @unique
+  description  String?
+  imageUrl     String?
+  storedFileId String? @unique
 
-  products  Product[]
-  discounts Discount[]
+  storedFile StoredFile? @relation(fields: [storedFileId], references: [id])
+  products   Product[]
+  discounts  Discount[]
 }
 
 model Supplier {
@@ -191,7 +198,6 @@ model SalesInvoice {
   subtotal       Decimal       @db.Decimal(12, 2)
   discountAmount Decimal       @default(0) @db.Decimal(12, 2)
   total          Decimal       @db.Decimal(12, 2)
-  amountPaid     Decimal       @db.Decimal(12, 2)
   status         InvoiceStatus @default(PENDING)
   createdAt      DateTime      @default(now())
 
@@ -250,11 +256,11 @@ model Order {
   appliedDiscountId Int?
 
   subtotal Decimal @db.Decimal(12, 2)
-  loyaltyPointsUsed Int         @default(0)
-  deliveryAddress   String?
-  status            OrderStatus @default(PENDING)
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+
+  deliveryAddress String?
+  status          OrderStatus @default(PENDING)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   customer        Customer    @relation(fields: [customerId], references: [id])
   appliedDiscount Discount?   @relation(fields: [appliedDiscountId], references: [id])
@@ -290,22 +296,46 @@ model Discount {
   createdById     Int
   productId       Int?
   categoryId      Int?
+  customerId      Int?
 
   createdAt DateTime @default(now())
 
-  createdBy     User           @relation(fields: [createdById], references: [id])
-  product       Product?       @relation(fields: [productId], references: [id])
-  category      Category?      @relation(fields: [categoryId], references: [id])
-  salesInvoices SalesInvoice[]
-  orders        Order[]
+  createdBy          User                @relation(fields: [createdById], references: [id])
+  product            Product?            @relation(fields: [productId], references: [id])
+  category           Category?           @relation(fields: [categoryId], references: [id])
+  customer           Customer?           @relation(fields: [customerId], references: [id])
+  salesInvoices      SalesInvoice[]
+  orders             Order[]
+  loyaltyRedemptions LoyaltyRedemption[]
 }
 
-model LoyaltyReward {
-  id                String  @id @default(uuid())
-  pointsThreshold   Int
-  rewardDescription String
-  discountValue     Decimal @db.Decimal(12, 2)
-  isActive          Boolean @default(true)
+model LoyaltyDiscountOffer {
+  id            String       @id @default(uuid())
+  name          String
+  description   String?
+  pointsCost    Int
+  discountType  DiscountType
+  discountValue Decimal      @db.Decimal(12, 2)
+  maxUses       Int          @default(1)
+  validityDays  Int          @default(7)
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  redemptions LoyaltyRedemption[]
+}
+
+model LoyaltyRedemption {
+  id          String   @id @default(uuid())
+  customerId  Int
+  offerId     String
+  discountId  Int
+  pointsSpent Int
+  redeemedAt  DateTime @default(now())
+
+  customer Customer             @relation(fields: [customerId], references: [id])
+  offer    LoyaltyDiscountOffer @relation(fields: [offerId], references: [id])
+  discount Discount             @relation(fields: [discountId], references: [id])
 }
 
 // Notifications
@@ -380,7 +410,7 @@ model AuditLog {
   userId      Int
   action      String
   entity      String
-  entityId    Int
+  entityId    String
   oldValue    Json?
   newValue    Json?
   performedAt DateTime @default(now())
@@ -432,6 +462,7 @@ model StoredFile {
   size         Int
 
   productPhotos ProductPhoto[]
+  category      Category?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

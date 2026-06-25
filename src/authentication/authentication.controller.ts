@@ -8,7 +8,7 @@ import { RefreshTokenDto } from "./dto/refresh-token.dto";
 import { SignoutDto } from "./dto/signout.dto";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { CustomerAuthenticationService } from "./customer.authentication.service";
-import { UserRole } from "@/prisma";
+import { UserRole } from "@/prisma/client";
 import { DocumentBody, DocumentCreatedResponse, DocumentOkResponse, DocumentOperation } from "@/openapi/decorators";
 import { AuthTokensDto, MessageResponseDto } from "@/openapi/dto/responses.dto";
 

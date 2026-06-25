@@ -1,5 +1,5 @@
 import { envSchema } from "@/common/schema/env";
-import { PrismaClient } from "@/prisma";
+import { PrismaClient } from "@/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 const { DATABASE_URL } = envSchema
   .pick({

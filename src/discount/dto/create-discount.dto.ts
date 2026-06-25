@@ -1,6 +1,6 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { DiscountScope, DiscountType, Prisma } from "@/prisma";
+import { DiscountScope, DiscountType, Prisma } from "@/prisma/client";
 import { stringToDateSchema } from "@/common/schema/date.schema";
 
 export const CreateDiscountSchema = z
@@ -23,6 +23,7 @@ export const CreateDiscountSchema = z
     isActive: z.boolean().default(true),
     productId: z.coerce.number().int().positive().nullish(),
     categoryId: z.coerce.number().int().positive().nullish(),
+    customerId: z.coerce.number().int().positive().nullish(),
   })
   .refine(
     (data) => {
@@ -61,6 +62,21 @@ export const CreateDiscountSchema = z
     {
       message: "categoryId is required for CATEGORY scope and must not be provided for other scopes",
       path: ["categoryId"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.scope === DiscountScope.CUSTOMER && data.customerId == undefined) {
+        return false;
+      }
+      if (data.scope !== DiscountScope.CUSTOMER && data.customerId != undefined) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message: "customerId is required for CUSTOMER scope and must not be provided for other scopes",
+      path: ["customerId"],
     },
   )
   .refine(

@@ -33,10 +33,11 @@ import { PurchaseModule } from "./purchase/purchase.module";
 import { ExpenseModule } from "./expense/expense.module";
 import { ReportModule } from "./report/report.module";
 import { HealthController } from "./health/health.controller";
-import { LoyaltyRewardModule } from "./loyalty-reward/loyalty-reward.module";
+import { LoyaltyRewardModule } from "./loyalty-offers/loyalty-discount-offer.module";
 import { AuditLogModule } from "./audit-log/audit-log.module";
 import { AdModule } from "./ad/ad.module";
 import { FinancialModule } from "./financial/financial.module";
+import { AuditContextInterceptor } from "./audit-log/audit-context.interceptor";
 
 @Module({
   imports: [
@@ -121,6 +122,10 @@ import { FinancialModule } from "./financial/financial.module";
     {
       provide: APP_INTERCEPTOR,
       useClass: TimeoutInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AuditContextInterceptor,
     },
   ],
 })

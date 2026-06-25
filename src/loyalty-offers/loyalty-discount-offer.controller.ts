@@ -1,10 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { LoyaltyRewardService } from "./loyalty-reward.service";
-import { LoyaltyPolicyService } from "./loyalty-policy.service";
-import { CreateLoyaltyRewardDto } from "./dto/create-loyalty-reward.dto";
-import { UpdateLoyaltyRewardDto } from "./dto/update-loyalty-reward.dto";
-import { UpdateLoyaltyPolicyDto } from "./dto/update-loyalty-policy.dto";
+import { CreateLoyaltyRewardDto } from "./dto/create-discount-offer.dto";
+import { UpdateLoyaltyRewardDto } from "./dto/update-discount-offer.dto";
+import { RedeemLoyaltyOfferDto } from "./dto/redeem-discount-offer.dto";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
 import { Permissions } from "@/access-control/permission.type";
@@ -18,32 +16,13 @@ import {
   DocumentParam,
 } from "@/openapi/decorators";
 import { MessageResponseDto } from "@/openapi/dto/responses.dto";
+import { LoyaltyRewardService } from "./loyalty-discount-offer.service";
 
 @ApiTags("Loyalty Rewards")
 @ApiAuth()
 @Controller("loyalty-rewards")
 export class LoyaltyRewardController {
-  constructor(
-    private readonly loyaltyRewardService: LoyaltyRewardService,
-    private readonly loyaltyPolicyService: LoyaltyPolicyService,
-  ) {}
-
-  @Get("policy")
-  @setPermissions(Permissions.manageLoyaltyRewards)
-  @DocumentOperation("Get loyalty points policy")
-  @DocumentOkResponse("Loyalty policy")
-  getPolicy() {
-    return this.loyaltyPolicyService.getPolicy();
-  }
-
-  @Patch("policy")
-  @setPermissions(Permissions.manageLoyaltyPolicy)
-  @DocumentOperation("Update loyalty points policy")
-  @DocumentBody(UpdateLoyaltyPolicyDto)
-  @DocumentOkResponse("Policy updated")
-  updatePolicy(@Body() dto: UpdateLoyaltyPolicyDto) {
-    return this.loyaltyPolicyService.updatePolicy(dto);
-  }
+  constructor(private readonly loyaltyRewardService: LoyaltyRewardService) {}
 
   @Get("available")
   @setPermissions(Permissions.viewAvailableLoyaltyRewards)
@@ -51,6 +30,15 @@ export class LoyaltyRewardController {
   @DocumentOkResponse("Rewards with canRedeem flag")
   findAvailable(@ActiveUser("sub") userId: number, @Query() query: PaginationQueryDto) {
     return this.loyaltyRewardService.findAvailableForCustomer(userId, query);
+  }
+
+  @Post("redeem")
+  @setPermissions(Permissions.viewAvailableLoyaltyRewards)
+  @DocumentOperation("Redeem loyalty points for a customer discount")
+  @DocumentBody(RedeemLoyaltyOfferDto)
+  @DocumentCreatedResponse("Redemption created with customer discount")
+  redeem(@ActiveUser("sub") userId: number, @Body() dto: RedeemLoyaltyOfferDto) {
+    return this.loyaltyRewardService.redeem(userId, dto);
   }
 
   @Post()

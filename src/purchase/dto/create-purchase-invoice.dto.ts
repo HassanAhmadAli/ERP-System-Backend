@@ -1,7 +1,7 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 import { stringToDateSchema } from "@/common/schema/date.schema";
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 export const PurchaseItemInputSchema = z.object({
   productId: z.coerce.number().int().positive(),
   quantity: z.coerce.number().int().positive(),

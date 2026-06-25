@@ -1,6 +1,6 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { DiscountScope, DiscountType, Prisma } from "@/prisma";
+import { DiscountScope, DiscountType, Prisma } from "@/prisma/client";
 import { stringToDateSchema } from "@/common/schema/date.schema";
 export const UpdateDiscountSchema = z.object({
   name: z.string().min(2).max(100).optional(),
@@ -22,5 +22,6 @@ export const UpdateDiscountSchema = z.object({
   isActive: z.boolean().optional(),
   productId: z.coerce.number().int().positive().nullish(),
   categoryId: z.coerce.number().int().positive().nullish(),
+  customerId: z.coerce.number().int().positive().nullish(),
 });
 export class UpdateDiscountDto extends createZodDto(UpdateDiscountSchema) {}

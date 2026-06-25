@@ -1,6 +1,7 @@
 import "@total-typescript/ts-reset";
 import Pino from "pino";
 import PinoPretty from "pino-pretty";
+import { Prisma } from "./prisma/client";
 export const getKeyOf = <T extends object>(obj: T) => {
   return Object.keys(obj) as (keyof typeof obj)[];
 };
@@ -65,4 +66,10 @@ export function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes}(B)`;
   if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)}(KB)`;
   return `${(bytes / 1048576).toFixed(1)}(MB)`;
+}
+
+export function convertObjecttoDbJson(val: unknown) {
+  if (val === undefined) return undefined;
+  if (val === null) return Prisma.DbNull;
+  return JSON.parse(JSON.stringify(val)) as Prisma.InputJsonValue;
 }

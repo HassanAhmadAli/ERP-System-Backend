@@ -1,4 +1,4 @@
-import { DiscountScope, DiscountType } from "@/prisma";
+import { DiscountScope, DiscountType } from "@/prisma/client";
 import { prisma } from "./client-instance";
 
 export const discountsData = [

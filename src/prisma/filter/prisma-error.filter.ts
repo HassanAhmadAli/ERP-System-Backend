@@ -5,7 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import { PrismaClientKnownRequestError } from "@/prisma";
+import { PrismaClientKnownRequestError } from "@/prisma/client";
 import { logger } from "@/utils";
 import { AppBaseExceptionFilter } from "@/common/app_filter";
 

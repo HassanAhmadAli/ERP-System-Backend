@@ -7,7 +7,7 @@ import { OrderQueryDto } from "./dto/order-query.dto";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
 import { Permissions } from "@/access-control/permission.type";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
-import { UserRole } from "@/prisma";
+import { UserRole } from "@/prisma/client";
 import {
   ApiAuth,
   DocumentBody,

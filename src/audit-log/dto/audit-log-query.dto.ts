@@ -6,6 +6,7 @@ import { stringToDateSchema } from "@/common/schema/date.schema";
 export const AuditLogQuerySchema = PaginationQuerySchema.extend({
   userId: z.coerce.number().int().positive().optional(),
   entity: z.string().optional(),
+  action: z.string().optional(),
   from: stringToDateSchema.optional(),
   to: stringToDateSchema.optional(),
 });

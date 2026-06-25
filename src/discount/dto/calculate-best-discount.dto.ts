@@ -1,4 +1,4 @@
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 import { SEED } from "@/openapi/examples";
 import { openapiMeta } from "@/openapi/meta";
 import { createZodDto } from "nestjs-zod";
@@ -12,9 +12,8 @@ export const CalculateBestDiscountSchema = openapiMeta(
   }),
   "CalculateBestDiscountDto",
   {
-    discountId: SEED.discountId,
     subtotal: 29.99,
-    // customerId: SEED.customerId,
+    customerId: SEED.customerId,
     productId: SEED.productId,
   },
 );

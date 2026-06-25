@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { Namespace, Socket } from "socket.io";
 import { MessageBody } from "@nestjs/websockets";
-import { PrismaService } from "@/prisma";
+import { PrismaService } from "@/prisma/prisma.service";
 import { ActiveUserSchema } from "@/authentication/dto/request-user.dto";
 import { AppCachingService } from "@/caching/caching.service";
 import { NotificationConsumer } from "./notification.consumer";

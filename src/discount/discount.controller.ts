@@ -7,7 +7,7 @@ import { CalculateDiscountDto } from "./dto/calculate-discount.dto";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
 import { Permissions } from "@/access-control/permission.type";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
-import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
+import { ActiveUser, type ActiveUserType } from "@/common/decorators/ActiveUser.decorator";
 import { SearchQueryDto } from "@/common/dto/search-query.dto";
 import { ToggleActiveDiscountDto } from "./dto/toggle-active.dto";
 import {
@@ -19,6 +19,7 @@ import {
   DocumentParam,
 } from "@/openapi/decorators";
 import { CalculateBestDiscountDto } from "./dto/calculate-best-discount.dto";
+import { UserRole } from "@/prisma/client";
 
 @ApiTags("Discounts")
 @ApiAuth()
@@ -46,8 +47,19 @@ export class DiscountController {
   @Get("active")
   @DocumentOperation("List active discounts", "Valid for current date; usable by customers at checkout.")
   @DocumentOkResponse("Paginated active discounts")
-  getActiveDiscounts(@Query() paginationQuery: PaginationQueryDto) {
-    return this.discountService.getActiveDiscounts(paginationQuery);
+  async getActiveDiscounts(@Query() paginationQuery: PaginationQueryDto, @ActiveUser() activeUser: ActiveUserType) {
+    if (activeUser.role === UserRole.CUSTOMER) {
+      const { id: customerId } = await this.discountService.prisma.customer.findUniqueOrThrow({
+        where: {
+          userId: activeUser.sub,
+        },
+        select: {
+          id: true,
+        },
+      });
+      return await this.discountService.getActiveDiscounts(paginationQuery, customerId);
+    }
+    return await this.discountService.getActiveDiscounts(paginationQuery, undefined);
   }
 
   @Get(":id")
@@ -100,8 +112,24 @@ export class DiscountController {
   @DocumentOperation("Find best applicable discount", "Evaluates scope rules for customer/product/category.")
   @DocumentBody(CalculateDiscountDto)
   @DocumentOkResponse("Best discount or null")
-  getBestDiscount(@Body() calculateDiscountDto: CalculateBestDiscountDto) {
-    return this.discountService.getBestDiscount(calculateDiscountDto.subtotal, {
+  async getBestDiscount(
+    @Body() calculateDiscountDto: CalculateBestDiscountDto,
+    @ActiveUser() activeUser: ActiveUserType,
+  ) {
+    let customerId = undefined;
+    if (activeUser.role === UserRole.CUSTOMER) {
+      const customer = await this.discountService.prisma.customer.findUniqueOrThrow({
+        where: {
+          userId: activeUser.sub,
+        },
+        select: {
+          id: true,
+        },
+      });
+      customerId = customer.id;
+    }
+    return await this.discountService.getBestDiscount(calculateDiscountDto.subtotal, {
+      customerId,
       productId: calculateDiscountDto.productId,
       categoryId: calculateDiscountDto.categoryId,
     });

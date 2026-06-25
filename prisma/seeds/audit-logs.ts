@@ -1,4 +1,4 @@
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 import { prisma } from "./client-instance";
 
 export const auditLogsData = [
@@ -7,7 +7,7 @@ export const auditLogsData = [
     userId: 1,
     action: "CREATE",
     entity: "Product",
-    entityId: 1,
+    entityId: "1",
     oldValue: Prisma.JsonNull,
     newValue: { name: "Wireless Mouse", barcode: "100000000001" },
     performedAt: new Date("2025-01-15T10:00:00.000Z"),
@@ -17,7 +17,7 @@ export const auditLogsData = [
     userId: 3,
     action: "UPDATE",
     entity: "Order",
-    entityId: 2,
+    entityId: "2",
     oldValue: { status: "PENDING" },
     newValue: { status: "PREPARING" },
     performedAt: new Date("2025-04-21T08:30:00.000Z"),

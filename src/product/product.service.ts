@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, ConflictException } from "@nestjs/comm
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
-import { Prisma } from "@/prisma";
+import { Prisma } from "@/prisma/client";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { paginated } from "@/common/types/paginated-response";
 

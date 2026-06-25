@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { Prisma, PrismaService, UserRole } from "@/prisma";
+import { PrismaService } from "@/prisma/prisma.service";
+import { Prisma, UserRole } from "@/prisma/client";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { AppCachingService } from "@/caching/caching.service";
 import { deletedAt, PaginationQueryDto } from "@/common/dto/pagination-query.dto";

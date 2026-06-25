@@ -1,3 +1,4 @@
+import { UserRole } from "@/prisma/client";
 export const Keys = {
   IsPublic: Symbol("Is_Public"),
   Roles: Symbol("Roles_Key"),
@@ -28,3 +29,20 @@ export const ErrorMessages = {
   INVALIDE_ACCESS_TOKEN: "Invalid Access Token",
   INVALID_TOKEN: "Invalid Token",
 } as const;
+
+export const STAFF_ROLES: UserRole[] = [
+  UserRole.CASHIER,
+  UserRole.WAREHOUSE_WORKER,
+  UserRole.ACCOUNTANT,
+  UserRole.STORE_MANAGER,
+];
+
+export const AuditAction = {
+  CREATE: "CREATE",
+  UPDATE: "UPDATE",
+  DELETE: "DELETE",
+  LOYALTY_ADJUSTMENT: "LOYALTY_ADJUSTMENT",
+  LOYALTY_REDEMPTION: "LOYALTY_REDEMPTION",
+} as const;
+
+export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction];

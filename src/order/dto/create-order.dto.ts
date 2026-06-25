@@ -10,14 +10,12 @@ export const OrderItemInputSchema = z.object({
 
 const CreateOrderBaseSchema = z.object({
   discountId: z.coerce.number().int().positive().nullish(),
-  loyaltyPointsUsed: z.coerce.number().int().min(0).default(0),
   deliveryAddress: z.string().min(1).optional(),
   items: z.array(OrderItemInputSchema).min(1),
 });
 
 export const CreateOrderSchema = openapiMeta(CreateOrderBaseSchema, "CreateOrderDto", {
   discountId: SEED.discountId,
-  loyaltyPointsUsed: 0,
   deliveryAddress: "123 Main St, Springfield",
   items: [{ productId: SEED.productId2, quantity: 2 }],
 });
@@ -29,7 +27,6 @@ export const CreateCashierOrderSchema = openapiMeta(
   "CreateCashierOrderDto",
   {
     customerId: SEED.customerId,
-    loyaltyPointsUsed: 0,
     items: [{ productId: SEED.productId, quantity: 1 }],
   },
 );

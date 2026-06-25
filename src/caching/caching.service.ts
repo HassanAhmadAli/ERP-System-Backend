@@ -1,4 +1,4 @@
-import { PrismaService } from "@/prisma";
+import { PrismaService } from "@/prisma/prisma.service";
 import { logger } from "@/utils";
 import { Cache } from "@nestjs/cache-manager";
 import { BadRequestException, Injectable } from "@nestjs/common";
