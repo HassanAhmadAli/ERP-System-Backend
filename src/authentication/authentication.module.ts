@@ -7,10 +7,19 @@ import { NotificationsModule } from "@/notification/notification.module";
 import { HashingModule } from "@/hashing/hashing.module";
 import { CustomerAuthenticationService } from "./customer.authentication.service";
 import { JwtStrategy } from "./strategies/jwt.strategy";
+import { LocalStrategy } from "./strategies/local.strategy";
+import { JwtRefreshStrategy } from "./strategies/jwt-refresh.strategy";
 
 @Module({
   controllers: [AuthenticationController],
-  providers: [RefreshTokenIdsStorage, CustomerAuthenticationService, AuthenticationService, JwtStrategy],
+  providers: [
+    RefreshTokenIdsStorage,
+    CustomerAuthenticationService,
+    AuthenticationService,
+    JwtStrategy,
+    LocalStrategy,
+    JwtRefreshStrategy,
+  ],
   imports: [HashingModule, NotificationsModule, PassportModule.register({ defaultStrategy: "jwt" })],
   exports: [HashingModule, AuthenticationService],
 })

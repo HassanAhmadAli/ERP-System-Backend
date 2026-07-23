@@ -14,7 +14,7 @@ export class UserLanguageResolver implements I18nResolver {
   }
   private decodeLanguageFromToken(token: string | undefined) {
     if (token == undefined) return undefined;
-    const payload = this.parseBase64(token);
+    const payload = this.parseToken(token);
     if (
       payload != undefined &&
       typeof payload === "object" &&
@@ -25,7 +25,7 @@ export class UserLanguageResolver implements I18nResolver {
     }
     return undefined;
   }
-  private parseBase64(token: string) {
+  private parseToken(token: string) {
     try {
       const parts = token.split(".");
       if (parts.length !== 3) return undefined;

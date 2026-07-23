@@ -1,5 +1,7 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 import { ApiTags } from "@nestjs/swagger";
+import type { Request } from "express";
 import { SigninDto } from "./dto/signin.dto";
 import { CustomerSignupDto } from "./dto/customer-signup.dto";
 import { AuthenticationService } from "./authentication.service";
@@ -11,6 +13,7 @@ import { CustomerAuthenticationService } from "./customer.authentication.service
 import { UserRole } from "@/prisma/client";
 import { DocumentBody, DocumentCreatedResponse, DocumentOkResponse, DocumentOperation } from "@/openapi/decorators";
 import { AuthTokensDto, MessageResponseDto } from "@/openapi/dto/responses.dto";
+import type { ActiveUserType, RefreshTokenPayload } from "./dto/request-user.dto";
 
 @Public()
 @ApiTags("Authentication")
@@ -21,54 +24,71 @@ export class AuthenticationController {
     private readonly customerAuthenticationService: CustomerAuthenticationService,
   ) {}
 
+  @UseGuards(AuthGuard("local"))
   @HttpCode(HttpStatus.OK)
   @Post("customer/signin")
   @DocumentOperation("Customer sign in", "Authenticate a customer account and receive JWT tokens.")
   @DocumentBody(SigninDto)
   @DocumentOkResponse("Access and refresh tokens", AuthTokensDto)
-  async customerSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.CUSTOMER);
+  async customerSignin(@Body() _signinDto: SigninDto, @Req() req: Request) {
+    const { access_token, refresh_token } = await this.authenticationService.signIn(
+      req.user as ActiveUserType,
+      UserRole.CUSTOMER,
+    );
     return { access_token, refresh_token };
   }
 
+  @UseGuards(AuthGuard("local"))
   @HttpCode(HttpStatus.OK)
   @Post("cashier/signin")
   @DocumentOperation("Cashier sign in")
   @DocumentBody(SigninDto)
   @DocumentOkResponse("Access and refresh tokens", AuthTokensDto)
-  async cashierSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.CASHIER);
+  async cashierSignin(@Body() _signinDto: SigninDto, @Req() req: Request) {
+    const { access_token, refresh_token } = await this.authenticationService.signIn(
+      req.user as ActiveUserType,
+      UserRole.CASHIER,
+    );
     return { access_token, refresh_token };
   }
 
+  @UseGuards(AuthGuard("local"))
   @HttpCode(HttpStatus.OK)
   @Post("store-manager/signin")
   @DocumentOperation("Store manager sign in")
   @DocumentBody(SigninDto)
   @DocumentOkResponse("Access and refresh tokens", AuthTokensDto)
-  async storeManagerSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.STORE_MANAGER);
+  async storeManagerSignin(@Body() _signinDto: SigninDto, @Req() req: Request) {
+    const { access_token, refresh_token } = await this.authenticationService.signIn(
+      req.user as ActiveUserType,
+      UserRole.STORE_MANAGER,
+    );
     return { access_token, refresh_token };
   }
 
+  @UseGuards(AuthGuard("local"))
   @HttpCode(HttpStatus.OK)
   @Post("accountant/signin")
   @DocumentOperation("Accountant sign in")
   @DocumentBody(SigninDto)
   @DocumentOkResponse("Access and refresh tokens", AuthTokensDto)
-  async accountantSignin(@Body() signinDto: SigninDto) {
-    const { access_token, refresh_token } = await this.authenticationService.signIn(signinDto, UserRole.ACCOUNTANT);
+  async accountantSignin(@Body() _signinDto: SigninDto, @Req() req: Request) {
+    const { access_token, refresh_token } = await this.authenticationService.signIn(
+      req.user as ActiveUserType,
+      UserRole.ACCOUNTANT,
+    );
     return { access_token, refresh_token };
   }
 
+  @UseGuards(AuthGuard("local"))
   @HttpCode(HttpStatus.OK)
   @Post("warehouse-worker/signin")
   @DocumentOperation("Warehouse worker sign in")
   @DocumentBody(SigninDto)
   @DocumentOkResponse("Access and refresh tokens", AuthTokensDto)
-  async warehouseWorkerSignin(@Body() signinDto: SigninDto) {
+  async warehouseWorkerSignin(@Body() _signinDto: SigninDto, @Req() req: Request) {
     const { access_token, refresh_token } = await this.authenticationService.signIn(
-      signinDto,
+      req.user as ActiveUserType,
       UserRole.WAREHOUSE_WORKER,
     );
     return { access_token, refresh_token };
@@ -90,21 +110,23 @@ export class AuthenticationController {
     return this.authenticationService.verifyEmail(verifyEmailDto);
   }
 
+  @UseGuards(AuthGuard("jwt-refresh"))
   @HttpCode(HttpStatus.OK)
   @Post("refresh-tokens")
   @DocumentOperation("Refresh access token")
   @DocumentBody(RefreshTokenDto)
   @DocumentOkResponse("New access and refresh tokens", AuthTokensDto)
-  refreshTokens(@Body() refreshTokensDto: RefreshTokenDto) {
-    return this.authenticationService.refreshTokens(refreshTokensDto);
+  refreshTokens(@Body() _refreshTokensDto: RefreshTokenDto, @Req() req: Request) {
+    return this.authenticationService.refreshTokens(req.user as RefreshTokenPayload);
   }
 
+  @UseGuards(AuthGuard("jwt-refresh"))
   @HttpCode(HttpStatus.OK)
   @Post("signout")
   @DocumentOperation("Sign out", "Revoke the refresh token for this session.")
   @DocumentBody(SignoutDto)
   @DocumentOkResponse("Signed out", MessageResponseDto)
-  signout(@Body() signoutDto: SignoutDto) {
-    return this.authenticationService.signout(signoutDto);
+  signout(@Body() _signoutDto: SignoutDto, @Req() req: Request) {
+    return this.authenticationService.signout(req.user as RefreshTokenPayload);
   }
 }

@@ -22,10 +22,15 @@ export class CustomerAuthenticationService {
       select: { id: true },
       where: { email: signupDto.email },
     });
-    await this.prisma.customer.create({
-      data: {
+
+    await this.prisma.customer.upsert({
+      where: { userId },
+      create: {
         address,
         userId,
+      },
+      update: {
+        address,
       },
     });
     return res;

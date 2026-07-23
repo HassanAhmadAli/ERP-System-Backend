@@ -14,7 +14,7 @@ export class AuthenticationGuard extends AuthGuard("jwt") {
     private readonly reflector: Reflector,
     private readonly i18n: I18nService<I18nTranslations>,
   ) {
-    super();
+    super("jwt");
   }
 
   override async canActivate(context: ExecutionContext) {

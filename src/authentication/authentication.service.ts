@@ -1,17 +1,20 @@
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { HashingService } from "@/hashing/hashing.service";
 import { SignupDto } from "./dto/signinup.dto";
-import { SigninDto } from "./dto/signin.dto";
 import { DurationType } from "@/common/schema/duration-schema";
-import { RefreshTokenDto } from "./dto/refresh-token.dto";
-import { ActiveUserSchema, RefreshTokenPayloadSchema, ActiveUserInput } from "./dto/request-user.dto";
+import {
+  ActiveUserSchema,
+  RefreshTokenPayloadSchema,
+  ActiveUserInput,
+  ActiveUserType,
+  RefreshTokenPayload,
+} from "./dto/request-user.dto";
 import { randomUUID, randomInt } from "node:crypto";
 import { RefreshTokenIdsStorage } from "./refresh-token-ids.storage";
 import { Prisma, User, UserRole } from "@/prisma/client";
 import { PrismaService } from "@/prisma/prisma.service";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
-import { SignoutDto } from "./dto/signout.dto";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { logger } from "@/utils";
 import { Cache } from "@nestjs/cache-manager";
@@ -181,58 +184,28 @@ export class AuthenticationService {
     return;
   }
 
-  async signIn({ email, password: rawPassword }: SigninDto, expectedRole: UserRole | undefined) {
-    const user = await this.prisma.user.findUniqueOrThrow({
-      where: {
-        email,
-      },
-      select: {
-        passwordHash: true,
-        id: true,
-        role: true,
-        isVerified: true,
-        language: true,
-      },
-    });
-
+  async signIn(user: ActiveUserType, expectedRole: UserRole | undefined) {
     if (expectedRole != undefined && user.role !== expectedRole) {
-      throw new UnauthorizedException(this.i18n.t("errors.auth.invalidCredentials"));
-    }
-
-    if (!user.isVerified) {
-      throw new UnauthorizedException(this.i18n.t("errors.auth.emailNotVerified"));
-    }
-
-    const doesPasswordMatch = await this.hashingService.compare({
-      raw: rawPassword,
-      encrypted: user.passwordHash,
-    });
-
-    if (!doesPasswordMatch) {
-      const userId = user.id;
-      await this.handlePasswordNotMatch({ email, userId });
-      throw new UnauthorizedException(this.i18n.t("errors.auth.passwordIncorrect"));
+      const msg = this.i18n.t("errors.auth.invalidCredentials");
+      throw new UnauthorizedException(msg);
     }
 
     const { refreshTokenId, ...generatedTokens } = await this.generateTokens({
-      email,
-      sub: user.id,
+      sub: user.sub,
+      email: user.email,
       role: user.role,
-      language: user.language as "en" | "ar" | undefined,
+      language: user.language,
     });
-    await this.refreshTokenIdsStorage.insert(user.id, refreshTokenId);
+    await this.refreshTokenIdsStorage.insert(user.sub, refreshTokenId);
     return generatedTokens;
   }
 
-  async signout({ refresh_token }: SignoutDto) {
-    const decoded = await this.hashingService.verifyJwtToken(refresh_token);
-    const { sub: userId } = RefreshTokenPayloadSchema.parse(decoded);
+  async signout({ sub: userId }: RefreshTokenPayload) {
     return await this.refreshTokenIdsStorage.invalidate(userId);
   }
-  async refreshTokens({ refresh_token }: RefreshTokenDto) {
-    const decoded = await this.hashingService.verifyJwtToken(refresh_token);
-    const { refreshTokenId, sub: userId } = RefreshTokenPayloadSchema.parse(decoded);
-    const isValid = await this.refreshTokenIdsStorage.validate(userId, refreshTokenId);
+  async refreshTokens(refreshTokenPayload: RefreshTokenPayload) {
+    const { refreshTokenId: payloadRefreshTokenId, sub: userId } = refreshTokenPayload;
+    const isValid = await this.refreshTokenIdsStorage.validate(userId, payloadRefreshTokenId);
     if (!isValid) {
       throw new UnauthorizedException(this.i18n.t("errors.auth.refreshTokenExpired"));
     }
@@ -247,13 +220,13 @@ export class AuthenticationService {
         language: true,
       },
     });
-    const { refreshTokenId: oldRefreshTokenId, ...generateTokens } = await this.generateTokens({
+    const { refreshTokenId: generatedRefreshTokenId, ...generateTokens } = await this.generateTokens({
       sub: userId,
       email: user.email,
       role: user.role,
       language: user.language as "en" | "ar" | undefined,
     });
-    await this.refreshTokenIdsStorage.insert(userId, oldRefreshTokenId);
+    await this.refreshTokenIdsStorage.insert(userId, generatedRefreshTokenId);
     return generateTokens;
   }
   public async generateTokens(payLoadDto: ActiveUserInput) {
