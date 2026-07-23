@@ -87,6 +87,7 @@ model User {
   nationalId   String   @unique
   role         UserRole
   isActive     Boolean  @default(true)
+  language     String   @default("en")
 
   isVerified                Boolean   @default(false)
   verificationCode          String?

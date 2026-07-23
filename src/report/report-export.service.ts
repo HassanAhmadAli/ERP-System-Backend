@@ -1,5 +1,7 @@
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { Parser } from "json2csv";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 import { ReportService } from "./report.service";
 import { FinancialService } from "@/financial/financial.service";
 import { ReportSummaryQueryDto } from "./dto/report-summary-query.dto";
@@ -14,6 +16,7 @@ export class ReportExportService {
     private readonly reportService: ReportService,
     private readonly financialService: FinancialService,
     private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {}
 
   public get prisma() {
@@ -124,7 +127,9 @@ export class ReportExportService {
       case "profit-margins":
         return [this.financialService.getProfitMargins()];
       default:
-        throw new BadRequestException(`Unsupported report type: ${reportType as string}`);
+        throw new BadRequestException(
+          this.i18n.t("errors.common.unsupportedReportType", { args: { type: reportType as string } }),
+        );
     }
   }
 

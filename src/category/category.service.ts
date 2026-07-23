@@ -1,4 +1,7 @@
 import { Injectable, ConflictException, BadRequestException } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateCategoryDto } from "./dto/create-category.dto";
 import { UpdateCategoryDto } from "./dto/update-category.dto";
@@ -7,7 +10,10 @@ import { paginated } from "@/common/types/paginated-response";
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
 
   public get prisma() {
     return this.prismaService.client;
@@ -20,7 +26,9 @@ export class CategoryService {
     });
 
     if (existing) {
-      throw new ConflictException(`Category with name "${createCategoryDto.name}" already exists`);
+      throw new ConflictException(
+        this.i18n.t("errors.category.nameExists", { args: { name: createCategoryDto.name } }),
+      );
     }
 
     return this.prisma.category.create({
@@ -78,7 +86,9 @@ export class CategoryService {
         where: { name: updateCategoryDto.name, NOT: { id } },
       });
       if (nameConflict) {
-        throw new ConflictException(`Category with name "${updateCategoryDto.name}" already exists`);
+        throw new ConflictException(
+          this.i18n.t("errors.category.nameExists", { args: { name: updateCategoryDto.name } }),
+        );
       }
     }
 
@@ -100,12 +110,14 @@ export class CategoryService {
 
     if (productCount > 0) {
       throw new BadRequestException(
-        `Cannot delete category that has ${productCount} associated product(s). Reassign or remove them first.`,
+        this.i18n.t("errors.category.cannotDeleteWithProducts", {
+          args: { count: productCount },
+        }),
       );
     }
 
     await this.prisma.category.delete({ where: { id } });
 
-    return { message: `Category with ID ${id} has been deleted successfully` };
+    return { message: this.i18n.t("responses.category.deleted", { args: { id } }) };
   }
 }

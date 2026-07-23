@@ -3,12 +3,16 @@ import { logger } from "@/utils";
 import { Cache } from "@nestjs/cache-manager";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { cachedUserPayload } from "./interface/cached-user-payload.interface";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { CacheKey, CashingNamespace } from "../common/const";
 @Injectable()
 export class AppCachingService {
   constructor(
     public readonly manager: Cache,
     private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {}
   public get prisma() {
     return this.prismaService.client;
@@ -20,7 +24,7 @@ export class AppCachingService {
       );
       if (exist) {
         logger.trace(`this socket is already registered ${socketId}`);
-        throw new BadRequestException("this socket is already registered");
+        throw new BadRequestException(this.i18n.t("errors.caching.socketAlreadyRegistered"));
       }
     },
     registerSocket: async (socketId: string, userId: number) => {
@@ -46,7 +50,7 @@ export class AppCachingService {
         `${CashingNamespace.SocketIo.SocketId_By_UserId}:${userId}` satisfies CacheKey,
       );
       if (exist) return exist;
-      throw new BadRequestException("socket was not registred yet");
+      throw new BadRequestException(this.i18n.t("errors.caching.socketNotRegistered"));
     },
   } as const;
 

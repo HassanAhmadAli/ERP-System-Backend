@@ -42,6 +42,15 @@ export class UserController {
     return this.userService.updateStoreManagerProfile(updateUserDto, id);
   }
 
+  @Patch("me")
+  @setPermissions(Permissions.updatePersonalProfile)
+  @DocumentOperation("Update current user profile")
+  @DocumentBody(UpdateProfileDto)
+  @DocumentOkResponse("Profile updated")
+  updatePersonalProfile(@Body() dto: UpdateProfileDto, @ActiveUser("sub") userId: number) {
+    return this.userService.updatePersonalProfile(dto, userId);
+  }
+
   @Get("me")
   @DocumentOperation("Get current user profile")
   @DocumentOkResponse("Authenticated user profile")

@@ -5,7 +5,13 @@
   "compilerOptions": {
     "builder": "swc",
     "deleteOutDir": true,
-    "typeCheck": true
+    "typeCheck": true,
+    "assets": [
+      {
+        "include": "i18n/**/*",
+        "watchAssets": true
+      }
+    ]
   },
   "generateOptions": {
     "flat": false,

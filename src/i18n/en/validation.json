@@ -1,0 +1,25 @@
+{
+  "discount": {
+    "endDateAfterStart": "endDate must be after startDate",
+    "scopeProductId": "productId is required for PRODUCT scope and must not be provided for other scopes",
+    "scopeCategoryId": "categoryId is required for CATEGORY scope and must not be provided for other scopes",
+    "scopeCustomerId": "customerId is required for CUSTOMER scope and must not be provided for other scopes",
+    "percentageExceeds100": "Percentage discount value cannot be greater than 100"
+  },
+  "notification": {
+    "userIdsRequired": "userIds required when targetType is USER",
+    "targetRoleRequired": "targetRole required when targetType is ROLE"
+  },
+  "loyalty": {
+    "atLeastOneField": "At least one field must be provided"
+  },
+  "common": {
+    "invalidDuration": "Invalid duration. Examples: 60, 1h, 1.5 hours, 100 ms",
+    "invalidPhoneNumber": "Invalid phone number",
+    "csvMinRows": "CSV file must contain at least one product row",
+    "stringMin": "Must be at least {{min}} characters",
+    "stringMax": "Must be at most {{max}} characters",
+    "required": "{{field}} is required",
+    "invalidEmail": "Invalid email address"
+  }
+}

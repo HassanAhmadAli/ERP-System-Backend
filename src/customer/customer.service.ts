@@ -1,5 +1,8 @@
 import { UserRole, DiscountScope, Prisma } from "@/prisma/client";
 import { BadRequestException, Injectable } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { UpdateCustomerProfileDto } from "./dto/update-profile.dto";
 import { CustomerListQueryDto } from "./dto/customer-list-query.dto";
 import { AdjustCustomerLoyaltyDto } from "./dto/adjust-customer-loyalty.dto";
@@ -11,7 +14,10 @@ import { PrismaService } from "@/prisma/prisma.service";
 
 @Injectable()
 export class CustomerService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
   get prisma() {
     return this.prismaService.client;
   }
@@ -23,6 +29,7 @@ export class CustomerService {
         fullName: true,
         email: true,
         phoneNumber: true,
+        language: true,
         customer: {
           where: { userId },
           select: {
@@ -84,6 +91,7 @@ export class CustomerService {
         },
       },
       select: {
+        language: true,
         fullName: true,
         email: true,
         phoneNumber: true,
@@ -184,7 +192,7 @@ export class CustomerService {
 
     const nextPoints = customer.loyaltyPoints + dto.points;
     if (nextPoints < 0) {
-      throw new BadRequestException("Loyalty points cannot be negative");
+      throw new BadRequestException(this.i18n.t("errors.customer.loyaltyPointsNegative"));
     }
 
     return this.prisma.$transaction(async (tx) => {

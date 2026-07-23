@@ -1,5 +1,5 @@
 import { ZodValidationPipe, ZodSerializerInterceptor } from "nestjs-zod";
-import { APP_PIPE, APP_INTERCEPTOR, APP_FILTER } from "@nestjs/core";
+import { APP_PIPE, APP_INTERCEPTOR, APP_FILTER, APP_GUARD } from "@nestjs/core";
 import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { EnvVariables, validateEnv } from "@/common/schema/env";
@@ -17,7 +17,6 @@ import { BullModule } from "@nestjs/bullmq";
 import { BackupModule } from "./backup/backup.module";
 import { GlobalExceptionFilter } from "./global-exception-filter";
 import { PermissionsGuard } from "./access-control/guards/permissions.guard";
-import { APP_GUARD } from "@nestjs/core";
 import { AuthenticationGuard } from "./authentication/guard/authentication.guard";
 import { AuthenticationModule } from "./authentication/authentication.module";
 import { CachingModule } from "./caching/caching.module";
@@ -38,6 +37,9 @@ import { AuditLogModule } from "./audit-log/audit-log.module";
 import { AdModule } from "./ad/ad.module";
 import { FinancialModule } from "./financial/financial.module";
 import { AuditContextInterceptor } from "./audit-log/audit-context.interceptor";
+import { AcceptLanguageResolver, I18nModule, QueryResolver } from "nestjs-i18n";
+import path from "node:path";
+import { UserLanguageResolver } from "./i18n/resolvers/user-language.resolver";
 
 @Module({
   imports: [
@@ -72,6 +74,16 @@ import { AuditContextInterceptor } from "./audit-log/audit-context.interceptor";
         },
       ],
       validate: validateEnv,
+    }),
+    I18nModule.forRoot({
+      fallbackLanguage: "en",
+      fallbacks: { "en-*": "en", "ar-*": "ar" },
+      loaderOptions: {
+        path: path.join(__dirname, "./i18n"),
+        watch: true,
+      },
+      resolvers: [new UserLanguageResolver(), { use: QueryResolver, options: ["lang"] }, AcceptLanguageResolver],
+      typesOutputPath: path.join(__dirname, "../src/i18n/generated/i18n.generated.ts"),
     }),
     ////
     PrismaModule,

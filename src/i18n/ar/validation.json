@@ -1,0 +1,25 @@
+{
+  "discount": {
+    "endDateAfterStart": "يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء",
+    "scopeProductId": "معرف المنتج مطلوب لنطاق PRODUCT ويجب عدم تقديمه للنطاقات الأخرى",
+    "scopeCategoryId": "معرف الفئة مطلوب لنطاق CATEGORY ويجب عدم تقديمه للنطاقات الأخرى",
+    "scopeCustomerId": "معرف العميل مطلوب لنطاق CUSTOMER ويجب عدم تقديمه للنطاقات الأخرى",
+    "percentageExceeds100": "لا يمكن أن تزيد قيمة الخصم النسبي عن 100"
+  },
+  "notification": {
+    "userIdsRequired": "معرفات المستخدمين مطلوبة عندما يكون نوع الهدف USER",
+    "targetRoleRequired": "الدور المستهدف مطلوب عندما يكون نوع الهدف ROLE"
+  },
+  "loyalty": {
+    "atLeastOneField": "يجب توفير حقل واحد على الأقل"
+  },
+  "common": {
+    "invalidDuration": "مدة غير صالحة. أمثلة: 60، 1h، 1.5 ساعة، 100 ms",
+    "invalidPhoneNumber": "رقم هاتف غير صالح",
+    "csvMinRows": "يجب أن يحتوي ملف CSV على صف منتج واحد على الأقل",
+    "stringMin": "يجب أن يكون على الأقل {{min}} حرفاً",
+    "stringMax": "يجب أن يكون على الأكثر {{max}} حرفاً",
+    "required": "{{field}} مطلوب",
+    "invalidEmail": "بريد إلكتروني غير صالح"
+  }
+}

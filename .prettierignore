@@ -2,3 +2,4 @@ prisma/schema.prisma
 package.json
 pnpm-lock.yaml
 pnpm-workspace.yaml
+src/i18n/generated/i18n.generated.ts

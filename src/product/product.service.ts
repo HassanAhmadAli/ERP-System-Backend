@@ -1,4 +1,7 @@
 import { Injectable, BadRequestException, ConflictException } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
@@ -8,7 +11,10 @@ import { paginated } from "@/common/types/paginated-response";
 
 @Injectable()
 export class ProductService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
 
   public get prisma() {
     return this.prismaService.client;
@@ -32,7 +38,11 @@ export class ProductService {
 
     // Check for duplicate barcode
     if (existingProduct) {
-      throw new ConflictException(`Product with barcode ${createProductDto.barcode} already exists`);
+      throw new ConflictException(
+        this.i18n.t("errors.product.barcodeExists", {
+          args: { barcode: createProductDto.barcode },
+        }),
+      );
     }
 
     const product = await this.prisma.product.create({
@@ -128,7 +138,11 @@ export class ProductService {
         where: { barcode: updateProductDto.barcode },
       });
       if (existingProduct) {
-        throw new ConflictException(`Product with barcode ${updateProductDto.barcode} already exists`);
+        throw new ConflictException(
+          this.i18n.t("errors.product.barcodeExists", {
+            args: { barcode: updateProductDto.barcode },
+          }),
+        );
       }
     }
 
@@ -175,14 +189,14 @@ export class ProductService {
     });
 
     if (saleItems > 0 || orderItems > 0) {
-      throw new BadRequestException("Cannot delete product that has been sold or is in active orders");
+      throw new BadRequestException(this.i18n.t("errors.product.cannotDeleteWithOrders"));
     }
 
     await this.prisma.product.delete({
       where: { id },
     });
 
-    return { message: `Product with ID ${id} has been deleted successfully` };
+    return { message: this.i18n.t("responses.product.deleted", { args: { id } }) };
   }
 
   async getProductsByCategory(categoryId: number, query: PaginationQueryDto) {

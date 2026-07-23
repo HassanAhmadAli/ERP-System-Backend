@@ -29,7 +29,7 @@
     "db:migrate:minimal": "prisma migrate dev",
     "db:migrate": "prisma migrate dev --name e-store && pnpm prisma db execute --file ./prisma/migrate.sql",
     "db:studio": "prisma studio",
-    "debug:circular-dependency": "pnpm run build && madge dist/main.js --circular",
+    "debug:circular-dependency": "pnpm run build && pnpm dlx madge dist/main.js --circular",
     "prepare": "husky && husky install"
   },
   "dependencies": {
@@ -76,6 +76,7 @@
     "lodash": "^4.18.1",
     "morgan": "^1.10.1",
     "multer": "^2.1.1",
+    "nestjs-i18n": "^10.8.5",
     "nestjs-zod": "^5.3.0",
     "nodemailer": "^7.0.13",
     "otpauth": "^9.5.0",
@@ -119,7 +120,6 @@
     "globals": "^16.5.0",
     "jest": "^30.3.0",
     "lint-staged": "^16.4.0",
-    "madge": "^8.0.0",
     "prettier": "^3.8.2",
     "prisma": "^7.7.0",
     "source-map-support": "^0.5.21",

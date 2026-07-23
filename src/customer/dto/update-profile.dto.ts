@@ -6,6 +6,7 @@ const UpdateCustomerProfileSchema = z.object({
   fullName: z.string().optional(),
   phoneNumber: phoneNumberSchema.optional(),
   address: z.string().optional(),
+  language: z.enum(["en", "ar"]),
 });
 
 export class UpdateCustomerProfileDto extends createZodDto(UpdateCustomerProfileSchema) {}

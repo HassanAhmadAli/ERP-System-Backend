@@ -7,6 +7,8 @@ import { OrderQueryDto } from "./dto/order-query.dto";
 import { paginated } from "@/common/types/paginated-response";
 import { OrderStatus, Prisma, UserRole } from "@/prisma/client";
 import { NotificationsService } from "@/notification/notification.service";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 
 type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
 
@@ -28,6 +30,7 @@ export class OrderService {
     private readonly prismaService: PrismaService,
     private readonly discountService: DiscountService,
     private readonly notificationsService: NotificationsService,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {}
 
   public get prisma() {
@@ -142,7 +145,7 @@ export class OrderService {
         select: { id: true },
       });
       if (!customer || order.customerId !== customer.id) {
-        throw new ForbiddenException("You do not have access to this order");
+        throw new ForbiddenException(this.i18n.t("errors.order.noAccess"));
       }
     }
 
@@ -161,7 +164,7 @@ export class OrderService {
     });
 
     if (order.customerId !== customer.id) {
-      throw new ForbiddenException("You can only cancel your own orders");
+      throw new ForbiddenException(this.i18n.t("errors.order.cannotCancelOwn"));
     }
 
     if (
@@ -169,9 +172,7 @@ export class OrderService {
       order.status !== OrderStatus.PREPARING &&
       order.status !== OrderStatus.OUT_FOR_DELIVERY
     ) {
-      throw new BadRequestException(
-        "Only orders in 'pending', 'preparing' or 'out for delivery' status can be cancelled",
-      );
+      throw new BadRequestException(this.i18n.t("errors.order.cancelStatusInvalid"));
     }
 
     return this.updateStatus(id, { status: OrderStatus.CANCELLED });
@@ -184,7 +185,7 @@ export class OrderService {
     });
 
     if (order.status === OrderStatus.DELIVERED || order.status === OrderStatus.CANCELLED) {
-      throw new BadRequestException(`Cannot update order in ${order.status} status`);
+      throw new BadRequestException(this.i18n.t("errors.order.cannotUpdateStatus", { args: { status: order.status } }));
     }
 
     if (dto.status === order.status) {
@@ -208,7 +209,9 @@ export class OrderService {
           const product = await tx.product.findUniqueOrThrow({ where: { id: item.productId } });
           if (product.quantityInStock < item.quantity) {
             throw new BadRequestException(
-              `Insufficient stock for product "${product.name}" (available: ${product.quantityInStock})`,
+              this.i18n.t("errors.order.insufficientStock", {
+                args: { name: product.name, stock: product.quantityInStock },
+              }),
             );
           }
         }
@@ -278,7 +281,7 @@ export class OrderService {
     };
 
     if (!allowed[current].includes(next)) {
-      throw new BadRequestException(`Cannot transition order from ${current} to ${next}`);
+      throw new BadRequestException(this.i18n.t("errors.order.invalidTransition", { args: { current, next } }));
     }
   }
 
@@ -290,7 +293,7 @@ export class OrderService {
     const uniqueProductIds = [...new Set(productIds)];
 
     if (products.length !== uniqueProductIds.length) {
-      throw new BadRequestException("One or more products were not found");
+      throw new BadRequestException(this.i18n.t("errors.order.productsNotFound"));
     }
 
     const productMap = new Map(products.map((p) => [p.id, p]));
@@ -299,7 +302,9 @@ export class OrderService {
       const product = productMap.get(item.productId)!;
       if (validateStock && product.quantityInStock < item.quantity) {
         throw new BadRequestException(
-          `Insufficient stock for product "${product.name}" (available: ${product.quantityInStock})`,
+          this.i18n.t("errors.order.insufficientStock", {
+            args: { name: product.name, stock: product.quantityInStock },
+          }),
         );
       }
 
@@ -334,10 +339,12 @@ export class OrderService {
   private async notifyOrderStatus(userId: number, email: string, orderId: number, status: OrderStatus) {
     await this.notificationsService.addNotification(
       {
-        title: "Order status updated",
+        title: this.i18n.t("notifications.order.statusUpdatedTitle"),
         userId,
         email,
-        message: `Your order #${orderId} is now ${status}`,
+        message: this.i18n.t("notifications.order.statusUpdatedBody", {
+          args: { orderId, status },
+        }),
         type: "info",
         createdAt: new Date(),
       },

@@ -1,4 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateExpenseDto } from "./dto/create-expense.dto";
 import { UpdateExpenseDto } from "./dto/update-expense.dto";
@@ -8,7 +11,10 @@ import { Prisma } from "@/prisma/client";
 
 @Injectable()
 export class ExpenseService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
 
   public get prisma() {
     return this.prismaService.client;
@@ -77,7 +83,7 @@ export class ExpenseService {
         },
       });
     } catch {
-      throw new NotFoundException(`Expense with ID ${id} not found`);
+      throw new NotFoundException(this.i18n.t("errors.expense.notFound", { args: { id } }));
     }
   }
 }

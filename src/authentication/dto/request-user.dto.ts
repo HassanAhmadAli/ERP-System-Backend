@@ -11,6 +11,7 @@ export const ActiveUserSchema = z.object({
   sub: z.number(),
   email: z.email(),
   role: z.enum(UserRole),
+  language: z.enum(["en", "ar"]).default("en"),
   tokenType: z.literal("access").default("access"),
 });
 export type ActiveUserInput = z.input<typeof ActiveUserSchema>;

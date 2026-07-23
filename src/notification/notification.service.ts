@@ -1,4 +1,7 @@
 import { Injectable } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { Namespace, Socket } from "socket.io";
 import { MessageBody } from "@nestjs/websockets";
 import { PrismaService } from "@/prisma/prisma.service";
@@ -21,6 +24,7 @@ export class NotificationsService {
     private readonly cachingService: AppCachingService,
     private readonly notificationConsumer: NotificationConsumer,
     @InjectQueue(Keys.notification) private readonly notificationQueue: Queue<Notification>,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {}
   get prisma() {
     return this.prismaService.client;
@@ -37,7 +41,7 @@ export class NotificationsService {
     await this.cachingService.socketIo.registerSocket(client.id, user.sub);
     return {
       email: user.email,
-      message: "Socketio Connection Established Successfully",
+      message: this.i18n.t("responses.notification.connectionEstablished"),
     };
   }
 

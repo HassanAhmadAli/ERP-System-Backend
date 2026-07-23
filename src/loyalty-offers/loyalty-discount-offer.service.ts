@@ -1,4 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { PrismaService } from "@/prisma/prisma.service";
 import { CreateLoyaltyRewardDto } from "./dto/create-discount-offer.dto";
 import { UpdateLoyaltyRewardDto } from "./dto/update-discount-offer.dto";
@@ -15,6 +18,7 @@ export class LoyaltyRewardService {
     private readonly prismaService: PrismaService,
     //todo: audit
     private readonly auditLogService: AuditLogService,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {}
 
   public get prisma() {
@@ -84,7 +88,7 @@ export class LoyaltyRewardService {
   async remove(id: string) {
     await this.findOne(id);
     await this.prisma.loyaltyDiscountOffer.delete({ where: { id } });
-    return { message: `Loyalty offer ${id} deleted successfully` };
+    return { message: this.i18n.t("responses.loyalty.offerDeleted", { args: { id } }) };
   }
 
   async redeem(userId: number, { offerId }: RedeemLoyaltyOfferDto) {
@@ -98,11 +102,11 @@ export class LoyaltyRewardService {
     });
 
     if (!offer.isActive) {
-      throw new BadRequestException("This loyalty offer is not active");
+      throw new BadRequestException(this.i18n.t("errors.loyalty.offerNotActive"));
     }
 
     if (customer.loyaltyPoints < offer.pointsCost) {
-      throw new BadRequestException("Insufficient loyalty points");
+      throw new BadRequestException(this.i18n.t("errors.loyalty.insufficientPoints"));
     }
 
     const startDate = new Date();

@@ -1,5 +1,7 @@
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 import { CreateSupplierDto } from "./dto/create-supplier.dto";
 import { UpdateSupplierDto } from "./dto/update-supplier.dto";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
@@ -7,7 +9,10 @@ import { paginated } from "@/common/types/paginated-response";
 
 @Injectable()
 export class SupplierService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
 
   public get prisma() {
     return this.prismaService.client;
@@ -104,12 +109,14 @@ export class SupplierService {
 
     if (productCount > 0 || invoiceCount > 0) {
       throw new BadRequestException(
-        `Cannot delete supplier that has ${productCount} product(s) and ${invoiceCount} purchase invoice(s) associated. Reassign or remove them first.`,
+        this.i18n.t("errors.supplier.cannotDeleteWithAssociations", {
+          args: { productCount, invoiceCount },
+        }),
       );
     }
 
     await this.prisma.supplier.delete({ where: { id } });
 
-    return { message: `Supplier with ID ${id} has been deleted successfully` };
+    return { message: this.i18n.t("responses.supplier.deleted", { args: { id } }) };
   }
 }

@@ -21,14 +21,6 @@ export const CashingNamespace = {
 export type CashingNamespace = ValueOf<{ [K in keyof typeof CashingNamespace]: ValueOf<(typeof CashingNamespace)[K]> }>;
 export type CacheKey = `${CashingNamespace}:${string}`;
 export type Keys = ValueOf<typeof Keys>;
-export const ErrorMessages = {
-  EMAIL_ALREADY_EXIST: "Email Already registerd",
-  USER_DOES_NOT_EXIST: "User Does not Exist",
-  PASSWORD_INCORRECT: "Password does not match",
-  ACCESS_TOKEN_NOT_PROVIDED: "Access Token Not Provided",
-  INVALIDE_ACCESS_TOKEN: "Invalid Access Token",
-  INVALID_TOKEN: "Invalid Token",
-} as const;
 
 export const STAFF_ROLES: UserRole[] = [
   UserRole.CASHIER,

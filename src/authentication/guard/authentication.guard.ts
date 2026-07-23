@@ -1,14 +1,18 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { ErrorMessages, Keys } from "@/common/const";
+import { Keys } from "@/common/const";
 import { ActiveUserSchema } from "../dto/request-user.dto";
 import { RequestWithActiveUser } from "@/common/decorators/ActiveUser.decorator";
 import { HashingService } from "@/hashing/hashing.service";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly hashingService: HashingService,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const IsPublic = this.reflector.getAllAndOverride<boolean | undefined>(Keys.IsPublic, [
@@ -25,7 +29,7 @@ export class AuthenticationGuard implements CanActivate {
   async validateTokenAndAssignUser(req: RequestWithActiveUser): Promise<boolean> {
     const token = this.extractTokenFromHeader(req);
     if (token == undefined) {
-      throw new UnauthorizedException(ErrorMessages.ACCESS_TOKEN_NOT_PROVIDED);
+      throw new UnauthorizedException(this.i18n.t("errors.auth.accessTokenNotProvided"));
     }
     const payLoad = await this.hashingService.verifyJwtToken(token);
     req[Keys.User] = ActiveUserSchema.parse(payLoad);

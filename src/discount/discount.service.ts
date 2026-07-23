@@ -6,6 +6,8 @@ import { UpdateDiscountDto } from "./dto/update-discount.dto";
 import { CalculateDiscountDto } from "./dto/calculate-discount.dto";
 import { PaginationQueryDto } from "@/common/dto/pagination-query.dto";
 import { paginated } from "@/common/types/paginated-response";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 
 export interface DiscountCalculationResult {
   discountId: number;
@@ -19,7 +21,10 @@ export interface DiscountCalculationResult {
 
 @Injectable()
 export class DiscountService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
 
   public get prisma() {
     return this.prismaService.client;
@@ -33,7 +38,11 @@ export class DiscountService {
         where: { id: createDiscountDto.productId },
       });
       if (!product) {
-        throw new BadRequestException(`Product with ID ${createDiscountDto.productId} does not exist`);
+        throw new BadRequestException(
+          this.i18n.t("errors.discount.productNotExist", {
+            args: { id: createDiscountDto.productId },
+          }),
+        );
       }
     }
 
@@ -42,7 +51,11 @@ export class DiscountService {
         where: { id: createDiscountDto.categoryId },
       });
       if (!category) {
-        throw new BadRequestException(`Category with ID ${createDiscountDto.categoryId} does not exist`);
+        throw new BadRequestException(
+          this.i18n.t("errors.discount.categoryNotExist", {
+            args: { id: createDiscountDto.categoryId },
+          }),
+        );
       }
     }
 
@@ -51,12 +64,16 @@ export class DiscountService {
         where: { id: createDiscountDto.customerId },
       });
       if (!customer) {
-        throw new BadRequestException(`Customer with ID ${createDiscountDto.customerId} does not exist`);
+        throw new BadRequestException(
+          this.i18n.t("errors.discount.customerNotExist", {
+            args: { id: createDiscountDto.customerId },
+          }),
+        );
       }
     }
 
     if (createDiscountDto.type === "PERCENTAGE" && new Prisma.Decimal(createDiscountDto.value).gt(100)) {
-      throw new BadRequestException("Percentage discount value cannot be greater than 100");
+      throw new BadRequestException(this.i18n.t("errors.discount.percentageExceeds100"));
     }
 
     const discount = await this.prisma.discount.create({
@@ -133,31 +150,31 @@ export class DiscountService {
 
     if (finalScope === "PRODUCT") {
       if (finalProductId == undefined) {
-        throw new BadRequestException("productId is required for PRODUCT scope");
+        throw new BadRequestException(this.i18n.t("errors.discount.productIdRequired"));
       }
     } else {
       if (finalProductId != undefined) {
-        throw new BadRequestException("productId must not be provided for non-PRODUCT scope");
+        throw new BadRequestException(this.i18n.t("errors.discount.productIdNotAllowed"));
       }
       updateDiscountDto.productId = null;
     }
     if (finalScope === "CATEGORY") {
       if (finalCategoryId == undefined) {
-        throw new BadRequestException("categoryId is required for CATEGORY scope");
+        throw new BadRequestException(this.i18n.t("errors.discount.categoryIdRequired"));
       }
     } else {
       if (finalCategoryId != undefined) {
-        throw new BadRequestException("categoryId must not be provided for non-CATEGORY scope");
+        throw new BadRequestException(this.i18n.t("errors.discount.categoryIdNotAllowed"));
       }
       updateDiscountDto.categoryId = null;
     }
     if (finalScope === "CUSTOMER") {
       if (finalCustomerId == undefined) {
-        throw new BadRequestException("customerId is required for CUSTOMER scope");
+        throw new BadRequestException(this.i18n.t("errors.discount.customerIdRequired"));
       }
     } else {
       if (finalCustomerId != undefined) {
-        throw new BadRequestException("customerId must not be provided for non-CUSTOMER scope");
+        throw new BadRequestException(this.i18n.t("errors.discount.customerIdNotAllowed"));
       }
       updateDiscountDto.customerId = null;
     }
@@ -173,7 +190,7 @@ export class DiscountService {
     }
 
     if (finalType === "PERCENTAGE" && new Prisma.Decimal(finalValue).gt(100)) {
-      throw new BadRequestException("Percentage discount value cannot be greater than 100");
+      throw new BadRequestException(this.i18n.t("errors.discount.percentageExceeds100"));
     }
 
     let finalStartDate = current.startDate;
@@ -187,7 +204,7 @@ export class DiscountService {
     }
 
     if (finalEndDate && finalStartDate >= finalEndDate) {
-      throw new BadRequestException("endDate must be after startDate");
+      throw new BadRequestException(this.i18n.t("errors.discount.endDateAfterStart"));
     }
 
     const updated = await this.prisma.discount.update({
@@ -202,7 +219,7 @@ export class DiscountService {
   async remove(id: number) {
     await this.prisma.discount.delete({ where: { id } });
 
-    return { message: `Discount with ID ${id} has been deleted successfully` };
+    return { message: this.i18n.t("responses.discount.deleted", { args: { id } }) };
   }
 
   async toggleActive(id: number, isActive: boolean) {
@@ -273,21 +290,21 @@ export class DiscountService {
 
     // 1. Validate discount is active
     if (!discount.isActive) {
-      throw new BadRequestException("This discount is no longer active");
+      throw new BadRequestException(this.i18n.t("errors.discount.notActive"));
     }
 
     // 2. Validate date range
     const now = new Date();
     if (discount.startDate > now) {
-      throw new BadRequestException("This discount has not started yet");
+      throw new BadRequestException(this.i18n.t("errors.discount.notStarted"));
     }
     if (discount.endDate && discount.endDate < now) {
-      throw new BadRequestException("This discount has expired");
+      throw new BadRequestException(this.i18n.t("errors.discount.expired"));
     }
 
     // 3. Validate usage limit
     if (discount.maxUses !== null && discount.usedCount >= discount.maxUses) {
-      throw new BadRequestException("This discount has reached its maximum number of uses");
+      throw new BadRequestException(this.i18n.t("errors.discount.maxUsesReached"));
     }
 
     // 4. Validate scope requirements
@@ -338,7 +355,7 @@ export class DiscountService {
     });
 
     if (discount.maxUses !== null && discount.usedCount >= discount.maxUses) {
-      throw new BadRequestException("This discount has reached its maximum number of uses");
+      throw new BadRequestException(this.i18n.t("errors.discount.maxUsesReached"));
     }
 
     return this.prisma.discount.update({
@@ -358,21 +375,21 @@ export class DiscountService {
 
     // 1. Validate discount is active
     if (!discount.isActive) {
-      throw new BadRequestException("This discount is no longer active");
+      throw new BadRequestException(this.i18n.t("errors.discount.notActive"));
     }
 
     // 2. Validate date range
     const now = new Date();
     if (discount.startDate > now) {
-      throw new BadRequestException("This discount has not started yet");
+      throw new BadRequestException(this.i18n.t("errors.discount.notStarted"));
     }
     if (discount.endDate && discount.endDate < now) {
-      throw new BadRequestException("This discount has expired");
+      throw new BadRequestException(this.i18n.t("errors.discount.expired"));
     }
 
     // 3. Validate usage limit
     if (discount.maxUses !== null && discount.usedCount >= discount.maxUses) {
-      throw new BadRequestException("This discount has reached its maximum number of uses");
+      throw new BadRequestException(this.i18n.t("errors.discount.maxUsesReached"));
     }
   }
 
@@ -478,13 +495,11 @@ export class DiscountService {
     let matchingItems = items;
     if (discount.scope === DiscountScope.PRODUCT) {
       if (discount.productId == null) {
-        throw new UnprocessableEntityException(
-          "Discount Type is Product, but the discount does not have Product Id Saved",
-        );
+        throw new UnprocessableEntityException(this.i18n.t("errors.discount.noProductIdSaved"));
       }
       matchingItems = items.filter((item) => item.productId === discount.productId);
       if (matchingItems.length === 0) {
-        throw new BadRequestException("Discount is not applicable because the required product is not in the order");
+        throw new BadRequestException(this.i18n.t("errors.discount.requiredProductNotInOrder"));
       }
     } else if (discount.scope === DiscountScope.CATEGORY) {
       matchingItems = items.filter((item) => {
@@ -492,9 +507,7 @@ export class DiscountService {
         return product?.categoryId === discount.categoryId;
       });
       if (matchingItems.length === 0) {
-        throw new BadRequestException(
-          "Discount is not applicable because no products from the required category are in the order",
-        );
+        throw new BadRequestException(this.i18n.t("errors.discount.requiredCategoryNotInOrder"));
       }
     }
     const subtotal = matchingItems.reduce((sum, item) => {
@@ -518,18 +531,18 @@ export class DiscountService {
     switch (discount.scope) {
       case DiscountScope.PRODUCT:
         if (!dto.productId) {
-          throw new BadRequestException("productId is required when applying a PRODUCT-scoped discount");
+          throw new BadRequestException(this.i18n.t("errors.discount.productIdRequiredApply"));
         }
         if (discount.productId !== null && discount.productId !== dto.productId) {
-          throw new BadRequestException("This discount is not applicable to the specified product");
+          throw new BadRequestException(this.i18n.t("errors.discount.notApplicableToProduct"));
         }
         break;
       case DiscountScope.CATEGORY:
         if (!dto.categoryId) {
-          throw new BadRequestException("categoryId is required when applying a CATEGORY-scoped discount");
+          throw new BadRequestException(this.i18n.t("errors.discount.categoryIdRequiredApply"));
         }
         if (discount.categoryId != null && discount.categoryId !== dto.categoryId) {
-          throw new BadRequestException("This discount is not applicable to the specified category");
+          throw new BadRequestException(this.i18n.t("errors.discount.notApplicableToCategory"));
         }
         break;
       case DiscountScope.GLOBAL:
@@ -537,10 +550,10 @@ export class DiscountService {
         break;
       case DiscountScope.CUSTOMER:
         if (!dto.customerId) {
-          throw new BadRequestException("customerId is required when applying a CUSTOMER-scoped discount");
+          throw new BadRequestException(this.i18n.t("errors.discount.customerIdRequiredApply"));
         }
         if (discount.customerId != null && discount.customerId !== dto.customerId) {
-          throw new BadRequestException("This discount is not applicable to the specified customer");
+          throw new BadRequestException(this.i18n.t("errors.discount.notApplicableToCustomer"));
         }
         break;
     }

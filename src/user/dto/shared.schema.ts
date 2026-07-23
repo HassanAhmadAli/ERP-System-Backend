@@ -13,7 +13,9 @@ export const CreateUserSchema = z.object({
   phoneNumber: phoneNumberSchema.optional(),
   password: z.string(),
   nationalId: z.string(),
+  language: z.enum(["en", "ar"]).optional(),
 });
+export const UpdateUserProfileSchema = CreateUserSchema.omit({ password: true }).partial().strict().extend({});
 
 export const CreateCustomerSchema = openapiMeta(
   CreateUserSchema.extend({

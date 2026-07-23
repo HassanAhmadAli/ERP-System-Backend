@@ -1,0 +1,128 @@
+{
+  "auth": {
+    "emailAlreadyExists": "Email Already registered",
+    "userDoesNotExist": "User Does not Exist",
+    "passwordIncorrect": "Password does not match",
+    "invalidCredentials": "Invalid credentials for this account type",
+    "emailNotVerified": "Please verify your email before logging in.",
+    "refreshTokenExpired": "Refresh Token Expired",
+    "userAlreadyVerified": "User is already verified",
+    "invalidVerificationCode": "Invalid verification code",
+    "verificationCodeExpired": "Verification code has expired",
+    "accessTokenNotProvided": "Access Token Not Provided",
+    "invalidAccessToken": "Invalid Access Token",
+    "invalidToken": "Invalid Token"
+  },
+  "product": {
+    "barcodeExists": "Product with barcode {{barcode}} already exists",
+    "cannotDeleteWithOrders": "Cannot delete product that has been sold or is in active orders",
+    "deleted": "Product with ID {{id}} has been deleted successfully",
+    "duplicateBarcodeCsv": "Duplicate barcode \"{{barcode}}\" in CSV (first seen on row {{row}})",
+    "barcodeExistsDb": "Barcode \"{{barcode}}\" already exists in the database",
+    "categoryIdNotFound": "categoryId {{id}} does not exist",
+    "supplierIdNotFound": "supplierId {{id}} does not exist",
+    "csvParseFailed": "Failed to parse CSV: {{message}}",
+    "missingCsvColumns": "Missing required CSV columns: {{columns}}",
+    "csvNoData": "CSV file must contain a header row and at least one data row",
+    "csvFileRequired": "CSV file is required",
+    "couldNotReadCsv": "Could not read CSV file contents",
+    "insufficientStock": "Insufficient stock"
+  },
+  "category": {
+    "nameExists": "Category with name \"{{name}}\" already exists",
+    "cannotDeleteWithProducts": "Cannot delete category that has {{count}} associated product(s). Reassign or remove them first.",
+    "deleted": "Category with ID {{id}} has been deleted successfully",
+    "fileNotFound": "File not found on disk for id {{id}}"
+  },
+  "supplier": {
+    "cannotDeleteWithAssociations": "Cannot delete supplier that has {{productCount}} product(s) and {{invoiceCount}} purchase invoice(s) associated. Reassign or remove them first.",
+    "deleted": "Supplier with ID {{id}} has been deleted successfully"
+  },
+  "discount": {
+    "productNotExist": "Product with ID {{id}} does not exist",
+    "categoryNotExist": "Category with ID {{id}} does not exist",
+    "customerNotExist": "Customer with ID {{id}} does not exist",
+    "percentageExceeds100": "Percentage discount value cannot be greater than 100",
+    "productIdRequired": "productId is required for PRODUCT scope",
+    "productIdNotAllowed": "productId must not be provided for non-PRODUCT scope",
+    "categoryIdRequired": "categoryId is required for CATEGORY scope",
+    "categoryIdNotAllowed": "categoryId must not be provided for non-CATEGORY scope",
+    "customerIdRequired": "customerId is required for CUSTOMER scope",
+    "customerIdNotAllowed": "customerId must not be provided for non-CUSTOMER scope",
+    "endDateAfterStart": "endDate must be after startDate",
+    "deleted": "Discount with ID {{id}} has been deleted successfully",
+    "notActive": "This discount is no longer active",
+    "notStarted": "This discount has not started yet",
+    "expired": "This discount has expired",
+    "maxUsesReached": "This discount has reached its maximum number of uses",
+    "noProductIdSaved": "Discount Type is Product, but the discount does not have Product Id Saved",
+    "requiredProductNotInOrder": "Discount is not applicable because the required product is not in the order",
+    "requiredCategoryNotInOrder": "Discount is not applicable because no products from the required category are in the order",
+    "productIdRequiredApply": "productId is required when applying a PRODUCT-scoped discount",
+    "notApplicableToProduct": "This discount is not applicable to the specified product",
+    "categoryIdRequiredApply": "categoryId is required when applying a CATEGORY-scoped discount",
+    "notApplicableToCategory": "This discount is not applicable to the specified category",
+    "customerIdRequiredApply": "customerId is required when applying a CUSTOMER-scoped discount",
+    "notApplicableToCustomer": "This discount is not applicable to the specified customer"
+  },
+  "customer": {
+    "loyaltyPointsNegative": "Loyalty points cannot be negative"
+  },
+  "expense": {
+    "notFound": "Expense with ID {{id}} not found"
+  },
+  "order": {
+    "noAccess": "You do not have access to this order",
+    "cannotCancelOwn": "You can only cancel your own orders",
+    "cancelStatusInvalid": "Only orders in 'pending', 'preparing' or 'out for delivery' status can be cancelled",
+    "cannotUpdateStatus": "Cannot update order in {{status}} status",
+    "insufficientStock": "Insufficient stock for product \"{{name}}\" (available: {{stock}})",
+    "invalidTransition": "Cannot transition order from {{current}} to {{next}}",
+    "productsNotFound": "One or more products were not found"
+  },
+  "sales": {
+    "canOnlyUpdateOwn": "You can only update invoices that you created",
+    "cannotUpdateStatus": "Cannot update invoice in {{status}} status",
+    "insufficientStock": "Insufficient stock for product \"{{name}}\" (available: {{stock}})",
+    "invalidTransition": "Cannot transition invoice from {{current}} to {{next}}",
+    "productsNotFound": "One or more products were not found"
+  },
+  "purchase": {
+    "cannotUpdateStatus": "Cannot update purchase invoice in {{status}} status",
+    "invalidTransition": "Cannot transition purchase invoice from {{current}} to {{next}}",
+    "productsNotFound": "One or more products were not found",
+    "productNotBelongToSupplier": "Product \"{{name}}\" does not belong to this supplier",
+    "refundInsufficientStock": "Cannot refund purchase: insufficient stock for \"{{name}}\""
+  },
+  "backup": {
+    "backupFailed": "backup Failed {{errorMessage}}"
+  },
+  "loyalty": {
+    "offerNotActive": "This loyalty offer is not active",
+    "insufficientPoints": "Insufficient loyalty points",
+    "offerDeleted": "Loyalty offer {{id}} deleted successfully"
+  },
+  "notification": {
+    "noRecipients": "No recipients matched the target criteria"
+  },
+  "caching": {
+    "socketAlreadyRegistered": "this socket is already registered",
+    "socketNotRegistered": "socket was not registred yet"
+  },
+  "common": {
+    "fileVerificationFailed": "File verification failed.",
+    "fileNotFoundOnDisk": "File not found on disk for id {{id}}",
+    "unsupportedReportType": "Unsupported report type: {{type}}"
+  },
+  "prisma": {
+    "uniqueConstraintFailed": "Database Unique Constraint Failed{{context}}",
+    "foreignKeyFailed": "Foreign key constraint Failed{{context}}",
+    "invalidData": "Invalid data provided for Field{{context}}",
+    "missingRequiredValue": "Missing required value{{context}}",
+    "relationViolation": "The requested change violates a required relation.{{context}}",
+    "columnNotFound": "column does not exist in the current database{{context}}",
+    "recordNotFound": "Record not found{{context}}",
+    "unknownException": "unknown Exception",
+    "validationError": "Prisma Validation Error"
+  }
+}

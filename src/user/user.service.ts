@@ -15,6 +15,7 @@ const staff_profile_select = {
   nationalId: true,
   phoneNumber: true,
   email: true,
+  language: true,
 } satisfies Prisma.UserSelect;
 @Injectable()
 export class UserService {
@@ -25,6 +26,16 @@ export class UserService {
   ) {}
   get prisma() {
     return this.prismaService.client;
+  }
+
+  async updatePersonalProfile(updateUserDto: UpdateProfileDto, userId: number) {
+    const res = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateUserDto,
+      select: staff_profile_select,
+    });
+    await this.cachingService.users.removeCachedUserData(userId);
+    return res;
   }
 
   async createStaff(dto: CreateStaffDto) {

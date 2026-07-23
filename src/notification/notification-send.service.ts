@@ -1,4 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { PrismaService } from "@/prisma/prisma.service";
 import { SendNotificationDto } from "./dto/send-notification.dto";
 import { paginated } from "@/common/types/paginated-response";
@@ -11,6 +14,7 @@ export class NotificationSendService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {}
 
   public get prisma() {
@@ -21,7 +25,7 @@ export class NotificationSendService {
     const recipientUserIds = await this.resolveRecipients(dto);
 
     if (recipientUserIds.length === 0) {
-      throw new BadRequestException("No recipients matched the target criteria");
+      throw new BadRequestException(this.i18n.t("errors.notification.noRecipients"));
     }
     const now = new Date();
 

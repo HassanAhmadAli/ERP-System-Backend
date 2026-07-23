@@ -1,13 +1,19 @@
 import { PrismaService } from "@/prisma/prisma.service";
 import { normalizeUploadPath, resolveUploadPath } from "@/upload/resolve-upload-path";
 import { Injectable, NotFoundException, StreamableFile } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { createReadStream } from "node:fs";
 import { unlink } from "node:fs/promises";
 import path from "node:path";
 
 @Injectable()
 export class CategoryImageService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
 
   public get prisma() {
     return this.prismaService.client;
@@ -46,7 +52,9 @@ export class CategoryImageService {
     });
 
     if (!category.storedFileId || !category.storedFile) {
-      return { message: `Category ${categoryId} has no image to delete` };
+      return {
+        message: this.i18n.t("errors.category.fileNotFound", { args: { id: categoryId } }),
+      };
     }
 
     const resolvedPath =
@@ -84,7 +92,7 @@ export class CategoryImageService {
       resolveUploadPath(fileRecord.path) ?? resolveUploadPath(path.posix.join("uploads", storedFileId));
 
     if (resolvedPath == undefined) {
-      throw new NotFoundException(`File not found on disk for id ${storedFileId}`);
+      throw new NotFoundException(this.i18n.t("errors.common.fileNotFoundOnDisk", { args: { id: storedFileId } }));
     }
 
     const file = createReadStream(resolvedPath);

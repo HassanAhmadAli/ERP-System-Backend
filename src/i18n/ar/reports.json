@@ -1,0 +1,26 @@
+{
+  "metrics": {
+    "revenue": "الإيرادات",
+    "purchases": "المشتريات",
+    "expenses": "المصروفات",
+    "grossProfit": "إجمالي الربح",
+    "netProfit": "صافي الربح",
+    "salesCount": "عدد المبيعات",
+    "lowStockProducts": "المنتجات منخفضة المخزون",
+    "ordersDelivered": "الطلبات التي تم تسليمها",
+    "salesByCategory": "المبيعات حسب الفئة",
+    "topProducts": "أفضل المنتجات",
+    "period": "الفترة"
+  },
+  "labels": {
+    "yes": "نعم",
+    "no": "لا",
+    "uncategorized": "بدون تصنيف",
+    "deletedProduct": "منتج محذوف (المعرف: {{id}})"
+  },
+  "stockStatus": {
+    "outOfStock": "نفذ من المخزون",
+    "low": "منخفض",
+    "ok": "جيد"
+  }
+}

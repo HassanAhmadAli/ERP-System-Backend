@@ -1,5 +1,8 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/prisma/prisma.service";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { CreatePurchaseInvoiceDto } from "./dto/create-purchase-invoice.dto";
 import { UpdatePurchaseInvoiceStatusDto } from "./dto/update-purchase-invoice-status.dto";
 import { PurchaseInvoiceQueryDto } from "./dto/purchase-invoice-query.dto";
@@ -16,7 +19,10 @@ const purchaseInclude = {
 
 @Injectable()
 export class PurchaseService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
 
   public get prisma() {
     return this.prismaService.client;
@@ -108,7 +114,9 @@ export class PurchaseService {
     });
 
     if (invoice.status === "CANCELLED" || invoice.status === "REFUNDED") {
-      throw new BadRequestException(`Cannot update purchase invoice in ${invoice.status} status`);
+      throw new BadRequestException(
+        this.i18n.t("errors.purchase.cannotUpdateStatus", { args: { status: invoice.status } }),
+      );
     }
 
     if (status === invoice.status) {
@@ -143,7 +151,7 @@ export class PurchaseService {
     };
 
     if (!allowed[current].includes(next)) {
-      throw new BadRequestException(`Cannot transition purchase invoice from ${current} to ${next}`);
+      throw new BadRequestException(this.i18n.t("errors.purchase.invalidTransition", { args: { current, next } }));
     }
   }
 
@@ -153,7 +161,7 @@ export class PurchaseService {
     const uniqueProductIds = [...new Set(productIds)];
 
     if (products.length !== uniqueProductIds.length) {
-      throw new BadRequestException("One or more products were not found");
+      throw new BadRequestException(this.i18n.t("errors.purchase.productsNotFound"));
     }
 
     const productMap = new Map(products.map((p) => [p.id, p]));
@@ -162,7 +170,11 @@ export class PurchaseService {
       const product = productMap.get(item.productId)!;
 
       if (product.supplierId !== supplierId) {
-        throw new BadRequestException(`Product "${product.name}" does not belong to this supplier`);
+        throw new BadRequestException(
+          this.i18n.t("errors.purchase.productNotBelongToSupplier", {
+            args: { name: product.name },
+          }),
+        );
       }
 
       const subtotal = item.unitCost.mul(item.quantity);
@@ -196,7 +208,11 @@ export class PurchaseService {
     for (const item of items) {
       const product = await tx.product.findUniqueOrThrow({ where: { id: item.productId } });
       if (product.quantityInStock < item.quantity) {
-        throw new BadRequestException(`Cannot refund purchase: insufficient stock for "${product.name}"`);
+        throw new BadRequestException(
+          this.i18n.t("errors.purchase.refundInsufficientStock", {
+            args: { name: product.name },
+          }),
+        );
       }
       await tx.product.update({
         where: { id: item.productId },

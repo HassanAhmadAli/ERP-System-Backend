@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "staffAccountCreated": "Staff account created successfully",
+    "userCreated": "User created. Please check your email for verification code.",
+    "accountVerified": "Account Verified Successfully, please login",
+    "verificationEmailSubject": "Verification Code for the Complaint App",
+    "verificationEmailBody": "Your verification code is: {{code}}, it will expire in 15 minutes",
+    "securityAlertSubject": "ERP Store — security alert",
+    "securityAlertBody": "Multiple failed sign-in attempts were detected for your account at {{time}}"
+  },
+  "backup": {
+    "started": "Backup is Being created, you will recieve a notification when the operation is completed",
+    "successTitle": "Backup Success",
+    "successBody": "backup successfully created at path {{path}}",
+    "failedTitle": "Backup Failed",
+    "failedBody": "backup Failed {{errorMessage}}"
+  },
+  "notification": {
+    "connectionEstablished": "Socketio Connection Established Successfully",
+    "orderStatusUpdatedTitle": "Order status updated",
+    "orderStatusUpdatedBody": "Your order #{{orderId}} is now {{status}}"
+  },
+  "product": {
+    "deleted": "Product with ID {{id}} has been deleted successfully"
+  },
+  "category": {
+    "deleted": "Category with ID {{id}} has been deleted successfully"
+  },
+  "discount": {
+    "deleted": "Discount with ID {{id}} has been deleted successfully"
+  },
+  "supplier": {
+    "deleted": "Supplier with ID {{id}} has been deleted successfully"
+  },
+  "loyalty": {
+    "offerDeleted": "Loyalty offer {{id}} deleted successfully"
+  },
+  "common": {
+    "operationCompleted": "Operation completed successfully"
+  }
+}

@@ -1,4 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { PrismaService } from "@/prisma/prisma.service";
 import { parse } from "csv-parse/sync";
 import { Prisma } from "@/prisma/client";
@@ -26,7 +29,10 @@ type PreparedImportRow = {
 
 @Injectable()
 export class ProductImportService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly i18n: I18nService<I18nTranslations>,
+  ) {}
 
   public get prisma() {
     return this.prismaService.client;
@@ -122,7 +128,9 @@ export class ProductImportService {
         duplicateInFile.add(entry.rowNum);
         errors.push({
           row: entry.rowNum,
-          message: `Duplicate barcode "${entry.data.barcode}" in CSV (first seen on row ${firstRow})`,
+          message: this.i18n.t("errors.product.duplicateBarcodeCsv", {
+            args: { barcode: entry.data.barcode, row: firstRow },
+          }),
         });
       } else {
         seenBarcodes.set(entry.data.barcode, entry.rowNum);
@@ -159,7 +167,9 @@ export class ProductImportService {
       if (existingBarcodeSet.has(entry.data.barcode)) {
         errors.push({
           row: entry.rowNum,
-          message: `Barcode "${entry.data.barcode}" already exists in the database`,
+          message: this.i18n.t("errors.product.barcodeExistsDb", {
+            args: { barcode: entry.data.barcode },
+          }),
         });
         continue;
       }
@@ -167,7 +177,9 @@ export class ProductImportService {
       if (!validCategoryIds.has(entry.data.categoryId)) {
         errors.push({
           row: entry.rowNum,
-          message: `categoryId ${entry.data.categoryId} does not exist`,
+          message: this.i18n.t("errors.product.categoryIdNotFound", {
+            args: { id: entry.data.categoryId },
+          }),
         });
         continue;
       }
@@ -175,7 +187,9 @@ export class ProductImportService {
       if (!validSupplierIds.has(entry.data.supplierId)) {
         errors.push({
           row: entry.rowNum,
-          message: `supplierId ${entry.data.supplierId} does not exist`,
+          message: this.i18n.t("errors.product.supplierIdNotFound", {
+            args: { id: entry.data.supplierId },
+          }),
         });
         continue;
       }
@@ -229,20 +243,24 @@ export class ProductImportService {
       return records;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Invalid CSV file";
-      throw new BadRequestException(`Failed to parse CSV: ${message}`);
+      throw new BadRequestException(this.i18n.t("errors.product.csvParseFailed", { args: { message } }));
     }
   }
 
   private validateCsvHeaders(columns: string[]): void {
     const missing = REQUIRED_CSV_HEADERS.filter((header) => !columns.includes(header));
     if (missing.length > 0) {
-      throw new BadRequestException(`Missing required CSV columns: ${missing.join(", ")}`);
+      throw new BadRequestException(
+        this.i18n.t("errors.product.missingCsvColumns", {
+          args: { columns: missing.join(", ") },
+        }),
+      );
     }
   }
 
   private validateCsvFile(rawRows: Record<string, string>[]) {
     if (rawRows.length === 0) {
-      throw new BadRequestException("CSV file must contain a header row and at least one data row");
+      throw new BadRequestException(this.i18n.t("errors.product.csvNoData"));
     }
 
     this.validateCsvHeaders(Object.keys(rawRows[0]!));

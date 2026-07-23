@@ -1,0 +1,26 @@
+{
+  "metrics": {
+    "revenue": "Revenue",
+    "purchases": "Purchases",
+    "expenses": "Expenses",
+    "grossProfit": "Gross Profit",
+    "netProfit": "Net Profit",
+    "salesCount": "Sales Count",
+    "lowStockProducts": "Low Stock Products",
+    "ordersDelivered": "Orders Delivered",
+    "salesByCategory": "Sales By Category",
+    "topProducts": "Top Products",
+    "period": "Period"
+  },
+  "labels": {
+    "yes": "yes",
+    "no": "no",
+    "uncategorized": "Uncategorized",
+    "deletedProduct": "Deleted Product (ID: {{id}})"
+  },
+  "stockStatus": {
+    "outOfStock": "out_of_stock",
+    "low": "low",
+    "ok": "ok"
+  }
+}

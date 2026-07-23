@@ -29,9 +29,7 @@ export const envSchema = z.object({
       if (Is_DOCKER) {
         return "/app/backups";
       }
-      const path = x.replaceAll("\\", "/").replace(/dist\/backups$/, "/backups");
-      console.log(path);
-      return path;
+      return x.replaceAll("\\", "/").replace(/dist\/backups$/, "/backups");
     }),
 });
 

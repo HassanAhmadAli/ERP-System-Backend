@@ -1,0 +1,18 @@
+{
+  "backup": {
+    "successTitle": "Backup Success",
+    "successBody": "backup successfully created at path {{path}}",
+    "failedTitle": "Backup Failed",
+    "failedBody": "backup Failed {{errorMessage}}"
+  },
+  "order": {
+    "statusUpdatedTitle": "Order status updated",
+    "statusUpdatedBody": "Your order #{{orderId}} is now {{status}}"
+  },
+  "auth": {
+    "verificationCodeSubject": "Verification Code for the Complaint App",
+    "verificationCodeBody": "Your verification code is: {{code}}, it will expire in 15 minutes",
+    "securityAlertSubject": "ERP Store — security alert",
+    "securityAlertBody": "Multiple failed sign-in attempts were detected for your account at {{time}}"
+  }
+}

@@ -9,11 +9,15 @@ import path from "node:path";
 import { logger } from "@/utils";
 import { BackupService } from "./backup.service";
 import { NotificationSendService } from "@/notification/notification-send.service";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 @Processor(Keys.backupQueue)
 export class BackupConsumer extends WorkerHost {
   constructor(
     private readonly configService: ConfigService<EnvVariables>,
     private readonly notificationSendService: NotificationSendService,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {
     super();
   }
@@ -23,10 +27,12 @@ export class BackupConsumer extends WorkerHost {
     try {
       const path = await this.backupDatabase();
       await this.notificationSendService.send(1, {
-        title: "Backup Success",
+        title: this.i18n.t("notifications.backup.successTitle"),
         targetType: "ROLE",
         targetRole: "STORE_MANAGER",
-        body: `backup successfully created at path ${path} , started at ${job.data.date}`,
+        body: this.i18n.t("notifications.backup.successBody", {
+          args: { path: path, date: job.data.date },
+        }),
       });
     } catch (error) {
       let errorMessage: string = "Unknown Exception";
@@ -34,10 +40,12 @@ export class BackupConsumer extends WorkerHost {
         errorMessage = error.message;
       }
       await this.notificationSendService.send(1, {
-        title: "Backup Failed",
+        title: this.i18n.t("notifications.backup.failedTitle"),
         targetType: "ROLE",
         targetRole: "STORE_MANAGER",
-        body: `backup Failed ${errorMessage}, started at ${job.data.date}`,
+        body: this.i18n.t("notifications.backup.failedBody", {
+          args: { errorMessage, date: job.data.date },
+        }),
       });
       throw error;
     }

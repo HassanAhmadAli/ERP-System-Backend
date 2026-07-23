@@ -8,17 +8,19 @@ import { BaseExceptionFilter } from "@nestjs/core";
 import { WsException } from "@nestjs/websockets";
 import { Socket } from "socket.io";
 import { logger } from "@/utils";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 
 @Catch()
 export class GlobalExceptionFilter extends BaseExceptionFilter {
   private strategies: AppBaseExceptionFilter[];
-  constructor() {
+  constructor(private readonly i18n: I18nService<I18nTranslations>) {
     super();
     this.strategies = [
       new ZodErrorFilter(),
       new HttpExceptionFilter(),
-      new JwtErrorFilter(),
-      new PrismaServerErrorFilter(),
+      new JwtErrorFilter(this.i18n),
+      new PrismaServerErrorFilter(this.i18n),
     ];
   }
 

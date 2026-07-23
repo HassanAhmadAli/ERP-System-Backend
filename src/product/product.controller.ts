@@ -15,6 +15,9 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import { readFileSync } from "node:fs";
 import { ApiTags } from "@nestjs/swagger";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 import { ProductService } from "./product.service";
 import { ProductImportService } from "./product-import.service";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
@@ -42,6 +45,7 @@ export class ProductController {
   constructor(
     private readonly productService: ProductService,
     private readonly productImportService: ProductImportService,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {}
 
   @Post()
@@ -90,11 +94,11 @@ export class ProductController {
   @DocumentCreatedResponse("Import job started")
   importCsv(@ActiveUser("sub") userId: number, @UploadedFile() file: Express.Multer.File) {
     if (!file?.buffer && !file?.path) {
-      throw new BadRequestException("CSV file is required");
+      throw new BadRequestException(this.i18n.t("errors.product.csvFileRequired"));
     }
     const content = file.buffer?.toString("utf-8") ?? (file.path ? readFileSync(file.path, "utf-8") : "");
     if (!content) {
-      throw new BadRequestException("Could not read CSV file contents");
+      throw new BadRequestException(this.i18n.t("errors.product.couldNotReadCsv"));
     }
     return this.productImportService.importFromCsv(userId, file.originalname, content);
   }
@@ -150,7 +154,7 @@ export class ProductController {
   @DocumentOkResponse("Stock updated")
   updateStock(@Param("id", ParseIntPipe) id: number, @Body() { quantityInStock }: UpdateStockDto) {
     if (quantityInStock < 0) {
-      throw new BadRequestException("Insufficient stock");
+      throw new BadRequestException(this.i18n.t("errors.product.insufficientStock"));
     }
     return this.productService.updateStock(id, quantityInStock);
   }

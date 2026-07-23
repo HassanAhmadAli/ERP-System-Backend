@@ -1,0 +1,18 @@
+{
+  "backup": {
+    "successTitle": "نجاح النسخ الاحتياطي",
+    "successBody": "تم إنشاء النسخة الاحتياطية بنجاح في المسار {{path}}",
+    "failedTitle": "فشل النسخ الاحتياطي",
+    "failedBody": "فشل النسخ الاحتياطي {{errorMessage}}"
+  },
+  "order": {
+    "statusUpdatedTitle": "تم تحديث حالة الطلب",
+    "statusUpdatedBody": "طلبك رقم {{orderId}} أصبح الآن {{status}}"
+  },
+  "auth": {
+    "verificationCodeSubject": "رمز التحقق لتطبيق الشكاوى",
+    "verificationCodeBody": "رمز التحقق الخاص بك هو: {{code}}، ستنتهي صلاحيته خلال 15 دقيقة",
+    "securityAlertSubject": "متجر ERP - تنبيه أمني",
+    "securityAlertBody": "تم اكتشاف عدة محاولات تسجيل دخول فاشلة لحسابك في {{time}}"
+  }
+}

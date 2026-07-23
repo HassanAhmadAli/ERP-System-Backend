@@ -9,7 +9,6 @@ import { randomUUID, randomInt } from "node:crypto";
 import { RefreshTokenIdsStorage } from "./refresh-token-ids.storage";
 import { Prisma, User, UserRole } from "@/prisma/client";
 import { PrismaService } from "@/prisma/prisma.service";
-import { ErrorMessages } from "@/common/const";
 import { ConfigService } from "@nestjs/config";
 import { EnvVariables } from "@/common/schema/env";
 import { SignoutDto } from "./dto/signout.dto";
@@ -18,6 +17,9 @@ import { logger } from "@/utils";
 import { Cache } from "@nestjs/cache-manager";
 import { NotificationsService } from "@/notification/notification.service";
 import { CreateStaffDto } from "@/user/dto/create-staff.dto";
+import { I18nService } from "nestjs-i18n";
+import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+
 @Injectable()
 export class AuthenticationService {
   constructor(
@@ -28,6 +30,7 @@ export class AuthenticationService {
     private readonly config: ConfigService<EnvVariables>,
     private cacheManager: Cache,
     private readonly notificationsService: NotificationsService,
+    private readonly i18n: I18nService<I18nTranslations>,
   ) {
     this.NODE_ENV = this.config.getOrThrow("NODE_ENV", {
       infer: true,
@@ -67,7 +70,7 @@ export class AuthenticationService {
     });
 
     return {
-      message: "Staff account created successfully",
+      message: this.i18n.t("responses.auth.staffAccountCreated"),
       user,
     };
   }
@@ -98,18 +101,19 @@ export class AuthenticationService {
 
     await this.notificationsService.addNotification(
       {
-        title: "Verification Code for the Complaint App",
-        //todo:
+        title: this.i18n.t("notifications.auth.verificationCodeSubject"),
         userId: user.id,
         email: signupDto.email,
-        message: `Your verification code is: ${verificationCode} , it will expire in 15 minutes`,
+        message: this.i18n.t("notifications.auth.verificationCodeBody", {
+          args: { code: verificationCode },
+        }),
         type: "security",
         createdAt: new Date(),
       },
       "send-notification",
     );
     return {
-      message: "User created. Please check your email for verification code.",
+      message: this.i18n.t("responses.auth.userCreated"),
     };
   }
 
@@ -119,19 +123,19 @@ export class AuthenticationService {
         Prisma.sql`SELECT * FROM "User" WHERE "email" = ${email} FOR UPDATE`,
       );
       if (queryResult == undefined || queryResult.length === 0) {
-        throw new UnauthorizedException();
+        throw new BadRequestException();
       }
       const user = queryResult[0]!;
       if (user.isVerified) {
-        throw new BadRequestException("User is already verified");
+        throw new BadRequestException(this.i18n.t("errors.auth.userAlreadyVerified"));
       }
 
       if (user.verificationCode !== code) {
-        throw new UnauthorizedException("Invalid verification code");
+        throw new UnauthorizedException(this.i18n.t("errors.auth.invalidVerificationCode"));
       }
 
       if (user.verificationCodeExpiresAt != undefined && user.verificationCodeExpiresAt < new Date()) {
-        throw new UnauthorizedException("Verification code has expired");
+        throw new UnauthorizedException(this.i18n.t("errors.auth.verificationCodeExpired"));
       }
 
       await tx.user.update({
@@ -146,7 +150,7 @@ export class AuthenticationService {
       });
 
       return {
-        message: "Account Verified Successfully, please login",
+        message: this.i18n.t("responses.auth.accountVerified"),
       };
     });
   }
@@ -163,10 +167,12 @@ export class AuthenticationService {
     if (res < 3) return await this.cacheManager.set(key, res + 1);
     await this.notificationsService.addNotification(
       {
-        title: "ERP Store — security alert",
+        title: this.i18n.t("notifications.auth.securityAlertSubject"),
         userId,
         email,
-        message: `Multiple failed sign-in attempts were detected for your account at ${new Date().toISOString()}. If this was not you, change your password immediately.`,
+        message: this.i18n.t("notifications.auth.securityAlertBody", {
+          args: { time: new Date().toISOString() },
+        }),
         type: "security",
         createdAt: new Date(),
       },
@@ -185,15 +191,16 @@ export class AuthenticationService {
         id: true,
         role: true,
         isVerified: true,
+        language: true,
       },
     });
 
     if (expectedRole != undefined && user.role !== expectedRole) {
-      throw new UnauthorizedException("Invalid credentials for this account type");
+      throw new UnauthorizedException(this.i18n.t("errors.auth.invalidCredentials"));
     }
 
     if (!user.isVerified) {
-      throw new UnauthorizedException("Please verify your email before logging in.");
+      throw new UnauthorizedException(this.i18n.t("errors.auth.emailNotVerified"));
     }
 
     const doesPasswordMatch = await this.hashingService.compare({
@@ -204,13 +211,14 @@ export class AuthenticationService {
     if (!doesPasswordMatch) {
       const userId = user.id;
       await this.handlePasswordNotMatch({ email, userId });
-      throw new UnauthorizedException(ErrorMessages.PASSWORD_INCORRECT);
+      throw new UnauthorizedException(this.i18n.t("errors.auth.passwordIncorrect"));
     }
 
     const { refreshTokenId, ...generatedTokens } = await this.generateTokens({
       email,
       sub: user.id,
       role: user.role,
+      language: user.language as "en" | "ar" | undefined,
     });
     await this.refreshTokenIdsStorage.insert(user.id, refreshTokenId);
     return generatedTokens;
@@ -226,7 +234,7 @@ export class AuthenticationService {
     const { refreshTokenId, sub: userId } = RefreshTokenPayloadSchema.parse(decoded);
     const isValid = await this.refreshTokenIdsStorage.validate(userId, refreshTokenId);
     if (!isValid) {
-      throw new UnauthorizedException("Refresh Token Expired");
+      throw new UnauthorizedException(this.i18n.t("errors.auth.refreshTokenExpired"));
     }
     await this.refreshTokenIdsStorage.invalidate(userId);
     const user = await this.prisma.user.findUniqueOrThrow({
@@ -236,14 +244,15 @@ export class AuthenticationService {
       select: {
         role: true,
         email: true,
+        language: true,
       },
     });
-    const newRefreshTokenPayload = {
+    const { refreshTokenId: oldRefreshTokenId, ...generateTokens } = await this.generateTokens({
       sub: userId,
       email: user.email,
       role: user.role,
-    };
-    const { refreshTokenId: oldRefreshTokenId, ...generateTokens } = await this.generateTokens(newRefreshTokenPayload);
+      language: user.language as "en" | "ar" | undefined,
+    });
     await this.refreshTokenIdsStorage.insert(userId, oldRefreshTokenId);
     return generateTokens;
   }
