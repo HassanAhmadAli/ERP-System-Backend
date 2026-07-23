@@ -12,9 +12,9 @@ import { InvoiceStatus, Prisma } from "@/prisma/client";
 type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
 
 const purchaseInclude = {
-  items: { include: { product: { select: { id: true, name: true, barcode: true } } } },
-  supplier: { select: { id: true, fullName: true, email: true, phone: true } },
-  accountant: { include: { user: { select: { id: true, fullName: true, email: true } } } },
+  items: { include: { product: { select: { id: true, name: true, nameAr: true, barcode: true } } } },
+  supplier: { select: { id: true, fullName: true, fullNameAr: true, email: true, phone: true } },
+  accountant: { include: { user: { select: { id: true, fullName: true, fullNameAr: true, email: true } } } },
 } satisfies Prisma.PurchaseInvoiceInclude;
 
 @Injectable()

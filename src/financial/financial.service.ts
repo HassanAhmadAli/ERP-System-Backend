@@ -21,11 +21,12 @@ export class FinancialService {
         select: {
           id: true,
           name: true,
+          nameAr: true,
           barcode: true,
           purchasePrice: true,
           sellingPrice: true,
           quantityInStock: true,
-          category: { select: { id: true, name: true } },
+          category: { select: { id: true, name: true, nameAr: true } },
         },
         skip: query?.offset,
         take: query?.limit,
@@ -40,8 +41,10 @@ export class FinancialService {
       return {
         productId: p.id,
         name: p.name,
+        nameAr: p.nameAr,
         barcode: p.barcode,
         category: p.category.name,
+        categoryAr: p.category.nameAr,
         purchasePrice: p.purchasePrice.toFixed(2),
         sellingPrice: p.sellingPrice.toFixed(2),
         margin: margin.toFixed(2),
@@ -111,7 +114,7 @@ export class FinancialService {
         purchase: { status: "COMPLETED", createdAt: { gte: from, lte: to } },
       },
       include: {
-        product: { select: { id: true, name: true } },
+        product: { select: { id: true, name: true, nameAr: true } },
         purchase: { select: { createdAt: true } },
       },
       orderBy: { purchase: { createdAt: "asc" } },
@@ -146,9 +149,15 @@ export class FinancialService {
     }
     const products = await this.prisma.product.findMany({
       where,
-      select: { id: true, name: true, purchasePrice: true },
+      select: { id: true, name: true, nameAr: true, purchasePrice: true },
     });
-    type recalculateCostsResultType = { productId: number; name: string; oldCost: string; newCost: string };
+    type recalculateCostsResultType = {
+      productId: number;
+      name: string;
+      nameAr: string | null;
+      oldCost: string;
+      newCost: string;
+    };
     const results: recalculateCostsResultType[] = [];
 
     for (const product of products) {
@@ -168,6 +177,7 @@ export class FinancialService {
       results.push({
         productId: product.id,
         name: product.name,
+        nameAr: product.nameAr,
         oldCost: product.purchasePrice.toFixed(2),
         newCost: updated.purchasePrice.toFixed(2),
       });
@@ -196,7 +206,7 @@ export class FinancialService {
       this.prisma.purchaseInvoice.findMany({
         where,
         include: {
-          items: { include: { product: { select: { id: true, name: true } } } },
+          items: { include: { product: { select: { id: true, name: true, nameAr: true } } } },
         },
         orderBy: { createdAt: "desc" },
       }),
@@ -204,7 +214,13 @@ export class FinancialService {
     ]);
 
     return {
-      supplier: { id: supplier.id, fullName: supplier.fullName, email: supplier.email, phone: supplier.phone },
+      supplier: {
+        id: supplier.id,
+        fullName: supplier.fullName,
+        fullNameAr: supplier.fullNameAr,
+        email: supplier.email,
+        phone: supplier.phone,
+      },
       period: { from: query.from?.toISOString() ?? null, to: query.to?.toISOString() ?? null },
       invoiceCount: aggregate._count,
       totalSpent: (aggregate._sum.total ?? new Prisma.Decimal(0)).toFixed(2),

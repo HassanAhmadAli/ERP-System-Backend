@@ -6,7 +6,9 @@ import { Prisma } from "@/prisma/client";
 export const CreateProductSchema = openapiMeta(
   z.object({
     name: z.string().min(2),
+    nameAr: z.string().min(2).optional(),
     description: z.string().optional(),
+    descriptionAr: z.string().optional(),
     barcode: z.string().min(3),
     purchasePrice: z.coerce
       .number()
@@ -25,7 +27,9 @@ export const CreateProductSchema = openapiMeta(
   "CreateProductDto",
   {
     name: "Wireless Mouse",
+    nameAr: "فأرة لاسلكية",
     description: "Ergonomic wireless mouse",
+    descriptionAr: "فأرة لاسلكية مريحة",
     barcode: "100000000099",
     purchasePrice: 12.5,
     sellingPrice: 29.99,

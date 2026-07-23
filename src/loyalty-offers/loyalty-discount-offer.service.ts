@@ -122,6 +122,7 @@ export class LoyaltyRewardService {
       const discount = await tx.discount.create({
         data: {
           name: `${offer.name} (Loyalty)`,
+          nameAr: offer.nameAr ? `${offer.nameAr} (ولاء)` : undefined,
           type: offer.discountType,
           value: offer.discountValue,
           scope: DiscountScope.CUSTOMER,

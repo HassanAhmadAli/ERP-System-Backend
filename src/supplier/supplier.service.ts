@@ -29,6 +29,7 @@ export class SupplierService {
       ? {
           OR: [
             { fullName: { contains: search, mode: "insensitive" as const } },
+            { fullNameAr: { contains: search, mode: "insensitive" as const } },
             { email: { contains: search, mode: "insensitive" as const } },
             { phone: { contains: search, mode: "insensitive" as const } },
           ],
@@ -59,6 +60,7 @@ export class SupplierService {
           select: {
             id: true,
             name: true,
+            nameAr: true,
             barcode: true,
             sellingPrice: true,
             quantityInStock: true,

@@ -63,15 +63,21 @@ export class ReportExportService {
       }
       case "inventory": {
         const products = await this.prisma.product.findMany({
-          include: { category: { select: { name: true } }, supplier: { select: { fullName: true } } },
+          include: {
+            category: { select: { name: true, nameAr: true } },
+            supplier: { select: { fullName: true, fullNameAr: true } },
+          },
           orderBy: { name: "asc" },
         });
         return products.map((p) => ({
           id: p.id,
           name: p.name,
+          nameAr: p.nameAr,
           barcode: p.barcode,
           category: p.category.name,
+          categoryAr: p.category.nameAr,
           supplier: p.supplier.fullName,
+          supplierAr: p.supplier.fullNameAr,
           quantityInStock: p.quantityInStock,
           minQuantity: p.minQuantity,
           purchasePrice: p.purchasePrice.toFixed(2),
@@ -108,8 +114,8 @@ export class ReportExportService {
             status: true,
             invoiceDate: true,
             createdAt: true,
-            supplier: { select: { fullName: true } },
-            accountant: { include: { user: { select: { fullName: true } } } },
+            supplier: { select: { fullName: true, fullNameAr: true } },
+            accountant: { include: { user: { select: { fullName: true, fullNameAr: true } } } },
           },
           orderBy: { createdAt: "desc" },
         });
@@ -117,7 +123,9 @@ export class ReportExportService {
         return invoices.map((inv) => ({
           id: inv.id,
           supplier: inv.supplier.fullName,
+          supplierAr: inv.supplier.fullNameAr,
           accountant: inv.accountant.user.fullName,
+          accountantAr: inv.accountant.user.fullNameAr,
           total: inv.total.toFixed(2),
           status: inv.status,
           invoiceDate: inv.invoiceDate.toISOString(),

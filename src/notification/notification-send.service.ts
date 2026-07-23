@@ -33,7 +33,9 @@ export class NotificationSendService {
       data: {
         senderId,
         title: dto.title,
+        titleAr: dto.titleAr,
         body: dto.body,
+        bodyAr: dto.bodyAr,
         targetType: dto.targetType,
         targetRole: dto.targetRole,
         recipients: {
@@ -41,7 +43,7 @@ export class NotificationSendService {
         },
       },
       include: {
-        sender: { select: { id: true, fullName: true } },
+        sender: { select: { id: true, fullName: true, fullNameAr: true } },
         recipients: { select: { id: true, userId: true, user: { select: { email: true } } } },
       },
     });
@@ -65,7 +67,7 @@ export class NotificationSendService {
     const [data, total] = await Promise.all([
       this.prisma.notification.findMany({
         include: {
-          sender: { select: { id: true, fullName: true, email: true } },
+          sender: { select: { id: true, fullName: true, fullNameAr: true, email: true } },
           _count: { select: { recipients: true } },
         },
         skip: query.offset,

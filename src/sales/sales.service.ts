@@ -14,10 +14,10 @@ import { NotificationsService } from "../notification/notification.service";
 type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
 
 const invoiceInclude = {
-  items: { include: { product: { select: { id: true, name: true, barcode: true } } } },
-  cashier: { include: { user: { select: { id: true, fullName: true, email: true } } } },
-  customer: { include: { user: { select: { id: true, fullName: true, email: true } } } },
-  appliedDiscount: { select: { id: true, name: true } },
+  items: { include: { product: { select: { id: true, name: true, nameAr: true, barcode: true } } } },
+  cashier: { include: { user: { select: { id: true, fullName: true, fullNameAr: true, email: true } } } },
+  customer: { include: { user: { select: { id: true, fullName: true, fullNameAr: true, email: true } } } },
+  appliedDiscount: { select: { id: true, name: true, nameAr: true } },
 } satisfies Prisma.SalesInvoiceInclude;
 
 @Injectable()

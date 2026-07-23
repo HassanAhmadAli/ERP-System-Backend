@@ -27,7 +27,7 @@ export class ExpenseService {
         recordedById: userId,
       },
       include: {
-        recordedBy: { select: { id: true, fullName: true, email: true } },
+        recordedBy: { select: { id: true, fullName: true, fullNameAr: true, email: true } },
       },
     });
   }
@@ -52,7 +52,7 @@ export class ExpenseService {
       this.prisma.expense.findMany({
         where,
         include: {
-          recordedBy: { select: { id: true, fullName: true, email: true } },
+          recordedBy: { select: { id: true, fullName: true, fullNameAr: true, email: true } },
         },
         skip: query.offset,
         take: query.limit,
@@ -68,7 +68,7 @@ export class ExpenseService {
     return this.prisma.expense.findUniqueOrThrow({
       where: { id },
       include: {
-        recordedBy: { select: { id: true, fullName: true, email: true } },
+        recordedBy: { select: { id: true, fullName: true, fullNameAr: true, email: true } },
       },
     });
   }
@@ -79,7 +79,7 @@ export class ExpenseService {
         where: { id },
         data: dto,
         include: {
-          recordedBy: { select: { id: true, fullName: true, email: true } },
+          recordedBy: { select: { id: true, fullName: true, fullNameAr: true, email: true } },
         },
       });
     } catch {

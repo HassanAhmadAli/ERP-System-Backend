@@ -68,6 +68,7 @@ export class AuthenticationService {
         id: true,
         email: true,
         fullName: true,
+        fullNameAr: true,
         role: true,
       },
     });

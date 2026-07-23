@@ -60,6 +60,7 @@ export class ProductService {
       ? {
           OR: [
             { name: { contains: search, mode: "insensitive" } },
+            { nameAr: { contains: search, mode: "insensitive" } },
             { barcode: { contains: search, mode: "insensitive" } },
           ],
         }

@@ -57,7 +57,7 @@ export class AuditLogService implements OnModuleInit {
       this.prisma.auditLog.findMany({
         where,
         include: {
-          user: { select: { id: true, fullName: true, email: true, role: true } },
+          user: { select: { id: true, fullName: true, fullNameAr: true, email: true, role: true } },
         },
         skip: query.offset,
         take: query.limit,

@@ -4,7 +4,9 @@ import { Prisma } from "@/prisma/client";
 import { stringToDateSchema } from "@/common/schema/date.schema";
 export const CreateExpenseSchema = z.object({
   description: z.string().min(1).max(500),
+  descriptionAr: z.string().min(1).max(500).optional(),
   category: z.string().min(1).max(100),
+  categoryAr: z.string().min(1).max(100).optional(),
   amount: z.coerce
     .number()
     .positive()

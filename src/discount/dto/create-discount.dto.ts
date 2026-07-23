@@ -6,6 +6,7 @@ import { stringToDateSchema } from "@/common/schema/date.schema";
 export const CreateDiscountSchema = z
   .object({
     name: z.string().min(2).max(100),
+    nameAr: z.string().min(2).max(100).optional(),
     type: z.enum(DiscountType),
     value: z.coerce
       .number()

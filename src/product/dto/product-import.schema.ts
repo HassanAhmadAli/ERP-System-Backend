@@ -5,6 +5,7 @@ import { emptyStringToUndefined } from "@/common/schema/helper";
 /** Required column headers in the uploaded CSV (first row). */
 export const PRODUCT_IMPORT_CSV_COLUMNS = [
   "name",
+  "nameAr",
   "barcode",
   "purchasePrice",
   "sellingPrice",
@@ -13,6 +14,7 @@ export const PRODUCT_IMPORT_CSV_COLUMNS = [
   "categoryId",
   "supplierId",
   "description",
+  "descriptionAr",
 ] as const;
 
 export type PRODUCT_IMPORT_CSV_COLUMNS = (typeof PRODUCT_IMPORT_CSV_COLUMNS)[number];

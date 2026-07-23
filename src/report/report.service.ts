@@ -85,14 +85,14 @@ export class ReportService {
     const [products, productsWithCategory] = await Promise.all([
       this.prisma.product.findMany({
         where: { id: { in: topProductsAgg.map((p) => p.productId) } },
-        select: { id: true, name: true },
+        select: { id: true, name: true, nameAr: true },
       }),
       this.prisma.product.findMany({
         where: { id: { in: allProductSalesAgg.map((p) => p.productId) } },
         select: {
           id: true,
           categoryId: true,
-          category: { select: { id: true, name: true } },
+          category: { select: { id: true, name: true, nameAr: true } },
         },
       }),
     ]);
@@ -102,22 +102,27 @@ export class ReportService {
       return {
         productId: agg.productId,
         name: product?.name ?? `Deleted Product (ID: ${agg.productId})`,
+        nameAr: product?.nameAr ?? null,
         quantitySold: agg._sum.quantity ?? 0,
         revenue: (agg._sum.subtotal ?? new Prisma.Decimal(0)).toFixed(2),
       };
     });
-    const categoryMap = new Map<number, { categoryId: number; name: string; revenue: Prisma.Decimal }>();
+    const categoryMap = new Map<
+      number,
+      { categoryId: number; name: string; nameAr: string | null; revenue: Prisma.Decimal }
+    >();
     for (const agg of allProductSalesAgg) {
       const product = productsWithCategory.find((p) => p.id === agg.productId);
       const categoryId = product?.categoryId ?? 0;
       const categoryName = product?.category?.name ?? "Uncategorized";
+      const categoryNameAr = product?.category?.nameAr ?? null;
       const revenue = agg._sum.subtotal ?? new Prisma.Decimal(0);
 
       const existing = categoryMap.get(categoryId);
       if (existing) {
         existing.revenue = existing.revenue.add(revenue);
       } else {
-        categoryMap.set(categoryId, { categoryId, name: categoryName, revenue });
+        categoryMap.set(categoryId, { categoryId, name: categoryName, nameAr: categoryNameAr, revenue });
       }
     }
     const salesByCategory = [...categoryMap.values()]
@@ -195,8 +200,8 @@ export class ReportService {
     const [products, lowStockCount, outOfStockCount] = await Promise.all([
       this.prisma.product.findMany({
         include: {
-          category: { select: { id: true, name: true } },
-          supplier: { select: { id: true, fullName: true } },
+          category: { select: { id: true, name: true, nameAr: true } },
+          supplier: { select: { id: true, fullName: true, fullNameAr: true } },
         },
         orderBy: { name: "asc" },
       }),
@@ -219,9 +224,12 @@ export class ReportService {
       products: products.map((p) => ({
         id: p.id,
         name: p.name,
+        nameAr: p.nameAr,
         barcode: p.barcode,
         category: p.category.name,
+        categoryAr: p.category.nameAr,
         supplier: p.supplier.fullName,
+        supplierAr: p.supplier.fullNameAr,
         quantityInStock: p.quantityInStock,
         minQuantity: p.minQuantity,
         purchasePrice: p.purchasePrice.toFixed(2),

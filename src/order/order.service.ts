@@ -13,9 +13,9 @@ import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
 
 const orderInclude = {
-  items: { include: { product: { select: { id: true, name: true, barcode: true } } } },
-  customer: { include: { user: { select: { id: true, fullName: true, email: true } } } },
-  appliedDiscount: { select: { id: true, name: true } },
+  items: { include: { product: { select: { id: true, name: true, nameAr: true, barcode: true } } } },
+  customer: { include: { user: { select: { id: true, fullName: true, fullNameAr: true, email: true } } } },
+  appliedDiscount: { select: { id: true, name: true, nameAr: true } },
 } satisfies Prisma.OrderInclude;
 
 const STOCK_RESERVED_STATUSES: OrderStatus[] = [
@@ -75,6 +75,7 @@ export class OrderService {
           appliedDiscountId,
           subtotal,
           deliveryAddress: dto.deliveryAddress ?? customer.address,
+          deliveryAddressAr: dto.deliveryAddressAr ?? customer.addressAr,
           items: {
             create: lineItems.map((item) => ({
               productId: item.productId,

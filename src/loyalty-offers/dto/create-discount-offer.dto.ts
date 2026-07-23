@@ -4,7 +4,9 @@ import { z } from "zod";
 
 export const CreateLoyaltyRewardSchema = z.object({
   name: z.string().min(2),
+  nameAr: z.string().min(2).optional(),
   description: z.string().optional(),
+  descriptionAr: z.string().optional(),
   pointsCost: z.coerce.number().int().positive(),
   discountType: z.enum(DiscountType),
   discountValue: z.coerce

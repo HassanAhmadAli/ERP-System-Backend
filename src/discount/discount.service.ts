@@ -12,6 +12,7 @@ import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 export interface DiscountCalculationResult {
   discountId: number;
   discountName: string;
+  discountNameAr: string | null;
   type: DiscountType;
   scope: DiscountScope;
   subtotal: string;
@@ -81,7 +82,7 @@ export class DiscountService {
         ...createDiscountDto,
         createdById: userId,
       },
-      include: { createdBy: { select: { id: true, fullName: true } } },
+      include: { createdBy: { select: { id: true, fullName: true, fullNameAr: true } } },
     });
 
     return discount;
@@ -91,13 +92,16 @@ export class DiscountService {
     const where: Prisma.DiscountWhereInput = {};
 
     if (search) {
-      where.name = { contains: search, mode: "insensitive" };
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { nameAr: { contains: search, mode: "insensitive" } },
+      ];
     }
 
     const [data, count] = await Promise.all([
       this.prisma.discount.findMany({
         where,
-        include: { createdBy: { select: { id: true, fullName: true } } },
+        include: { createdBy: { select: { id: true, fullName: true, fullNameAr: true } } },
         skip: query.offset,
         take: query.limit,
         orderBy: { createdAt: "desc" },
@@ -111,7 +115,7 @@ export class DiscountService {
   async findOne(id: number) {
     const discount = await this.prisma.discount.findUniqueOrThrow({
       where: { id },
-      include: { createdBy: { select: { id: true, fullName: true } } },
+      include: { createdBy: { select: { id: true, fullName: true, fullNameAr: true } } },
     });
 
     return discount;
@@ -210,7 +214,7 @@ export class DiscountService {
     const updated = await this.prisma.discount.update({
       where: { id },
       data: updateDiscountDto,
-      include: { createdBy: { select: { id: true, fullName: true } } },
+      include: { createdBy: { select: { id: true, fullName: true, fullNameAr: true } } },
     });
 
     return updated;
@@ -226,7 +230,7 @@ export class DiscountService {
     return await this.prisma.discount.update({
       where: { id },
       data: { isActive },
-      include: { createdBy: { select: { id: true, fullName: true } } },
+      include: { createdBy: { select: { id: true, fullName: true, fullNameAr: true } } },
     });
   }
 
@@ -337,6 +341,7 @@ export class DiscountService {
     return {
       discountId: discount.id,
       discountName: discount.name,
+      discountNameAr: discount.nameAr,
       type: discount.type,
       scope: discount.scope,
       subtotal: subtotal.toFixed(2),

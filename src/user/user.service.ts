@@ -11,6 +11,7 @@ import { CreateStaffDto } from "./dto/create-staff.dto";
 const STAFF_ROLES: UserRole[] = [UserRole.CASHIER, UserRole.ACCOUNTANT, UserRole.WAREHOUSE_WORKER];
 const staff_profile_select = {
   fullName: true,
+  fullNameAr: true,
   role: true,
   nationalId: true,
   phoneNumber: true,

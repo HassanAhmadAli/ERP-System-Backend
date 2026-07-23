@@ -31,13 +31,32 @@ export class CategoryService {
       );
     }
 
+    if (createCategoryDto.nameAr) {
+      const nameArConflict = await this.prisma.category.findFirst({
+        select: { id: true },
+        where: { nameAr: createCategoryDto.nameAr },
+      });
+      if (nameArConflict) {
+        throw new ConflictException(
+          this.i18n.t("errors.category.nameExists", { args: { name: createCategoryDto.nameAr } }),
+        );
+      }
+    }
+
     return this.prisma.category.create({
       data: createCategoryDto,
     });
   }
 
   async findAll(query: PaginationQueryDto, search: string | undefined) {
-    const where = search ? { name: { contains: search, mode: "insensitive" as const } } : {};
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" as const } },
+            { nameAr: { contains: search, mode: "insensitive" as const } },
+          ],
+        }
+      : {};
 
     const [data, total] = await Promise.all([
       this.prisma.category.findMany({
@@ -63,6 +82,7 @@ export class CategoryService {
           select: {
             id: true,
             name: true,
+            nameAr: true,
             barcode: true,
             sellingPrice: true,
             quantityInStock: true,
@@ -88,6 +108,18 @@ export class CategoryService {
       if (nameConflict) {
         throw new ConflictException(
           this.i18n.t("errors.category.nameExists", { args: { name: updateCategoryDto.name } }),
+        );
+      }
+    }
+
+    if (updateCategoryDto.nameAr) {
+      const nameArConflict = await this.prisma.category.findFirst({
+        select: { id: true },
+        where: { nameAr: updateCategoryDto.nameAr, NOT: { id } },
+      });
+      if (nameArConflict) {
+        throw new ConflictException(
+          this.i18n.t("errors.category.nameExists", { args: { name: updateCategoryDto.nameAr } }),
         );
       }
     }

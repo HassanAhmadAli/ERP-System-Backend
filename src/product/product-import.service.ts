@@ -13,8 +13,9 @@ import {
   type ProductImportCsvFile,
 } from "./dto/product-import.schema";
 
+const OPTIONAL_CSV_COLUMNS = new Set(["description", "nameAr", "descriptionAr"]);
 const REQUIRED_CSV_HEADERS = PRODUCT_IMPORT_CSV_COLUMNS.filter(
-  (column): column is Exclude<PRODUCT_IMPORT_CSV_COLUMNS, "description"> => column !== "description",
+  (column): column is Exclude<PRODUCT_IMPORT_CSV_COLUMNS, typeof column> => !OPTIONAL_CSV_COLUMNS.has(column),
 );
 
 /** Max rows per `createMany` call to stay within DB/driver limits. */
@@ -73,7 +74,7 @@ export class ProductImportService {
   async getJob(id: number) {
     return this.prisma.productImportJob.findUniqueOrThrow({
       where: { id },
-      include: { uploadedBy: { select: { id: true, fullName: true, email: true } } },
+      include: { uploadedBy: { select: { id: true, fullName: true, fullNameAr: true, email: true } } },
     });
   }
 
@@ -81,7 +82,7 @@ export class ProductImportService {
     return this.prisma.productImportJob.findMany({
       take: limit,
       orderBy: { createdAt: "desc" },
-      include: { uploadedBy: { select: { id: true, fullName: true } } },
+      include: { uploadedBy: { select: { id: true, fullName: true, fullNameAr: true } } },
     });
   }
 

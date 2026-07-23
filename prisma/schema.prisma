@@ -81,6 +81,7 @@ enum NotificationTargetType {
 model User {
   id           Int      @id @default(autoincrement())
   fullName     String
+  fullNameAr   String?
   email        String   @unique
   phoneNumber  String?
   passwordHash String   @map("password")
@@ -112,9 +113,10 @@ model User {
 }
 
 model Employee {
-  id       Int    @id @default(autoincrement())
-  userId   Int    @unique
-  jobTitle String
+  id         Int     @id @default(autoincrement())
+  userId     Int     @unique
+  jobTitle   String
+  jobTitleAr String?
 
   user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   processedInvoices SalesInvoice[]    @relation("Cashier")
@@ -125,6 +127,7 @@ model Customer {
   id            Int     @id @default(autoincrement())
   userId        Int     @unique
   address       String?
+  addressAr     String?
   loyaltyPoints Int     @default(0)
   totalSpent    Decimal @default(0) @db.Decimal(12, 2)
 
@@ -141,11 +144,13 @@ model Customer {
 //// Products
 
 model Category {
-  id           Int     @id @default(autoincrement())
-  name         String  @unique
-  description  String?
-  imageUrl     String?
-  storedFileId String? @unique
+  id            Int     @id @default(autoincrement())
+  name          String  @unique
+  nameAr        String?
+  description   String?
+  descriptionAr String?
+  imageUrl      String?
+  storedFileId  String? @unique
 
   storedFile StoredFile? @relation(fields: [storedFileId], references: [id])
   products   Product[]
@@ -153,11 +158,13 @@ model Category {
 }
 
 model Supplier {
-  id       Int     @id @default(autoincrement())
-  fullName String
-  phone    String?
-  email    String?
-  address  String?
+  id         Int     @id @default(autoincrement())
+  fullName   String
+  fullNameAr String?
+  phone      String?
+  email      String?
+  address    String?
+  addressAr  String?
 
   products         Product[]
   purchaseInvoices PurchaseInvoice[]
@@ -166,7 +173,9 @@ model Supplier {
 model Product {
   id              Int      @id @default(autoincrement())
   name            String
+  nameAr          String?
   description     String?
+  descriptionAr   String?
   barcode         String   @unique
   purchasePrice   Decimal  @db.Decimal(12, 2)
   sellingPrice    Decimal  @db.Decimal(12, 2)
@@ -258,10 +267,11 @@ model Order {
 
   subtotal Decimal @db.Decimal(12, 2)
 
-  deliveryAddress String?
-  status          OrderStatus @default(PENDING)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  deliveryAddress   String?
+  deliveryAddressAr String?
+  status            OrderStatus @default(PENDING)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   customer        Customer    @relation(fields: [customerId], references: [id])
   appliedDiscount Discount?   @relation(fields: [appliedDiscountId], references: [id])
@@ -285,6 +295,7 @@ model OrderItem {
 model Discount {
   id              Int           @id @default(autoincrement())
   name            String
+  nameAr          String?
   type            DiscountType
   value           Decimal       @db.Decimal(12, 2)
   scope           DiscountScope
@@ -313,7 +324,9 @@ model Discount {
 model LoyaltyDiscountOffer {
   id            String       @id @default(uuid())
   name          String
+  nameAr        String?
   description   String?
+  descriptionAr String?
   pointsCost    Int
   discountType  DiscountType
   discountValue Decimal      @db.Decimal(12, 2)
@@ -345,7 +358,9 @@ model Notification {
   id         Int                    @id @default(autoincrement())
   senderId   Int
   title      String
+  titleAr    String?
   body       String
+  bodyAr     String?
   targetType NotificationTargetType
   targetRole UserRole?
   sentAt     DateTime               @default(now())
@@ -355,17 +370,19 @@ model Notification {
 }
 
 model Advertisement {
-  id          Int         @id @default(autoincrement())
-  title       String
-  description String?
-  imageUrl    String?
-  linkUrl     String?
-  placement   AdPlacement @default(HOME)
-  isActive    Boolean     @default(true)
-  startDate   DateTime
-  endDate     DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id            Int         @id @default(autoincrement())
+  title         String
+  titleAr       String?
+  description   String?
+  descriptionAr String?
+  imageUrl      String?
+  linkUrl       String?
+  placement     AdPlacement @default(HOME)
+  isActive      Boolean     @default(true)
+  startDate     DateTime
+  endDate       DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 
 // used for storing one row, hoding the loyality policy of the store
@@ -380,6 +397,7 @@ model ProductImportJob {
   id           Int                 @id @default(autoincrement())
   uploadedById Int
   fileName     String
+  fileNameAr   String?
   status       ProductImportStatus @default(PENDING)
   totalRows    Int                 @default(0)
   successCount Int                 @default(0)
@@ -420,13 +438,15 @@ model AuditLog {
 }
 
 model Expense {
-  id           Int      @id @default(autoincrement())
-  recordedById Int
-  description  String
-  category     String
-  amount       Decimal  @db.Decimal(12, 2)
-  expenseDate  DateTime
-  createdAt    DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  recordedById  Int
+  description   String
+  descriptionAr String?
+  category      String
+  categoryAr    String?
+  amount        Decimal  @db.Decimal(12, 2)
+  expenseDate   DateTime
+  createdAt     DateTime @default(now())
 
   recordedBy User @relation(fields: [recordedById], references: [id])
 }

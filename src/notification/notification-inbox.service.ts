@@ -25,7 +25,7 @@ export class NotificationInboxService {
         include: {
           notification: {
             include: {
-              sender: { select: { id: true, fullName: true, email: true } },
+              sender: { select: { id: true, fullName: true, fullNameAr: true, email: true } },
             },
           },
         },

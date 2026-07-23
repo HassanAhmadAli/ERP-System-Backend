@@ -4,6 +4,7 @@ import { DiscountScope, DiscountType, Prisma } from "@/prisma/client";
 import { stringToDateSchema } from "@/common/schema/date.schema";
 export const UpdateDiscountSchema = z.object({
   name: z.string().min(2).max(100).optional(),
+  nameAr: z.string().min(2).max(100).optional(),
   type: z.enum(DiscountType).optional(),
   value: z.coerce
     .number()

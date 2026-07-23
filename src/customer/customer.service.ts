@@ -27,6 +27,7 @@ export class CustomerService {
       where: { id: userId },
       select: {
         fullName: true,
+        fullNameAr: true,
         email: true,
         phoneNumber: true,
         language: true,
@@ -35,6 +36,7 @@ export class CustomerService {
           select: {
             id: true,
             address: true,
+            addressAr: true,
             loyaltyPoints: true,
             totalSpent: true,
           },
@@ -61,6 +63,7 @@ export class CustomerService {
             select: {
               id: true,
               name: true,
+              nameAr: true,
               type: true,
               value: true,
               maxUses: true,
@@ -76,7 +79,7 @@ export class CustomerService {
   }
 
   async updateProfile(userId: number, dto: UpdateCustomerProfileDto) {
-    const { address, ...userFields } = dto;
+    const { address, addressAr, ...userFields } = dto;
     const user = await this.prisma.user.update({
       where: {
         id: userId,
@@ -86,19 +89,21 @@ export class CustomerService {
         customer: {
           update: {
             where: { userId },
-            data: { address },
+            data: { address, addressAr },
           },
         },
       },
       select: {
         language: true,
         fullName: true,
+        fullNameAr: true,
         email: true,
         phoneNumber: true,
         customer: {
           where: { userId },
           select: {
             address: true,
+            addressAr: true,
           },
         },
       },
@@ -114,6 +119,7 @@ export class CustomerService {
     if (query.search != undefined) {
       where.user!.OR = [
         { fullName: { contains: query.search, mode: "insensitive" } },
+        { fullNameAr: { contains: query.search, mode: "insensitive" } },
         { email: { contains: query.search, mode: "insensitive" } },
       ];
     }
@@ -126,6 +132,7 @@ export class CustomerService {
             select: {
               id: true,
               fullName: true,
+              fullNameAr: true,
               email: true,
               phoneNumber: true,
               isActive: true,
@@ -150,6 +157,7 @@ export class CustomerService {
           select: {
             id: true,
             fullName: true,
+            fullNameAr: true,
             email: true,
             phoneNumber: true,
             isActive: true,
@@ -181,7 +189,7 @@ export class CustomerService {
     return this.prisma.user.update({
       where: { id: customer.user.id },
       data: { isActive: dto.isActive },
-      select: { id: true, fullName: true, email: true, isActive: true },
+      select: { id: true, fullName: true, fullNameAr: true, email: true, isActive: true },
     });
   }
 
@@ -200,7 +208,7 @@ export class CustomerService {
         where: { id: customerId },
         data: { loyaltyPoints: nextPoints },
         include: {
-          user: { select: { id: true, fullName: true, email: true } },
+          user: { select: { id: true, fullName: true, fullNameAr: true, email: true } },
         },
       });
 

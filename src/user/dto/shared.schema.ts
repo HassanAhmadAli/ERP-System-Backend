@@ -9,6 +9,7 @@ const staffRoles = _.omit(UserRole, ["CUSTOMER"]);
 
 export const CreateUserSchema = z.object({
   fullName: z.string(),
+  fullNameAr: z.string().optional(),
   email: z.email(),
   phoneNumber: phoneNumberSchema.optional(),
   password: z.string(),
@@ -21,31 +22,37 @@ export const CreateCustomerSchema = openapiMeta(
   CreateUserSchema.extend({
     phoneNumber: phoneNumberSchema,
     address: z.string().optional(),
+    addressAr: z.string().optional(),
   }),
   "CustomerSignupDto",
   {
     fullName: "Jane Customer",
+    fullNameAr: "جين كاستمر",
     email: "jane.customer@example.com",
     phoneNumber: "+12025550199",
     password: SEED.password,
     nationalId: "0000000099",
     address: "456 Oak Ave",
+    addressAr: "456 أوك أفينيو",
   },
 );
 
 export const CreateStaffSchema = openapiMeta(
   CreateUserSchema.extend({
     jobTitle: z.string(),
+    jobTitleAr: z.string().optional(),
     role: z.enum(staffRoles),
   }),
   "CreateStaffDto",
   {
     fullName: "New Cashier",
+    fullNameAr: "موظف جديد",
     email: "new.cashier@example.com",
     phoneNumber: "+12025550200",
     password: SEED.password,
     nationalId: "0000000100",
     jobTitle: "Cashier",
+    jobTitleAr: "أمين صندوق",
     role: UserRole.CASHIER,
   },
 );
