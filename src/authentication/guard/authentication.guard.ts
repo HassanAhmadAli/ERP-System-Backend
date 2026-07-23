@@ -1,20 +1,23 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { AuthGuard } from "@nestjs/passport";
+import { JsonWebTokenError } from "@nestjs/jwt";
 import { Keys } from "@/common/const";
-import { ActiveUserSchema } from "../dto/request-user.dto";
+import { ActiveUserType } from "../dto/request-user.dto";
 import { RequestWithActiveUser } from "@/common/decorators/ActiveUser.decorator";
-import { HashingService } from "@/hashing/hashing.service";
 import { I18nService } from "nestjs-i18n";
 import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 
 @Injectable()
-export class AuthenticationGuard implements CanActivate {
+export class AuthenticationGuard extends AuthGuard("jwt") {
   constructor(
     private readonly reflector: Reflector,
-    private readonly hashingService: HashingService,
     private readonly i18n: I18nService<I18nTranslations>,
-  ) {}
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  ) {
+    super();
+  }
+
+  override async canActivate(context: ExecutionContext) {
     const IsPublic = this.reflector.getAllAndOverride<boolean | undefined>(Keys.IsPublic, [
       context.getHandler(),
       context.getClass(),
@@ -22,21 +25,26 @@ export class AuthenticationGuard implements CanActivate {
     if (IsPublic) {
       return true;
     }
-    const req = context.switchToHttp().getRequest<RequestWithActiveUser>();
-    return this.validateTokenAndAssignUser(req);
+    return (await super.canActivate(context)) as boolean;
   }
 
-  async validateTokenAndAssignUser(req: RequestWithActiveUser): Promise<boolean> {
-    const token = this.extractTokenFromHeader(req);
-    if (token == undefined) {
+  override handleRequest<TUser = ActiveUserType>(
+    err: Error | null,
+    user: TUser | false,
+    info: Error | null,
+    context: ExecutionContext,
+  ): TUser {
+    if (err) {
+      throw err;
+    }
+    if (!user) {
+      if (info instanceof JsonWebTokenError) {
+        throw new UnauthorizedException(this.i18n.t("errors.auth.invalidToken"));
+      }
       throw new UnauthorizedException(this.i18n.t("errors.auth.accessTokenNotProvided"));
     }
-    const payLoad = await this.hashingService.verifyJwtToken(token);
-    req[Keys.User] = ActiveUserSchema.parse(payLoad);
-    return true;
-  }
-  private extractTokenFromHeader(req: RequestWithActiveUser): string | undefined {
-    const [_, token] = req.headers.authorization?.split(" ") ?? [];
-    return token;
+    const req = context.switchToHttp().getRequest<RequestWithActiveUser>();
+    req[Keys.User] = user as unknown as ActiveUserType;
+    return user;
   }
 }
