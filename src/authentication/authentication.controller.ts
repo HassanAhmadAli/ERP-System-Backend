@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { ApiTags } from "@nestjs/swagger";
+import { ThrottlerGuard } from "@nestjs/throttler";
 import type { Request } from "express";
 import { SigninDto } from "./dto/signin.dto";
 import { CustomerSignupDto } from "./dto/customer-signup.dto";
@@ -16,6 +17,7 @@ import { AuthTokensDto, MessageResponseDto } from "@/openapi/dto/responses.dto";
 import type { ActiveUserType, RefreshTokenPayload } from "./dto/request-user.dto";
 
 @Public()
+@UseGuards(ThrottlerGuard)
 @ApiTags("Authentication")
 @Controller("authentication")
 export class AuthenticationController {

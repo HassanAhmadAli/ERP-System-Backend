@@ -40,9 +40,13 @@ import { AuditContextInterceptor } from "./audit-log/audit-context.interceptor";
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from "nestjs-i18n";
 import path from "node:path";
 import { UserLanguageResolver } from "./i18n/resolvers/user-language.resolver";
+import { ThrottlerModule } from "@nestjs/throttler";
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [{ name: "default", ttl: 60000, limit: 10 }],
+    }),
     //// core imports
     BullModule.forRoot({
       connection: {

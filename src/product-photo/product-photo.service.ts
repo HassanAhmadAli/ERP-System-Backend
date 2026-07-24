@@ -3,6 +3,7 @@ import { normalizeUploadPath, resolveUploadPath } from "@/upload/resolve-upload-
 import { Injectable, NotFoundException, StreamableFile } from "@nestjs/common";
 import { I18nService } from "nestjs-i18n";
 import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+import { logger } from "@/utils";
 
 import { createReadStream } from "node:fs";
 import { unlink } from "node:fs/promises";
@@ -102,11 +103,11 @@ export class ProductPhotoService {
       try {
         await unlink(resolvedPath);
       } catch {
-        // file may already be missing on disk
+        logger.warn({ resolvedPath }, "Failed to delete product photo file (may already be missing)");
       }
     }
 
-    return { message: `Product photo ${photoId} deleted successfully` };
+    return { message: this.i18n.t("responses.productPhoto.deleted", { args: { photoId: String(photoId) } }) };
   }
 
   async downloadProductPhoto(storedFileId: string) {

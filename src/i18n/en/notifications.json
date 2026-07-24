@@ -9,6 +9,10 @@
     "statusUpdatedTitle": "Order status updated",
     "statusUpdatedBody": "Your order #{{orderId}} is now {{status}}"
   },
+  "stock": {
+    "lowStockTitle": "Low stock alert",
+    "lowStockBody": "Product \"{{productName}}\" is low on stock ({{quantity}} remaining)"
+  },
   "auth": {
     "verificationCodeSubject": "Verification Code for the Complaint App",
     "verificationCodeBody": "Your verification code is: {{code}}, it will expire in 15 minutes",

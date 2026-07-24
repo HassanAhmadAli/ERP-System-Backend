@@ -37,6 +37,7 @@ export class ProductPhotoController {
   }
 
   @Get("product/:productId")
+  @setPermissions(Permissions.viewProducts)
   @DocumentOperation("List photos for a product")
   @DocumentParam("productId", "Product ID")
   @DocumentOkResponse("Product photos")

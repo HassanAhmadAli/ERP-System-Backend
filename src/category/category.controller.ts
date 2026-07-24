@@ -51,6 +51,7 @@ export class CategoryController {
   }
 
   @Get()
+  @setPermissions(Permissions.viewCategories)
   @DocumentOperation("List categories", "Paginated with optional search.")
   @DocumentOkResponse("Paginated categories")
   findAll(@Query() { search, ...paginationQuery }: SearchQueryDto) {
@@ -67,6 +68,7 @@ export class CategoryController {
   }
 
   @Get(":id")
+  @setPermissions(Permissions.viewCategories)
   @DocumentOperation("Get category by ID", "Includes linked products.")
   @DocumentParam("id", "Category ID")
   @DocumentOkResponse("Category with products")

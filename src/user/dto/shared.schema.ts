@@ -12,7 +12,10 @@ export const CreateUserSchema = z.object({
   fullNameAr: z.string().optional(),
   email: z.email(),
   phoneNumber: phoneNumberSchema.optional(),
-  password: z.string(),
+  password: z
+    .string()
+    .min(8)
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must include uppercase, lowercase, and digit"),
   nationalId: z.string(),
   language: z.enum(["en", "ar"]).optional(),
 });

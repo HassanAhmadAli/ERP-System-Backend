@@ -9,6 +9,10 @@
     "statusUpdatedTitle": "تم تحديث حالة الطلب",
     "statusUpdatedBody": "طلبك رقم {{orderId}} أصبح الآن {{status}}"
   },
+  "stock": {
+    "lowStockTitle": "تنبيه المخزون المنخفض",
+    "lowStockBody": "المنتج \"{{productName}}\" منخفض المخزون ({{quantity}} متبقي)"
+  },
   "auth": {
     "verificationCodeSubject": "رمز التحقق لتطبيق الشكاوى",
     "verificationCodeBody": "رمز التحقق الخاص بك هو: {{code}}، ستنتهي صلاحيته خلال 15 دقيقة",

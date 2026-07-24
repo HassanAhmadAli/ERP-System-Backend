@@ -1,9 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { I18nService } from "nestjs-i18n";
 import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
-
 import { Namespace, Socket } from "socket.io";
-import { MessageBody } from "@nestjs/websockets";
 import { PrismaService } from "@/prisma/prisma.service";
 import { ActiveUserSchema } from "@/authentication/dto/request-user.dto";
 import { AppCachingService } from "@/caching/caching.service";
@@ -13,11 +11,11 @@ import { InjectQueue } from "@nestjs/bullmq";
 import { Keys } from "@/common/const";
 import { Queue } from "bullmq";
 import { Notification } from "./notification.interface";
+import { logger } from "@/utils";
 
 @Injectable()
 export class NotificationsService {
   namespace!: Namespace;
-
   constructor(
     private readonly prismaService: PrismaService,
     private readonly hashingService: HashingService,
@@ -34,15 +32,27 @@ export class NotificationsService {
     this.notificationConsumer.setNamespace(namespace);
   }
 
-  async handleLogin(client: Socket, @MessageBody() access_token: string) {
-    const decoded = this.hashingService.verifyJwtToken(access_token);
-    const user = ActiveUserSchema.parse(decoded);
-    await this.cachingService.socketIo.checkSocketid(client.id);
-    await this.cachingService.socketIo.registerSocket(client.id, user.sub);
-    return {
-      email: user.email,
-      message: this.i18n.t("responses.notification.connectionEstablished"),
-    };
+  async handleConnection(client: Socket) {
+    const token = client.handshake.query.token as string | undefined;
+    if (!token) {
+      logger.warn(`WS connection rejected (no token): ${client.id}`);
+      client.disconnect();
+      return;
+    }
+    try {
+      const decoded = await this.hashingService.verifyJwtToken<object>(token);
+      const { success, data: user } = ActiveUserSchema.safeParse(decoded);
+      if (!success) {
+        logger.warn(`WS connection rejected (invalid token payload): ${client.id}`);
+        client.disconnect();
+        return;
+      }
+      await this.cachingService.socketIo.checkSocketid(client.id);
+      await this.cachingService.socketIo.registerSocket(client.id, user.sub);
+    } catch {
+      logger.warn(`WS connection rejected (bad token): ${client.id}`);
+      client.disconnect();
+    }
   }
 
   async handleDisconnect(client: Socket) {

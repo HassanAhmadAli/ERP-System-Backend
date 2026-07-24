@@ -24,7 +24,8 @@
     "deleted": "Product with ID {{id}} has been deleted successfully"
   },
   "category": {
-    "deleted": "Category with ID {{id}} has been deleted successfully"
+    "deleted": "Category with ID {{id}} has been deleted successfully",
+    "imageDeleted": "Category image for {{categoryId}} deleted successfully"
   },
   "discount": {
     "deleted": "Discount with ID {{id}} has been deleted successfully"
@@ -34,6 +35,9 @@
   },
   "loyalty": {
     "offerDeleted": "Loyalty offer {{id}} deleted successfully"
+  },
+  "productPhoto": {
+    "deleted": "Product photo {{photoId}} deleted successfully"
   },
   "common": {
     "operationCompleted": "Operation completed successfully"

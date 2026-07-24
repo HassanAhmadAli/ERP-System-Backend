@@ -24,7 +24,8 @@
     "deleted": "تم حذف المنتج ذو المعرف {{id}} بنجاح"
   },
   "category": {
-    "deleted": "تم حذف الفئة ذات المعرف {{id}} بنجاح"
+    "deleted": "تم حذف الفئة ذات المعرف {{id}} بنجاح",
+    "imageDeleted": "تم حذف صورة الفئة {{categoryId}} بنجاح"
   },
   "discount": {
     "deleted": "تم حذف الخصم ذو المعرف {{id}} بنجاح"
@@ -34,6 +35,9 @@
   },
   "loyalty": {
     "offerDeleted": "تم حذف عرض الولاء {{id}} بنجاح"
+  },
+  "productPhoto": {
+    "deleted": "تم حذف صورة المنتج {{photoId}} بنجاح"
   },
   "common": {
     "operationCompleted": "تمت العملية بنجاح"

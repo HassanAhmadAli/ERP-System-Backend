@@ -31,6 +31,7 @@ export class AdController {
   }
 
   @Get()
+  @setPermissions(Permissions.viewAds)
   @DocumentOperation("List advertisements", "Public catalog; filter activeOnly for storefront.")
   @DocumentOkResponse("Paginated advertisements")
   findAll(@Query() { activeOnly, ...paginationQuery }: FindAllAdQueryDto) {

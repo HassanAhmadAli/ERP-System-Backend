@@ -1,16 +1,12 @@
 import {
   WebSocketGateway,
-  SubscribeMessage,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  ConnectedSocket,
-  MessageBody,
   OnGatewayInit,
   WebSocketServer,
 } from "@nestjs/websockets";
 import { Namespace, Socket } from "socket.io";
 import { NotificationsService } from "./notification.service";
-import { logger } from "@/utils";
 import { UseStandardGatewaySetup } from "@/common/decorators/standard-gateway.decorator";
 
 @UseStandardGatewaySetup()
@@ -27,16 +23,11 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     this.notificationsService.setNamespace(namespace);
   }
 
-  handleConnection(client: Socket) {
-    logger.info(`Client connected: ${client.id}`);
+  async handleConnection(client: Socket) {
+    return this.notificationsService.handleConnection(client);
   }
 
   async handleDisconnect(client: Socket) {
     return this.notificationsService.handleDisconnect(client);
-  }
-
-  @SubscribeMessage("login")
-  async handleLogin(@ConnectedSocket() socket: Socket, @MessageBody() access_token: string) {
-    return await this.notificationsService.handleLogin(socket, access_token);
   }
 }

@@ -42,7 +42,8 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
     if (exception instanceof HttpException) {
       try {
         return client.emit("exception", exception.getResponse());
-      } catch {
+      } catch (wsError) {
+        logger.error({ err: wsError }, "Failed to emit WS exception response");
         super.catch(exception, host);
       }
     }
@@ -57,8 +58,8 @@ export class GlobalExceptionFilter extends BaseExceptionFilter {
         statusCode: 500,
         message: exception.message,
       });
-    } catch {
-      // do nothing
+    } catch (finalWsError) {
+      logger.error({ err: finalWsError }, "Failed to emit final WS error response");
     }
   }
 }

@@ -52,6 +52,7 @@ export class UserController {
   }
 
   @Get("me")
+  @setPermissions(Permissions.updatePersonalProfile)
   @DocumentOperation("Get current user profile")
   @DocumentOkResponse("Authenticated user profile")
   getPersonalProfile(@ActiveUser("sub") userId: number) {

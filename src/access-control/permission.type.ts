@@ -17,7 +17,9 @@ export const Permissions = {
   deleteAccount: "account:delete",
   manageDiscounts: "discount:manage",
   manageAds: "ads:manage",
+  viewAds: "ads:view",
   manageCategories: "category:manage",
+  viewCategories: "category:view",
   viewReports: "reports:view",
   viewCustomers: "customers:view",
   manageCustomerStatus: "customers:manage-status",
@@ -31,6 +33,7 @@ export const Permissions = {
   manageSales: "sales:manage",
   addProduct: "product:create",
   manageProduct: "product:manage",
+  viewProducts: "product:view",
   manageSuppliers: "supplier:manage",
   manageExpenses: "expenses:manage",
   viewExpenses: "expenses:view",
@@ -43,7 +46,12 @@ export const Permissions = {
 } as const;
 export type Permissions = ValueOf<typeof Permissions>;
 
-const BASE_PERMISSIONS: Permissions[] = [Permissions.updatePersonalProfile];
+const BASE_PERMISSIONS: Permissions[] = [
+  Permissions.updatePersonalProfile,
+  Permissions.viewProducts,
+  Permissions.viewCategories,
+  Permissions.viewAds,
+];
 
 const CASHIER_PERMISSIONS: Permissions[] = [
   ...BASE_PERMISSIONS,

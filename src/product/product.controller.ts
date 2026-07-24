@@ -58,6 +58,7 @@ export class ProductController {
   }
 
   @Get()
+  @setPermissions(Permissions.viewProducts)
   @DocumentOperation("List products", "Paginated catalog with optional search term.")
   @DocumentOkResponse("Paginated products")
   getProducts(@Query() { search, ...paginationQuery }: SearchQueryDto) {
@@ -65,6 +66,7 @@ export class ProductController {
   }
 
   @Get("category/:categoryId")
+  @setPermissions(Permissions.viewProducts)
   @DocumentOperation("List products by category")
   @DocumentParam("categoryId", "Category ID")
   @DocumentOkResponse("Paginated products in category")
@@ -76,6 +78,7 @@ export class ProductController {
   }
 
   @Get("supplier/:supplierId")
+  @setPermissions(Permissions.viewProducts)
   @DocumentOperation("List products by supplier")
   @DocumentParam("supplierId", "Supplier ID")
   @DocumentOkResponse("Paginated products from supplier")
@@ -129,6 +132,7 @@ export class ProductController {
   }
 
   @Get(":id")
+  @setPermissions(Permissions.viewProducts)
   @DocumentOperation("Get product by ID")
   @DocumentParam("id", "Product ID")
   @DocumentOkResponse("Product details")

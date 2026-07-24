@@ -273,10 +273,12 @@ export class SalesService {
           if (!worker.email) continue;
           await this.notificationsService.addNotification(
             {
-              title: "Low stock alert",
+              title: this.i18n.t("notifications.stock.lowStockTitle"),
               userId: worker.id,
               email: worker.email,
-              message: `Product "${updatedProduct.name}" is low on stock (${updatedProduct.quantityInStock} remaining)`,
+              message: this.i18n.t("notifications.stock.lowStockBody", {
+                args: { productName: updatedProduct.name, quantity: updatedProduct.quantityInStock },
+              }),
               type: "warning",
               createdAt: new Date(),
             },
@@ -288,17 +290,19 @@ export class SalesService {
 
     if (invoice.customerId != undefined) {
       const total = invoice.total;
+      const policy = await tx.loyaltyPolicy.findUnique({ where: { id: 1 } });
+      const points = policy ? Math.floor(total.mul(policy.pointsPerCurrency).toNumber()) : Math.floor(total.toNumber());
       await tx.customer.update({
         where: { id: invoice.customerId },
         data: {
           totalSpent: { increment: invoice.total },
-          loyaltyPoints: { increment: total.toNumber() },
+          loyaltyPoints: { increment: points },
         },
       });
     }
 
     if (invoice.appliedDiscountId != undefined) {
-      await this.discountService.incrementUsage(invoice.appliedDiscountId);
+      await this.discountService.incrementUsage(invoice.appliedDiscountId, tx);
     }
   }
 
@@ -315,11 +319,13 @@ export class SalesService {
 
     if (invoice.customerId != undefined) {
       const total = invoice.total;
+      const policy = await tx.loyaltyPolicy.findUnique({ where: { id: 1 } });
+      const points = policy ? Math.floor(total.mul(policy.pointsPerCurrency).toNumber()) : Math.floor(total.toNumber());
       await tx.customer.update({
         where: { id: invoice.customerId },
         data: {
           totalSpent: { decrement: invoice.total },
-          loyaltyPoints: { decrement: total.toNumber() },
+          loyaltyPoints: { decrement: points },
         },
       });
     }

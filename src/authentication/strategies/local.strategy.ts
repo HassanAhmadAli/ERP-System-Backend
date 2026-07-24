@@ -30,7 +30,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   override async validate(email: string, password: string): Promise<ActiveUserType> {
-    const user = await this.prisma.user.findUniqueOrThrow({
+    const user = await this.prisma.user.findFirst({
       where: { email },
       select: {
         id: true,
@@ -41,8 +41,9 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       },
     });
 
-    if (!user.isVerified) {
-      throw new UnauthorizedException(this.i18n.t("errors.auth.emailNotVerified"));
+    if (!user || !user.isVerified) {
+      await this.handlePasswordNotMatch({ email });
+      throw new UnauthorizedException(this.i18n.t("errors.auth.invalidCredentials"));
     }
 
     const doesPasswordMatch = await this.hashingService.compare({
@@ -52,7 +53,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
 
     if (!doesPasswordMatch) {
       await this.handlePasswordNotMatch({ email, userId: user.id });
-      throw new UnauthorizedException(this.i18n.t("errors.auth.passwordIncorrect"));
+      throw new UnauthorizedException(this.i18n.t("errors.auth.invalidCredentials"));
     }
 
     return ActiveUserSchema.parse({
@@ -64,13 +65,20 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  private async handlePasswordNotMatch({ email, userId }: { email: string; userId: number }) {
+  private async handlePasswordNotMatch({ email, userId }: { email: string; userId?: number }) {
     const key = `password-mismatch-${email}`;
     const res: number | undefined = await this.cacheManager.get(key);
     if (res == undefined) {
-      return await this.cacheManager.set(key, 1);
+      await this.cacheManager.set(key, 1);
+      return;
     }
-    if (res < 3) return await this.cacheManager.set(key, res + 1);
+    if (res < 3) {
+      await this.cacheManager.set(key, res + 1);
+      return;
+    }
+    if (userId == undefined) {
+      return;
+    }
     await this.notificationsService.addNotification(
       {
         title: this.i18n.t("notifications.auth.securityAlertSubject"),
@@ -84,6 +92,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
       },
       "send-notification",
     );
+
     return;
   }
 }

@@ -9,6 +9,8 @@ import { paginated } from "@/common/types/paginated-response";
 import { I18nService } from "nestjs-i18n";
 import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 
+type PrismaTransaction = Parameters<Parameters<PrismaService["client"]["$transaction"]>[0]>[0];
+
 export interface DiscountCalculationResult {
   discountId: number;
   discountName: string;
@@ -354,8 +356,8 @@ export class DiscountService {
    * Atomically increments the usedCount for a discount.
    * Call this when a discount is actually applied to an invoice/order.
    */
-  async incrementUsage(discountId: number) {
-    const discount = await this.prisma.discount.findUniqueOrThrow({
+  async incrementUsage(discountId: number, tx: PrismaTransaction) {
+    const discount = await tx.discount.findUniqueOrThrow({
       where: { id: discountId },
     });
 
@@ -363,7 +365,7 @@ export class DiscountService {
       throw new BadRequestException(this.i18n.t("errors.discount.maxUsesReached"));
     }
 
-    return this.prisma.discount.update({
+    return tx.discount.update({
       where: { id: discountId },
       data: { usedCount: { increment: 1 } },
     });

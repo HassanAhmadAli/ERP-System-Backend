@@ -43,22 +43,22 @@ export class ReportExportService {
         const summary = await this.reportService.getSummary(query);
 
         return [
-          { metric: "Revenue", value: summary.revenue },
-          { metric: "Purchases", value: summary.purchases },
-          { metric: "Expenses", value: summary.expenses },
-          { metric: "Gross Profit", value: summary.grossProfit },
-          { metric: "Net Profit", value: summary.netProfit },
-          { metric: "Sales Count", value: String(summary.salesCount) },
-          { metric: "Low Stock Products", value: String(summary.lowStockProducts) },
-          { metric: "Orders Delivered", value: summary.ordersDelivered },
+          { metric: this.i18n.t("reports.metrics.revenue"), value: summary.revenue },
+          { metric: this.i18n.t("reports.metrics.purchases"), value: summary.purchases },
+          { metric: this.i18n.t("reports.metrics.expenses"), value: summary.expenses },
+          { metric: this.i18n.t("reports.metrics.grossProfit"), value: summary.grossProfit },
+          { metric: this.i18n.t("reports.metrics.netProfit"), value: summary.netProfit },
+          { metric: this.i18n.t("reports.metrics.salesCount"), value: String(summary.salesCount) },
+          { metric: this.i18n.t("reports.metrics.lowStockProducts"), value: String(summary.lowStockProducts) },
+          { metric: this.i18n.t("reports.metrics.ordersDelivered"), value: summary.ordersDelivered },
           {
-            metric: "Sales By Category",
+            metric: this.i18n.t("reports.metrics.salesByCategory"),
             value: summary.salesByCategory.map((x) => {
               return { [x.name]: x.revenue };
             }),
           },
-          { metric: "Top Products", value: summary.topProducts },
-          { metric: "Period", value: summary.period },
+          { metric: this.i18n.t("reports.metrics.topProducts"), value: summary.topProducts },
+          { metric: this.i18n.t("reports.metrics.period"), value: summary.period },
         ];
       }
       case "inventory": {

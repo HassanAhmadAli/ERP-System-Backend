@@ -144,6 +144,10 @@ export type I18nTranslations = {
             "statusUpdatedTitle": string;
             "statusUpdatedBody": string;
         };
+        "stock": {
+            "lowStockTitle": string;
+            "lowStockBody": string;
+        };
         "auth": {
             "verificationCodeSubject": string;
             "verificationCodeBody": string;
@@ -204,6 +208,7 @@ export type I18nTranslations = {
         };
         "category": {
             "deleted": string;
+            "imageDeleted": string;
         };
         "discount": {
             "deleted": string;
@@ -213,6 +218,9 @@ export type I18nTranslations = {
         };
         "loyalty": {
             "offerDeleted": string;
+        };
+        "productPhoto": {
+            "deleted": string;
         };
         "common": {
             "operationCompleted": string;

@@ -38,7 +38,7 @@ export async function recordAuditFromExtension(params: Omit<AuditRecordParams, "
     return;
   }
   const isStaff = STAFF_ROLES.includes(actor.role);
-  if (isStaff == undefined) {
+  if (!isStaff) {
     return;
   }
   if (auditRecorder == undefined) {
