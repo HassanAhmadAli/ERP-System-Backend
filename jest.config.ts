@@ -3,7 +3,7 @@ import type { Config } from "jest";
 const config: Config = {
   preset: "ts-jest",
   testEnvironment: "node",
-  roots: ["<rootDir>/test"],
+  rootDir: ".",
   testMatch: ["**/*.spec.ts", "**/*.e2e-spec.ts"],
   moduleNameMapper: {
     "^file-type$": "<rootDir>/test/__mocks__/file-type.ts",
@@ -19,6 +19,7 @@ const config: Config = {
       },
     ],
   },
+  restoreMocks: true,
   testTimeout: 30_000,
   forceExit: true,
 };

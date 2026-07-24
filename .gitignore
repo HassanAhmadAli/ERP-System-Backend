@@ -66,3 +66,4 @@ prisma/old.prisma.txt
 ignore/
 backups/
 usecases.md
+.agents/skills

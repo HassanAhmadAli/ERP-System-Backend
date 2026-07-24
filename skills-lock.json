@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "generate-test-cases": {
+      "source": "clear-solutions/unit-tests-skills",
+      "sourceType": "github",
+      "skillPath": "skills/generate-test-cases/SKILL.md",
+      "computedHash": "be40cc609f954e4dee1e9838d2a7a2e8f1c7af75677069a530b8e088cb0decca"
+    },
+    "generate-tests": {
+      "source": "clear-solutions/unit-tests-skills",
+      "sourceType": "github",
+      "skillPath": "skills/generate-tests/SKILL.md",
+      "computedHash": "15ca2443130fc9aab2f3808137ffcf3e795e728c40cf4e54f016c8c41ccf88e0"
+    },
+    "jest": {
+      "source": "anivar/jest-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "261e66b66472901d9590f91e0870d450120ef77a990ef9da84e6a98c8dfab7dc"
+    },
+    "nestjs-best-practices": {
+      "source": "kadajett/agent-nestjs-skills",
+      "sourceType": "github",
+      "skillPath": "skills/nestjs-best-practices/SKILL.md",
+      "computedHash": "58f8a630637be3acce1f118c747d68160346ada8a43d76cb52a5b4c4edaa2d37"
+    },
+    "prisma-client-api": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-client-api/SKILL.md",
+      "computedHash": "0434410e48fb796bbdc3ad0050654bfc9cf72c89b30dbad098ee5c9f655b7f85"
+    },
+    "zod": {
+      "source": "anivar/zod-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "8f746325460dba852bd07b63d3afd74af86fcf267def6dc509694882a58d91ee"
+    }
+  }
+}
