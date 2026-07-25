@@ -14,34 +14,34 @@
     "invalidToken": "الرمز غير صالح"
   },
   "product": {
-    "barcodeExists": "المنتج ذو الرمز الشريطي {{barcode}} موجود بالفعل",
+    "barcodeExists": "المنتج ذو الرمز الشريطي {barcode} موجود بالفعل",
     "cannotDeleteWithOrders": "لا يمكن حذف منتج تم بيعه أو موجود في طلبات نشطة",
-    "deleted": "تم حذف المنتج ذو المعرف {{id}} بنجاح",
-    "duplicateBarcodeCsv": "الرمز الشريطي المكرر \"{{barcode}}\" في ملف CSV (ظهر أولاً في الصف {{row}})",
-    "barcodeExistsDb": "الرمز الشريطي \"{{barcode}}\" موجود بالفعل في قاعدة البيانات",
-    "categoryIdNotFound": "معرف الفئة {{id}} غير موجود",
-    "supplierIdNotFound": "معرف المورد {{id}} غير موجود",
-    "csvParseFailed": "فشل تحليل CSV: {{message}}",
-    "missingCsvColumns": "أعمدة CSV مطلوبة مفقودة: {{columns}}",
+    "deleted": "تم حذف المنتج ذو المعرف {id} بنجاح",
+    "duplicateBarcodeCsv": "الرمز الشريطي المكرر \"{barcode}}\" في ملف CSV (ظهر أولاً في الصف {{row})",
+    "barcodeExistsDb": "الرمز الشريطي \"{barcode}\" موجود بالفعل في قاعدة البيانات",
+    "categoryIdNotFound": "معرف الفئة {id} غير موجود",
+    "supplierIdNotFound": "معرف المورد {id} غير موجود",
+    "csvParseFailed": "فشل تحليل CSV: {message}",
+    "missingCsvColumns": "أعمدة CSV مطلوبة مفقودة: {columns}",
     "csvNoData": "يجب أن يحتوي ملف CSV على صف رأس وصف بيانات واحد على الأقل",
     "csvFileRequired": "ملف CSV مطلوب",
     "couldNotReadCsv": "تعذر قراءة محتويات ملف CSV",
     "insufficientStock": "المخزون غير كافٍ"
   },
   "category": {
-    "nameExists": "الفئة بالاسم \"{{name}}\" موجودة بالفعل",
-    "cannotDeleteWithProducts": "لا يمكن حذف فئة تحتوي على {{count}} منتج (منتجات) مرتبط. أعد تعيينها أو أزلها أولاً.",
-    "deleted": "تم حذف الفئة ذات المعرف {{id}} بنجاح",
-    "fileNotFound": "لم يتم العثور على الملف على القرص للمعرف {{id}}"
+    "nameExists": "الفئة بالاسم \"{name}\" موجودة بالفعل",
+    "cannotDeleteWithProducts": "لا يمكن حذف فئة تحتوي على {count} منتج (منتجات) مرتبط. أعد تعيينها أو أزلها أولاً.",
+    "deleted": "تم حذف الفئة ذات المعرف {id} بنجاح",
+    "fileNotFound": "لم يتم العثور على الملف على القرص للمعرف {id}"
   },
   "supplier": {
-    "cannotDeleteWithAssociations": "لا يمكن حذف مورد لديه {{productCount}} منتج و{{invoiceCount}} فاتورة شراء مرتبطة. أعد تعيينها أو أزلها أولاً.",
-    "deleted": "تم حذف المورد ذو المعرف {{id}} بنجاح"
+    "cannotDeleteWithAssociations": "لا يمكن حذف مورد لديه {productCount}} منتج و{{invoiceCount} فاتورة شراء مرتبطة. أعد تعيينها أو أزلها أولاً.",
+    "deleted": "تم حذف المورد ذو المعرف {id} بنجاح"
   },
   "discount": {
-    "productNotExist": "المنتج ذو المعرف {{id}} غير موجود",
-    "categoryNotExist": "الفئة ذات المعرف {{id}} غير موجودة",
-    "customerNotExist": "العميل ذو المعرف {{id}} غير موجود",
+    "productNotExist": "المنتج ذو المعرف {id} غير موجود",
+    "categoryNotExist": "الفئة ذات المعرف {id} غير موجودة",
+    "customerNotExist": "العميل ذو المعرف {id} غير موجود",
     "percentageExceeds100": "لا يمكن أن تزيد قيمة الخصم百分比 عن 100",
     "productIdRequired": "معرف المنتج مطلوب لنطاق PRODUCT",
     "productIdNotAllowed": "يجب عدم تقديم معرف المنتج للنطاقات غير PRODUCT",
@@ -50,7 +50,7 @@
     "customerIdRequired": "معرف العميل مطلوب لنطاق CUSTOMER",
     "customerIdNotAllowed": "يجب عدم تقديم معرف العميل للنطاقات غير CUSTOMER",
     "endDateAfterStart": "يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء",
-    "deleted": "تم حذف الخصم ذو المعرف {{id}} بنجاح",
+    "deleted": "تم حذف الخصم ذو المعرف {id} بنجاح",
     "notActive": "هذا الخصم لم يعد نشطاً",
     "notStarted": "لم يبدأ هذا الخصم بعد",
     "expired": "انتهت صلاحية هذا الخصم",
@@ -69,38 +69,38 @@
     "loyaltyPointsNegative": "لا يمكن أن تكون نقاط الولاء سالبة"
   },
   "expense": {
-    "notFound": "المصروف ذو المعرف {{id}} غير موجود"
+    "notFound": "المصروف ذو المعرف {id} غير موجود"
   },
   "order": {
     "noAccess": "ليس لديك صلاحية الوصول إلى هذا الطلب",
     "cannotCancelOwn": "يمكنك فقط إلغاء طلباتك الخاصة",
     "cancelStatusInvalid": "يمكن فقط إلغاء الطلبات في حالة 'قيد الانتظار' أو 'قيد التحضير' أو 'قيد التوصيل'",
-    "cannotUpdateStatus": "لا يمكن تحديث الطلب في حالة {{status}}",
-    "insufficientStock": "مخزون غير كافٍ للمنتج \"{{name}}\" (المتاح: {{stock}})",
-    "invalidTransition": "لا يمكن تحويل الطلب من {{current}} إلى {{next}}",
+    "cannotUpdateStatus": "لا يمكن تحديث الطلب في حالة {status}",
+    "insufficientStock": "مخزون غير كافٍ للمنتج \"{name}}\" (المتاح: {{stock})",
+    "invalidTransition": "لا يمكن تحويل الطلب من {current}} إلى {{next}",
     "productsNotFound": "لم يتم العثور على منتج أو أكثر"
   },
   "sales": {
     "canOnlyUpdateOwn": "يمكنك فقط تحديث الفواتير التي قمت بإنشائها",
-    "cannotUpdateStatus": "لا يمكن تحديث الفاتورة في حالة {{status}}",
-    "insufficientStock": "مخزون غير كافٍ للمنتج \"{{name}}\" (المتاح: {{stock}})",
-    "invalidTransition": "لا يمكن تحويل الفاتورة من {{current}} إلى {{next}}",
+    "cannotUpdateStatus": "لا يمكن تحديث الفاتورة في حالة {status}",
+    "insufficientStock": "مخزون غير كافٍ للمنتج \"{name}}\" (المتاح: {{stock})",
+    "invalidTransition": "لا يمكن تحويل الفاتورة من {current}} إلى {{next}",
     "productsNotFound": "لم يتم العثور على منتج أو أكثر"
   },
   "purchase": {
-    "cannotUpdateStatus": "لا يمكن تحديث فاتورة الشراء في حالة {{status}}",
-    "invalidTransition": "لا يمكن تحويل فاتورة الشراء من {{current}} إلى {{next}}",
+    "cannotUpdateStatus": "لا يمكن تحديث فاتورة الشراء في حالة {status}",
+    "invalidTransition": "لا يمكن تحويل فاتورة الشراء من {current}} إلى {{next}",
     "productsNotFound": "لم يتم العثور على منتج أو أكثر",
-    "productNotBelongToSupplier": "المنتج \"{{name}}\" لا ينتمي إلى هذا المورد",
-    "refundInsufficientStock": "لا يمكن رد الشراء: مخزون غير كافٍ لـ \"{{name}}\""
+    "productNotBelongToSupplier": "المنتج \"{name}\" لا ينتمي إلى هذا المورد",
+    "refundInsufficientStock": "لا يمكن رد الشراء: مخزون غير كافٍ لـ \"{name}\""
   },
   "backup": {
-    "backupFailed": "فشل النسخ الاحتياطي {{errorMessage}}"
+    "backupFailed": "فشل النسخ الاحتياطي {errorMessage}"
   },
   "loyalty": {
     "offerNotActive": "عرض الولاء هذا غير نشط",
     "insufficientPoints": "نقاط ولاء غير كافية",
-    "offerDeleted": "تم حذف عرض الولاء {{id}} بنجاح"
+    "offerDeleted": "تم حذف عرض الولاء {id} بنجاح"
   },
   "notification": {
     "noRecipients": "لا توجد جهات اتصال تطابق معايير الهدف"
@@ -111,17 +111,17 @@
   },
   "common": {
     "fileVerificationFailed": "فشل التحقق من الملف.",
-    "fileNotFoundOnDisk": "لم يتم العثور على الملف على القرص للمعرف {{id}}",
-    "unsupportedReportType": "نوع تقرير غير مدعوم: {{type}}"
+    "fileNotFoundOnDisk": "لم يتم العثور على الملف على القرص للمعرف {id}",
+    "unsupportedReportType": "نوع تقرير غير مدعوم: {type}"
   },
   "prisma": {
-    "uniqueConstraintFailed": "فشل قيد التفرد في قاعدة البيانات{{context}}",
-    "foreignKeyFailed": "فشل قيد المفتاح الخارجي{{context}}",
-    "invalidData": "بيانات غير صالحة مقدمة للحقل{{context}}",
-    "missingRequiredValue": "قيمة مطلوبة مفقودة{{context}}",
-    "relationViolation": "التغيير المطلوب ينتهك علاقة مطلوبة.{{context}}",
-    "columnNotFound": "العمود غير موجود في قاعدة البيانات الحالية{{context}}",
-    "recordNotFound": "لم يتم العثور على السجل{{context}}",
+    "uniqueConstraintFailed": "فشل قيد التفرد في قاعدة البيانات{tableContext}",
+    "foreignKeyFailed": "فشل قيد المفتاح الخارجي{tableContext}",
+    "invalidData": "بيانات غير صالحة مقدمة للحقل{tableContext}",
+    "missingRequiredValue": "قيمة مطلوبة مفقودة{tableContext}",
+    "relationViolation": "التغيير المطلوب ينتهك علاقة مطلوبة.{tableContext}",
+    "columnNotFound": "العمود غير موجود في قاعدة البيانات الحالية{tableContext}",
+    "recordNotFound": "لم يتم العثور على السجل{tableContext}",
     "unknownException": "استثناء غير معروف",
     "validationError": "خطأ في التحقق من صحة Prisma"
   }

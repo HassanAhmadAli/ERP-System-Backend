@@ -1,4 +1,4 @@
-import { prisma } from "./client-instance";
+import type { PrismaTransactionClient } from "./data/generators";
 
 const TABLES_WITH_SERIAL_ID = [
   "User",
@@ -24,10 +24,9 @@ const TABLES_WITH_SERIAL_ID = [
   "errors",
 ] as const;
 
-/** Keeps autoincrement aligned after explicit `id` values in seed data. */
-export async function resetSequences() {
+export async function resetSequences(tx: PrismaTransactionClient) {
   for (const table of TABLES_WITH_SERIAL_ID) {
-    await prisma.$executeRawUnsafe(
+    await tx.$executeRawUnsafe(
       `SELECT setval(pg_get_serial_sequence('"${table}"', 'id'), COALESCE((SELECT MAX(id) FROM "${table}"), 1), true)`,
     );
   }

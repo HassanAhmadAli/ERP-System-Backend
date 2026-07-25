@@ -4,40 +4,40 @@
     "userCreated": "تم إنشاء المستخدم. يرجى التحقق من بريدك الإلكتروني للحصول على رمز التحقق.",
     "accountVerified": "تم التحقق من الحساب بنجاح، يرجى تسجيل الدخول",
     "verificationEmailSubject": "رمز التحقق لتطبيق الشكاوى",
-    "verificationEmailBody": "رمز التحقق الخاص بك هو: {{code}}، ستنتهي صلاحيته خلال 15 دقيقة",
+    "verificationEmailBody": "رمز التحقق الخاص بك هو: {code}، ستنتهي صلاحيته خلال 15 دقيقة",
     "securityAlertSubject": "متجر ERP - تنبيه أمني",
-    "securityAlertBody": "تم اكتشاف عدة محاولات تسجيل دخول فاشلة لحسابك في {{time}}"
+    "securityAlertBody": "تم اكتشاف عدة محاولات تسجيل دخول فاشلة لحسابك في {time}"
   },
   "backup": {
     "started": "جاري إنشاء النسخة الاحتياطية، ستتلقى إشعاراً عند اكتمال العملية",
     "successTitle": "نجاح النسخ الاحتياطي",
-    "successBody": "تم إنشاء النسخة الاحتياطية بنجاح في المسار {{path}}",
+    "successBody": "تم إنشاء النسخة الاحتياطية بنجاح في المسار {path}",
     "failedTitle": "فشل النسخ الاحتياطي",
-    "failedBody": "فشل النسخ الاحتياطي {{errorMessage}}"
+    "failedBody": "فشل النسخ الاحتياطي {errorMessage}"
   },
   "notification": {
     "connectionEstablished": "تم إنشاء اتصال Socketio بنجاح",
     "orderStatusUpdatedTitle": "تم تحديث حالة الطلب",
-    "orderStatusUpdatedBody": "طلبك رقم {{orderId}} أصبح الآن {{status}}"
+    "orderStatusUpdatedBody": "طلبك رقم {orderId}} أصبح الآن {{status}"
   },
   "product": {
-    "deleted": "تم حذف المنتج ذو المعرف {{id}} بنجاح"
+    "deleted": "تم حذف المنتج ذو المعرف {id} بنجاح"
   },
   "category": {
-    "deleted": "تم حذف الفئة ذات المعرف {{id}} بنجاح",
-    "imageDeleted": "تم حذف صورة الفئة {{categoryId}} بنجاح"
+    "deleted": "تم حذف الفئة ذات المعرف {id} بنجاح",
+    "imageDeleted": "تم حذف صورة الفئة {categoryId} بنجاح"
   },
   "discount": {
-    "deleted": "تم حذف الخصم ذو المعرف {{id}} بنجاح"
+    "deleted": "تم حذف الخصم ذو المعرف {id} بنجاح"
   },
   "supplier": {
-    "deleted": "تم حذف المورد ذو المعرف {{id}} بنجاح"
+    "deleted": "تم حذف المورد ذو المعرف {id} بنجاح"
   },
   "loyalty": {
-    "offerDeleted": "تم حذف عرض الولاء {{id}} بنجاح"
+    "offerDeleted": "تم حذف عرض الولاء {id} بنجاح"
   },
   "productPhoto": {
-    "deleted": "تم حذف صورة المنتج {{photoId}} بنجاح"
+    "deleted": "تم حذف صورة المنتج {photoId} بنجاح"
   },
   "common": {
     "operationCompleted": "تمت العملية بنجاح"

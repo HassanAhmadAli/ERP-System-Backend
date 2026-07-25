@@ -186,7 +186,13 @@ export class OrderService {
     });
 
     if (order.status === OrderStatus.DELIVERED || order.status === OrderStatus.CANCELLED) {
-      throw new BadRequestException(this.i18n.t("errors.order.cannotUpdateStatus", { args: { status: order.status } }));
+      throw new BadRequestException(
+        this.i18n.t("errors.order.cannotUpdateStatus", {
+          args: {
+            status: order.status,
+          },
+        }),
+      );
     }
 
     if (dto.status === order.status) {
@@ -241,7 +247,7 @@ export class OrderService {
 
         // Increment discount usage count
         if (order.appliedDiscountId != undefined) {
-          await this.discountService.incrementUsage(order.appliedDiscountId);
+          await this.discountService.incrementUsage(order.appliedDiscountId, tx);
         }
       }
 

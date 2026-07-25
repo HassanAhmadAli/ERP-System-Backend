@@ -1,8 +1,7 @@
-import { prisma } from "./client-instance";
+import type { PrismaTransactionClient } from "./data/generators";
 
-/** Wipes seed-related tables so `prisma db seed` is repeatable without migrate reset. */
-export async function clearDatabase() {
-  await prisma.$executeRawUnsafe(`
+export async function clearDatabase(tx: PrismaTransactionClient) {
+  await tx.$executeRawUnsafe(`
     TRUNCATE TABLE
       "NotificationRecipient",
       "Notification",

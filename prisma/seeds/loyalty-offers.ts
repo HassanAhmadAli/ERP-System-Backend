@@ -1,5 +1,5 @@
 import { DiscountType } from "@/prisma/client";
-import { prisma } from "./client-instance";
+import type { PrismaTransactionClient } from "./data/generators";
 
 export const loyaltyDiscountOffersData = [
   {
@@ -26,8 +26,8 @@ export const loyaltyDiscountOffersData = [
   },
 ];
 
-export async function seedLoyaltyDiscountOffers() {
+export async function seedLoyaltyDiscountOffers(tx: PrismaTransactionClient) {
   for (const item of loyaltyDiscountOffersData) {
-    await prisma.loyaltyDiscountOffer.create({ data: item });
+    await tx.loyaltyDiscountOffer.create({ data: item });
   }
 }

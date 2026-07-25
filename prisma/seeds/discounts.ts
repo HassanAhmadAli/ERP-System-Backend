@@ -1,59 +1,90 @@
-import { DiscountScope, DiscountType } from "@/prisma/client";
-import { prisma } from "./client-instance";
+import { DiscountScope, DiscountType, type Prisma } from "@/prisma/client";
+import type { PrismaTransactionClient } from "./data/generators";
+import { pick, randFloat, randInt } from "./data/generators";
+import { CATEGORY_COUNT } from "./categories";
+import { PRODUCT_COUNT } from "./products";
+import { CUSTOMER_COUNT, CUSTOMER_ID_OFFSET } from "./customers";
 
-export const discountsData = [
-  {
-    id: 1,
-    name: "Store-wide Spring Sale",
-    type: DiscountType.PERCENTAGE,
-    value: "10.00",
-    scope: DiscountScope.GLOBAL,
-    maxInvoiceValue: "50.00",
-    maxUses: 100,
-    usedCount: 1,
-    startDate: new Date("2025-01-01T00:00:00.000Z"),
-    endDate: new Date("2026-12-31T23:59:59.000Z"),
-    isActive: true,
-    createdById: 1,
-    productId: null,
-    categoryId: null,
-  },
-  {
-    id: 2,
-    name: "Wireless Mouse Promo",
-    type: DiscountType.FIXED_AMOUNT,
-    value: "5.00",
-    scope: DiscountScope.PRODUCT,
-    maxInvoiceValue: "110.00",
-    maxUses: null,
-    usedCount: 0,
-    startDate: new Date("2025-01-01T00:00:00.000Z"),
-    endDate: null,
-    isActive: true,
-    createdById: 1,
-    productId: 1,
-    categoryId: null,
-  },
-  {
-    id: 3,
-    name: "Vegetables Promo",
-    type: DiscountType.PERCENTAGE,
-    value: "5.00",
-    scope: DiscountScope.CATEGORY,
-    maxInvoiceValue: "110.00",
-    maxUses: null,
-    usedCount: 0,
-    startDate: new Date("2025-01-01T00:00:00.000Z"),
-    endDate: null,
-    isActive: true,
-    createdById: 1,
-    productId: null,
-    categoryId: 2,
-  },
+const SCOPE_WEIGHTS: { scope: DiscountScope; weight: number }[] = [
+  { scope: DiscountScope.GLOBAL, weight: 2 },
+  { scope: DiscountScope.CATEGORY, weight: 5 },
+  { scope: DiscountScope.PRODUCT, weight: 5 },
+  { scope: DiscountScope.CUSTOMER, weight: 3 },
 ];
 
-export async function seedDiscounts() {
-  for (const item of discountsData) {
-    await prisma.discount.create({ data: item });
+const DISCOUNT_NAMES = [
+  "Summer Sale",
+  "Winter Clearance",
+  "Flash Deal",
+  "Weekend Special",
+  "Holiday Offer",
+  "New Customer Discount",
+  "Loyalty Reward",
+  "Seasonal Promotion",
+  "Bundle Discount",
+  "Early Bird Special",
+  "Midnight Madness",
+  "Referral Bonus",
+  "Bulk Purchase Discount",
+  "Anniversary Sale",
+  "Free Shipping Promo",
+  "Member Exclusive",
+  "Back to School Sale",
+  "Black Friday Deal",
+  "Cyber Monday Offer",
+  "New Year Special",
+];
+
+export async function seedDiscounts(tx: PrismaTransactionClient) {
+  const discounts: Prisma.DiscountCreateManyInput[] = [];
+  const now = new Date();
+  const START_DATE = new Date(now.getFullYear() - 1, 0, 1);
+  const END_DATE = new Date(now.getFullYear() + 1, 11, 31);
+
+  for (let i = 0; i < 40; i++) {
+    const scopePick = SCOPE_WEIGHTS[selectWeighted(SCOPE_WEIGHTS.map((s) => s.weight))]!;
+    const scope = scopePick.scope;
+    const isPercent = Math.random() > 0.4;
+    const value = isPercent ? randFloat(5, 30, 2) : randFloat(2, 50, 2);
+
+    const discount: Prisma.DiscountCreateManyInput = {
+      id: i + 1,
+      name: pick(DISCOUNT_NAMES) + (i > 15 ? ` #${i}` : ""),
+      type: isPercent ? DiscountType.PERCENTAGE : DiscountType.FIXED_AMOUNT,
+      value,
+      scope,
+      maxInvoiceValue: isPercent ? randFloat(50, 500, 2) : randFloat(50, 300, 2),
+      maxUses: Math.random() > 0.3 ? randInt(10, 500) : null,
+      usedCount: randInt(0, 50),
+      startDate: START_DATE,
+      endDate: Math.random() > 0.2 ? END_DATE : null,
+      isActive: Math.random() > 0.15,
+      createdById: 1,
+      productId: null,
+      categoryId: null,
+      customerId: null,
+    };
+
+    if (scope === DiscountScope.PRODUCT) {
+      discount.productId = randInt(1, PRODUCT_COUNT);
+    } else if (scope === DiscountScope.CATEGORY) {
+      discount.categoryId = randInt(1, CATEGORY_COUNT);
+    } else if (scope === DiscountScope.CUSTOMER) {
+      discount.customerId = randInt(CUSTOMER_ID_OFFSET, CUSTOMER_ID_OFFSET + CUSTOMER_COUNT - 1);
+    }
+
+    discounts.push(discount);
   }
+
+  await tx.discount.createMany({ data: discounts });
+}
+
+function selectWeighted(weights: number[]): number {
+  const total = weights.reduce((a, b) => a + b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < weights.length; i++) {
+    r -= weights[i]!;
+    if (r <= 0) return i;
+  }
+  return weights.length - 1;
 }

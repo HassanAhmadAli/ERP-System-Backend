@@ -138,6 +138,9 @@
   "optionalDependencies": {
     "prisma-zod-generator": "^2.1.4"
   },
+  "prisma": {
+    "seed": "tsx prisma/seeds/index.ts"
+  },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,css,md,json}": [
       "prettier --write"

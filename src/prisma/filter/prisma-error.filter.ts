@@ -9,6 +9,7 @@ import { PrismaClientKnownRequestError } from "@/prisma/client";
 import { I18nService } from "nestjs-i18n";
 import type { I18nTranslations, I18nPath } from "@/i18n/generated/i18n.generated";
 import { AppBaseExceptionFilter } from "@/common/app_filter";
+import { logger } from "@/utils";
 
 type HttpExceptionConstructor = new (message: string) => HttpException;
 
@@ -31,7 +32,7 @@ export class PrismaServerErrorFilter extends AppBaseExceptionFilter {
   ) {
     const originalMessage = error.meta?.driverAdapterError?.cause?.originalMessage;
     const tableContext = error.meta?.modelName ? ` on table [${error.meta?.modelName}]` : "";
-    const args = { context: tableContext };
+    const args = { tableContext };
     const record = this.errorMap.get(error.code) || this.unkownErrorRecord;
     const [ExceptionClass, translationKey] = record;
     const msg = this.msg(translationKey, args, originalMessage);
@@ -39,6 +40,7 @@ export class PrismaServerErrorFilter extends AppBaseExceptionFilter {
   }
 
   private msg(key: I18nPath, args: Record<string, string>, fallback: string | undefined) {
+    logger.trace(args);
     const msg = this.i18n.t(key, { args });
     if (typeof msg === "string") {
       return msg;

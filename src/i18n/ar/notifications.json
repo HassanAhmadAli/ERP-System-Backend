@@ -1,22 +1,22 @@
 {
   "backup": {
     "successTitle": "نجاح النسخ الاحتياطي",
-    "successBody": "تم إنشاء النسخة الاحتياطية بنجاح في المسار {{path}}",
+    "successBody": "تم إنشاء النسخة الاحتياطية بنجاح في المسار {path}",
     "failedTitle": "فشل النسخ الاحتياطي",
-    "failedBody": "فشل النسخ الاحتياطي {{errorMessage}}"
+    "failedBody": "فشل النسخ الاحتياطي {errorMessage}"
   },
   "order": {
     "statusUpdatedTitle": "تم تحديث حالة الطلب",
-    "statusUpdatedBody": "طلبك رقم {{orderId}} أصبح الآن {{status}}"
+    "statusUpdatedBody": "طلبك رقم {orderId}} أصبح الآن {{status}"
   },
   "stock": {
     "lowStockTitle": "تنبيه المخزون المنخفض",
-    "lowStockBody": "المنتج \"{{productName}}\" منخفض المخزون ({{quantity}} متبقي)"
+    "lowStockBody": "المنتج \"{productName}}\" منخفض المخزون ({{quantity} متبقي)"
   },
   "auth": {
     "verificationCodeSubject": "رمز التحقق لتطبيق الشكاوى",
-    "verificationCodeBody": "رمز التحقق الخاص بك هو: {{code}}، ستنتهي صلاحيته خلال 15 دقيقة",
+    "verificationCodeBody": "رمز التحقق الخاص بك هو: {code}، ستنتهي صلاحيته خلال 15 دقيقة",
     "securityAlertSubject": "متجر ERP - تنبيه أمني",
-    "securityAlertBody": "تم اكتشاف عدة محاولات تسجيل دخول فاشلة لحسابك في {{time}}"
+    "securityAlertBody": "تم اكتشاف عدة محاولات تسجيل دخول فاشلة لحسابك في {time}"
   }
 }

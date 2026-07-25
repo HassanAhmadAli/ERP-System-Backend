@@ -1,22 +1,22 @@
 {
   "backup": {
     "successTitle": "Backup Success",
-    "successBody": "backup successfully created at path {{path}}",
+    "successBody": "backup successfully created at path {path}",
     "failedTitle": "Backup Failed",
-    "failedBody": "backup Failed {{errorMessage}}"
+    "failedBody": "backup Failed {errorMessage}"
   },
   "order": {
     "statusUpdatedTitle": "Order status updated",
-    "statusUpdatedBody": "Your order #{{orderId}} is now {{status}}"
+    "statusUpdatedBody": "Your order #{orderId}} is now {{status}"
   },
   "stock": {
     "lowStockTitle": "Low stock alert",
-    "lowStockBody": "Product \"{{productName}}\" is low on stock ({{quantity}} remaining)"
+    "lowStockBody": "Product \"{productName}}\" is low on stock ({{quantity} remaining)"
   },
   "auth": {
     "verificationCodeSubject": "Verification Code for the Complaint App",
-    "verificationCodeBody": "Your verification code is: {{code}}, it will expire in 15 minutes",
+    "verificationCodeBody": "Your verification code is: {code}, it will expire in 15 minutes",
     "securityAlertSubject": "ERP Store — security alert",
-    "securityAlertBody": "Multiple failed sign-in attempts were detected for your account at {{time}}"
+    "securityAlertBody": "Multiple failed sign-in attempts were detected for your account at {time}"
   }
 }

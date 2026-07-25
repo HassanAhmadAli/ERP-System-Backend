@@ -1,24 +1,19 @@
-import { prisma } from "./client-instance";
+import type { Prisma } from "@/prisma/client";
+import type { PrismaTransactionClient } from "./data/generators";
+import { faker } from "./data/generators";
 
-export const suppliersData = [
-  {
-    id: 1,
-    fullName: "Acme Wholesale Co.",
-    email: "contact@acmewholesale.example.com",
-    phone: "+963911000001",
-    address: "100 Industrial Park, Springfield",
-  },
-  {
-    id: 2,
-    fullName: "Green Valley Farms",
-    email: "orders@greenvalley.example.com",
-    phone: "+963911000002",
-    address: "42 Orchard Lane, Riverside",
-  },
-];
+export const SUPPLIER_COUNT = 25;
 
-export async function seedSuppliers() {
-  for (const item of suppliersData) {
-    await prisma.supplier.create({ data: item });
-  }
+export function seedSuppliers(tx: PrismaTransactionClient) {
+  const data: Prisma.SupplierCreateManyInput[] = Array.from({ length: SUPPLIER_COUNT }, (_, i) => ({
+    id: i + 1,
+    fullName: faker.company.name(),
+    fullNameAr: null,
+    phone: faker.phone.number({ style: "international" }),
+    email: faker.internet.email().toLowerCase(),
+    address: faker.location.streetAddress({ useFullAddress: true }),
+    addressAr: null,
+  }));
+
+  return tx.supplier.createMany({ data });
 }

@@ -1,73 +1,98 @@
-import { OrderStatus } from "@/prisma/client";
-import { prisma } from "./client-instance";
+import { OrderStatus, type Prisma } from "@/prisma/client";
+import type { PrismaTransactionClient } from "./data/generators";
+import { randInt, randomOrderDate, round } from "./data/generators";
+import { PRODUCT_COUNT } from "./products";
+import { CUSTOMER_COUNT, CUSTOMER_ID_OFFSET } from "./customers";
 
-export async function seedOrders() {
-  await prisma.order.create({
-    data: {
-      id: 1,
-      customerId: 1,
-      appliedDiscountId: 2,
-      subtotal: "9.98",
-      deliveryAddress: "123 Main St, Springfield",
-      status: OrderStatus.DELIVERED,
-      createdAt: new Date("2025-04-10T16:00:00.000Z"),
-      items: {
-        create: [
-          {
-            id: 1,
-            productId: 2,
-            quantity: 2,
-            unitPrice: "4.99",
-            subtotal: "9.98",
-          },
-        ],
-      },
-    },
-  });
+const ORDER_COUNT = 6000;
 
-  await prisma.order.create({
-    data: {
-      id: 2,
-      customerId: 1,
-      appliedDiscountId: null,
-      subtotal: "29.99",
-      deliveryAddress: "123 Main St, Springfield",
-      status: OrderStatus.PREPARING,
-      createdAt: new Date("2025-04-21T08:00:00.000Z"),
-      items: {
-        create: [
-          {
-            id: 2,
-            productId: 1,
-            quantity: 1,
-            unitPrice: "29.99",
-            subtotal: "29.99",
-          },
-        ],
-      },
-    },
-  });
+const STATUS_WEIGHT = [
+  { status: OrderStatus.DELIVERED, weight: 65 },
+  { status: OrderStatus.CANCELLED, weight: 10 },
+  { status: OrderStatus.OUT_FOR_DELIVERY, weight: 10 },
+  { status: OrderStatus.PREPARING, weight: 8 },
+  { status: OrderStatus.PENDING, weight: 7 },
+];
 
-  await prisma.order.create({
-    data: {
-      id: 3,
-      customerId: 1,
-      appliedDiscountId: null,
-      subtotal: "14.97",
-      deliveryAddress: "123 Main St, Springfield",
-      status: OrderStatus.PENDING,
-      createdAt: new Date("2025-04-22T09:00:00.000Z"),
-      items: {
-        create: [
-          {
-            id: 3,
-            productId: 2,
-            quantity: 3,
-            unitPrice: "4.99",
-            subtotal: "14.97",
-          },
-        ],
+function pickStatus(): OrderStatus {
+  const total = STATUS_WEIGHT.reduce((a, s) => a + s.weight, 0);
+  let r = Math.random() * total;
+  for (const s of STATUS_WEIGHT) {
+    r -= s.weight;
+    if (r <= 0) return s.status;
+  }
+  return OrderStatus.DELIVERED;
+}
+
+export async function seedOrders(tx: PrismaTransactionClient) {
+  const now = new Date();
+
+  const orders: Prisma.OrderCreateManyInput[] = [];
+  const orderItems: Prisma.OrderItemCreateManyInput[] = [];
+  const customerTotals: Record<number, number> = {};
+
+  let itemId = 0;
+
+  for (let i = 0; i < ORDER_COUNT; i++) {
+    const status = pickStatus();
+    const createdAt = randomOrderDate(now);
+    const itemCount = randInt(1, 6);
+    const customerId = randInt(CUSTOMER_ID_OFFSET, CUSTOMER_ID_OFFSET + CUSTOMER_COUNT - 1);
+    const useDiscount = Math.random() > 0.85;
+    const discountId = useDiscount ? randInt(1, 40) : null;
+
+    let subtotal = 0;
+    const usedProductIds = new Set<number>();
+
+    for (let j = 0; j < itemCount; j++) {
+      let productId: number;
+      do {
+        productId = randInt(1, PRODUCT_COUNT);
+      } while (usedProductIds.has(productId));
+      usedProductIds.add(productId);
+
+      itemId++;
+      const quantity = randInt(1, 4);
+      const unitPrice = parseFloat((Math.random() * (status === OrderStatus.DELIVERED ? 50 : 200) + 2).toFixed(2));
+      const itemSubtotal = round(quantity * unitPrice);
+      subtotal += itemSubtotal;
+
+      orderItems.push({
+        id: itemId,
+        orderId: i + 1,
+        productId,
+        quantity,
+        unitPrice,
+        subtotal: itemSubtotal,
+      });
+    }
+
+    customerTotals[customerId] = (customerTotals[customerId] ?? 0) + subtotal;
+
+    orders.push({
+      id: i + 1,
+      customerId,
+      appliedDiscountId: discountId,
+      subtotal: round(subtotal),
+      deliveryAddress: null,
+      deliveryAddressAr: null,
+      status,
+      createdAt,
+      updatedAt: createdAt,
+    });
+  }
+
+  await tx.order.createMany({ data: orders });
+  await tx.orderItem.createMany({ data: orderItems });
+
+  for (const [customerIdStr, totalSpent] of Object.entries(customerTotals)) {
+    const customerId = Number(customerIdStr);
+    await tx.customer.update({
+      where: { id: customerId },
+      data: {
+        totalSpent: round(totalSpent),
+        loyaltyPoints: Math.floor(totalSpent / 10),
       },
-    },
-  });
+    });
+  }
 }

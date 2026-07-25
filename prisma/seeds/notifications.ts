@@ -1,8 +1,8 @@
 import { NotificationTargetType, UserRole } from "@/prisma/client";
-import { prisma } from "./client-instance";
+import type { PrismaTransactionClient } from "./data/generators";
 
-export async function seedNotifications() {
-  await prisma.notification.create({
+export async function seedNotifications(tx: PrismaTransactionClient) {
+  await tx.notification.create({
     data: {
       id: 1,
       senderId: 1,
@@ -23,7 +23,7 @@ export async function seedNotifications() {
     },
   });
 
-  await prisma.notification.create({
+  await tx.notification.create({
     data: {
       id: 2,
       senderId: 1,
@@ -38,7 +38,7 @@ export async function seedNotifications() {
     },
   });
 
-  await prisma.notification.create({
+  await tx.notification.create({
     data: {
       id: 3,
       senderId: 1,
@@ -52,7 +52,7 @@ export async function seedNotifications() {
     },
   });
 
-  await prisma.notification.create({
+  await tx.notification.create({
     data: {
       id: 4,
       senderId: 5,

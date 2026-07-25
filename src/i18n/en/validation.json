@@ -17,9 +17,9 @@
     "invalidDuration": "Invalid duration. Examples: 60, 1h, 1.5 hours, 100 ms",
     "invalidPhoneNumber": "Invalid phone number",
     "csvMinRows": "CSV file must contain at least one product row",
-    "stringMin": "Must be at least {{min}} characters",
-    "stringMax": "Must be at most {{max}} characters",
-    "required": "{{field}} is required",
+    "stringMin": "Must be at least {min} characters",
+    "stringMax": "Must be at most {max} characters",
+    "required": "{field} is required",
     "invalidEmail": "Invalid email address"
   }
 }

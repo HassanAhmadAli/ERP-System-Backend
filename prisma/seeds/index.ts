@@ -2,13 +2,14 @@ import "reflect-metadata";
 import { PrismaClientKnownRequestError } from "@prisma/client-runtime-utils";
 import { logger } from "@/utils";
 import { prisma } from "./client-instance";
-import { seedUsers } from "./user";
 import { NestFactory } from "@nestjs/core";
 import { HashingService } from "@/hashing/hashing.service";
 import { SeedModule } from "./seed-modules";
-import { seedCategory } from "./categories";
+import { seedCategories } from "./categories";
 import { seedSuppliers } from "./suppliers";
-import { seedProducts } from "./products";
+import { generateProductData } from "./products";
+import { seedStaff } from "./staff";
+import { seedCustomers } from "./customers";
 import { seedDiscounts } from "./discounts";
 import { seedPurchases } from "./purchases";
 import { seedSales } from "./sales";
@@ -24,24 +25,31 @@ import { resetSequences } from "./reset-sequences";
 import { clearDatabase } from "./clear-database";
 
 async function seed(hashingService: HashingService) {
-  await clearDatabase();
-  await seedCategory();
-  await seedSuppliers();
-  await seedProducts();
-  await seedUsers(hashingService);
-  await seedDiscounts();
-  await seedPurchases();
-  await seedSales();
-  await seedOrders();
-  await seedExpenses();
-  await seedLoyaltyDiscountOffers();
+  const productData = generateProductData();
 
-  await seedAds();
-  await seedProductImportJobs();
-  await seedNotifications();
-  await seedAuditLogs();
-  await seedProductPhotos();
-  await resetSequences();
+  await prisma.$transaction(
+    async (tx) => {
+      await clearDatabase(tx);
+      await seedCategories(tx);
+      await seedSuppliers(tx);
+      await tx.product.createMany({ data: productData });
+      await seedStaff(tx, hashingService);
+      await seedCustomers(tx, hashingService);
+      await seedDiscounts(tx);
+      await seedPurchases(tx);
+      await seedSales(tx);
+      await seedOrders(tx);
+      await seedExpenses(tx);
+      await seedLoyaltyDiscountOffers(tx);
+      await seedAds(tx);
+      await seedProductImportJobs(tx);
+      await seedNotifications(tx);
+      await seedAuditLogs(tx);
+      await seedProductPhotos(tx);
+      await resetSequences(tx);
+    },
+    { maxWait: 120000, timeout: 300000 },
+  );
 }
 
 async function bootstrap() {
@@ -59,7 +67,7 @@ async function bootstrap() {
     } else {
       logger.error({
         caller: "unknown error",
-        value: e,
+        value: e instanceof Error ? e.message : String(e),
       });
     }
     await prisma.$disconnect();

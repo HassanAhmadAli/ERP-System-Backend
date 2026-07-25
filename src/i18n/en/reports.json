@@ -16,7 +16,7 @@
     "yes": "yes",
     "no": "no",
     "uncategorized": "Uncategorized",
-    "deletedProduct": "Deleted Product (ID: {{id}})"
+    "deletedProduct": "Deleted Product (ID: {id})"
   },
   "stockStatus": {
     "outOfStock": "out_of_stock",

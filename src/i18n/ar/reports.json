@@ -16,7 +16,7 @@
     "yes": "نعم",
     "no": "لا",
     "uncategorized": "بدون تصنيف",
-    "deletedProduct": "منتج محذوف (المعرف: {{id}})"
+    "deletedProduct": "منتج محذوف (المعرف: {id})"
   },
   "stockStatus": {
     "outOfStock": "نفذ من المخزون",

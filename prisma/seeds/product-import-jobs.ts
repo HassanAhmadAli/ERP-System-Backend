@@ -1,5 +1,5 @@
 import { ProductImportStatus } from "@/prisma/client";
-import { prisma } from "./client-instance";
+import type { PrismaTransactionClient } from "./data/generators";
 
 export const productImportJobsData = [
   {
@@ -31,8 +31,8 @@ export const productImportJobsData = [
   },
 ];
 
-export async function seedProductImportJobs() {
+export async function seedProductImportJobs(tx: PrismaTransactionClient) {
   for (const item of productImportJobsData) {
-    await prisma.productImportJob.create({ data: item });
+    await tx.productImportJob.create({ data: item });
   }
 }

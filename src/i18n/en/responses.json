@@ -4,40 +4,40 @@
     "userCreated": "User created. Please check your email for verification code.",
     "accountVerified": "Account Verified Successfully, please login",
     "verificationEmailSubject": "Verification Code for the Complaint App",
-    "verificationEmailBody": "Your verification code is: {{code}}, it will expire in 15 minutes",
+    "verificationEmailBody": "Your verification code is: {code}, it will expire in 15 minutes",
     "securityAlertSubject": "ERP Store — security alert",
-    "securityAlertBody": "Multiple failed sign-in attempts were detected for your account at {{time}}"
+    "securityAlertBody": "Multiple failed sign-in attempts were detected for your account at {time}"
   },
   "backup": {
     "started": "Backup is Being created, you will recieve a notification when the operation is completed",
     "successTitle": "Backup Success",
-    "successBody": "backup successfully created at path {{path}}",
+    "successBody": "backup successfully created at path {path}",
     "failedTitle": "Backup Failed",
-    "failedBody": "backup Failed {{errorMessage}}"
+    "failedBody": "backup Failed {errorMessage}"
   },
   "notification": {
     "connectionEstablished": "Socketio Connection Established Successfully",
     "orderStatusUpdatedTitle": "Order status updated",
-    "orderStatusUpdatedBody": "Your order #{{orderId}} is now {{status}}"
+    "orderStatusUpdatedBody": "Your order #{orderId}} is now {{status}"
   },
   "product": {
-    "deleted": "Product with ID {{id}} has been deleted successfully"
+    "deleted": "Product with ID {id} has been deleted successfully"
   },
   "category": {
-    "deleted": "Category with ID {{id}} has been deleted successfully",
-    "imageDeleted": "Category image for {{categoryId}} deleted successfully"
+    "deleted": "Category with ID {id} has been deleted successfully",
+    "imageDeleted": "Category image for {categoryId} deleted successfully"
   },
   "discount": {
-    "deleted": "Discount with ID {{id}} has been deleted successfully"
+    "deleted": "Discount with ID {id} has been deleted successfully"
   },
   "supplier": {
-    "deleted": "Supplier with ID {{id}} has been deleted successfully"
+    "deleted": "Supplier with ID {id} has been deleted successfully"
   },
   "loyalty": {
-    "offerDeleted": "Loyalty offer {{id}} deleted successfully"
+    "offerDeleted": "Loyalty offer {id} deleted successfully"
   },
   "productPhoto": {
-    "deleted": "Product photo {{photoId}} deleted successfully"
+    "deleted": "Product photo {photoId} deleted successfully"
   },
   "common": {
     "operationCompleted": "Operation completed successfully"

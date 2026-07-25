@@ -12,10 +12,7 @@ export const CreateUserSchema = z.object({
   fullNameAr: z.string().optional(),
   email: z.email(),
   phoneNumber: phoneNumberSchema.optional(),
-  password: z
-    .string()
-    .min(8)
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must include uppercase, lowercase, and digit"),
+  password: z.string().min(8),
   nationalId: z.string(),
   language: z.enum(["en", "ar"]).optional(),
 });
@@ -43,7 +40,6 @@ export const CreateCustomerSchema = openapiMeta(
 export const CreateStaffSchema = openapiMeta(
   CreateUserSchema.extend({
     jobTitle: z.string(),
-    jobTitleAr: z.string().optional(),
     role: z.enum(staffRoles),
   }),
   "CreateStaffDto",

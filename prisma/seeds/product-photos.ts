@@ -1,11 +1,11 @@
 import path from "node:path";
-import { prisma } from "./client-instance";
+import type { PrismaTransactionClient } from "./data/generators";
 
 export const PRODUCT_PHOTO_STORED_FILE_ID = "17607250278bc4d093eb101bff9234d8";
 const PRODUCT_PHOTO_PATH = path.posix.join("uploads", PRODUCT_PHOTO_STORED_FILE_ID);
 
-export async function seedProductPhotos() {
-  await prisma.storedFile.create({
+export async function seedProductPhotos(tx: PrismaTransactionClient) {
+  await tx.storedFile.create({
     data: {
       id: PRODUCT_PHOTO_STORED_FILE_ID,
       originalname: "product-photo-wireless-mouse.png",
@@ -24,7 +24,7 @@ export async function seedProductPhotos() {
     },
   });
 
-  await prisma.product.update({
+  await tx.product.update({
     where: { id: 1 },
     data: { imageUrl: `/product-photo/download/${PRODUCT_PHOTO_STORED_FILE_ID}` },
   });

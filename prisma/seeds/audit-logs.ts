@@ -1,5 +1,5 @@
 import { Prisma } from "@/prisma/client";
-import { prisma } from "./client-instance";
+import type { PrismaTransactionClient } from "./data/generators";
 
 export const auditLogsData = [
   {
@@ -24,8 +24,8 @@ export const auditLogsData = [
   },
 ];
 
-export async function seedAuditLogs() {
+export async function seedAuditLogs(tx: PrismaTransactionClient) {
   for (const item of auditLogsData) {
-    await prisma.auditLog.create({ data: item });
+    await tx.auditLog.create({ data: item });
   }
 }

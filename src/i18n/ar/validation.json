@@ -17,9 +17,9 @@
     "invalidDuration": "مدة غير صالحة. أمثلة: 60، 1h، 1.5 ساعة، 100 ms",
     "invalidPhoneNumber": "رقم هاتف غير صالح",
     "csvMinRows": "يجب أن يحتوي ملف CSV على صف منتج واحد على الأقل",
-    "stringMin": "يجب أن يكون على الأقل {{min}} حرفاً",
-    "stringMax": "يجب أن يكون على الأكثر {{max}} حرفاً",
-    "required": "{{field}} مطلوب",
+    "stringMin": "يجب أن يكون على الأقل {min} حرفاً",
+    "stringMax": "يجب أن يكون على الأكثر {max} حرفاً",
+    "required": "{field} مطلوب",
     "invalidEmail": "بريد إلكتروني غير صالح"
   }
 }

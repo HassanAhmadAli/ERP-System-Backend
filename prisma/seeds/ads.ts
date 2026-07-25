@@ -1,5 +1,5 @@
 import { AdPlacement } from "@/prisma/client";
-import { prisma } from "./client-instance";
+import type { PrismaTransactionClient } from "./data/generators";
 
 export const adsData = [
   {
@@ -48,8 +48,8 @@ export const adsData = [
   },
 ];
 
-export async function seedAds() {
+export async function seedAds(tx: PrismaTransactionClient) {
   for (const item of adsData) {
-    await prisma.advertisement.create({ data: item });
+    await tx.advertisement.create({ data: item });
   }
 }

@@ -3,6 +3,7 @@ import { Reflector } from "@nestjs/core";
 import { Permissions, PermissionsMap } from "../permission.type";
 import { Keys } from "@/common/const";
 import { RequestWithActiveUser } from "@/common/decorators/ActiveUser.decorator";
+import { logger } from "@/utils";
 
 @Injectable()
 export class PermissionsGuard implements CanActivate {
@@ -15,7 +16,9 @@ export class PermissionsGuard implements CanActivate {
     if (contextPermissions == undefined) {
       return true;
     }
+
     const { role } = context.switchToHttp().getRequest<RequestWithActiveUser>()[Keys.User]!;
+    logger.trace(`role is ${role}`);
     return contextPermissions.every((permission) => PermissionsMap[role].includes(permission));
   }
 }
