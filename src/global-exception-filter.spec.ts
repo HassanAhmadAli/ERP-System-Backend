@@ -22,37 +22,30 @@ describe("GlobalExceptionFilter", () => {
   let i18nService: jest.Mocked<I18nService<I18nTranslations>>;
   let baseCatchSpy: jest.SpyInstance;
 
-  const httpHost = {
-    getType: () => "http" as const,
-    switchToHttp: () => ({
-      getRequest: () => ({}),
-      getResponse: () => ({}),
-      getNext: () => ({}),
+  const httpHost: ArgumentsHost = {
+    getType: jest.fn().mockReturnValue("http" as const),
+    switchToHttp: jest.fn().mockReturnValue({
+      getRequest: jest.fn().mockReturnValue({}),
+      getResponse: jest.fn().mockReturnValue({}),
+      getNext: jest.fn().mockReturnValue({}),
     }),
-    switchToWs: () => {
-      throw new Error("Unexpected WS access in HTTP host");
-    },
-    switchToRpc: () => {
-      throw new Error("Unexpected RPC access in HTTP host");
-    },
-    getArgs: () => [],
-  } as unknown as ArgumentsHost;
+    switchToWs: jest.fn(),
+    switchToRpc: jest.fn(),
+    getArgs: jest.fn().mockReturnValue([]),
+    getArgByIndex: jest.fn(),
+  };
 
-  const createWsHost = (socketClient: { emit: jest.Mock }): ArgumentsHost =>
-    ({
-      getType: () => "ws" as const,
-      switchToWs: () => ({
-        getClient: () => socketClient,
-        getData: () => ({}),
-      }),
-      switchToHttp: () => {
-        throw new Error("Unexpected HTTP access in WS host");
-      },
-      switchToRpc: () => {
-        throw new Error("Unexpected RPC access in WS host");
-      },
-      getArgs: () => [],
-    }) as unknown as ArgumentsHost;
+  const createWsHost = (socketClient: { emit: jest.Mock }): ArgumentsHost => ({
+    getType: jest.fn().mockReturnValue("ws" as const),
+    switchToWs: jest.fn().mockReturnValue({
+      getClient: jest.fn().mockReturnValue(socketClient),
+      getData: jest.fn().mockReturnValue({}),
+    }),
+    switchToHttp: jest.fn(),
+    switchToRpc: jest.fn(),
+    getArgs: jest.fn().mockReturnValue([]),
+    getArgByIndex: jest.fn(),
+  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -233,19 +226,14 @@ describe("GlobalExceptionFilter", () => {
 
   describe("edge cases", () => {
     it("throws an error for unknown host type", () => {
-      const unknownHost = {
-        getType: () => "rpc" as const,
-        switchToHttp: () => {
-          throw new Error("Unexpected HTTP access");
-        },
-        switchToWs: () => {
-          throw new Error("Unexpected WS access");
-        },
-        switchToRpc: () => {
-          throw new Error("Unexpected RPC access");
-        },
-        getArgs: () => [],
-      } as Partial<ArgumentsHost> as ArgumentsHost;
+      const unknownHost: ArgumentsHost = {
+        getType: jest.fn().mockReturnValue("rpc" as const),
+        switchToHttp: jest.fn(),
+        switchToWs: jest.fn(),
+        switchToRpc: jest.fn(),
+        getArgs: jest.fn().mockReturnValue([]),
+        getArgByIndex: jest.fn(),
+      };
 
       expect(() => filter.catch(new Error("test"), unknownHost)).toThrow(
         "using host type without specifiying how to handle it",

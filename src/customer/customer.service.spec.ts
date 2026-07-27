@@ -99,6 +99,7 @@ describe("CustomerService", () => {
               },
               discount: {
                 findMany: discountFindManyMock,
+                fields: { maxUses: "maxUses" },
               },
               customer: {
                 findUniqueOrThrow: customerFindUniqueOrThrowMock,
@@ -158,7 +159,7 @@ describe("CustomerService", () => {
           OR: [{ endDate: null }, { endDate: { gte: expect.any(Date) } }],
           AND: [
             {
-              OR: [{ maxUses: null }, { usedCount: { lt: expect.any(Number) } }],
+              OR: [{ maxUses: null }, { usedCount: { lt: "maxUses" } }],
             },
           ],
         },

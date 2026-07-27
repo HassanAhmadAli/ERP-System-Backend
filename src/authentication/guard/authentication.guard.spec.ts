@@ -12,14 +12,32 @@ describe("AuthenticationGuard", () => {
   let reflector: jest.Mocked<Reflector>;
   let i18nService: jest.Mocked<I18nService<I18nTranslations>>;
 
+  const dummyContext: ExecutionContext = {
+    getHandler: jest.fn(),
+    getClass: jest.fn(),
+    getType: jest.fn(),
+    getArgByIndex: jest.fn(),
+    switchToHttp: jest.fn(),
+    switchToRpc: jest.fn(),
+    switchToWs: jest.fn(),
+    getArgs: jest.fn(),
+  };
+
   const mockExecutionContext = (): jest.Mocked<ExecutionContext> => {
-    const context = {
+    const context: jest.Mocked<ExecutionContext> = {
       getHandler: jest.fn(),
       getClass: jest.fn(),
+      getType: jest.fn(),
+      getArgByIndex: jest.fn(),
       switchToHttp: jest.fn().mockReturnValue({
         getRequest: jest.fn().mockReturnValue({}),
+        getResponse: jest.fn(),
+        getNext: jest.fn(),
       }),
-    } as unknown as jest.Mocked<ExecutionContext>;
+      switchToRpc: jest.fn(),
+      switchToWs: jest.fn(),
+      getArgs: jest.fn(),
+    };
     return context;
   };
 
@@ -73,9 +91,7 @@ describe("AuthenticationGuard", () => {
       const context = mockExecutionContext();
       reflector.getAllAndOverride.mockReturnValue(undefined);
 
-      const parentCanActivateSpy = jest
-        .spyOn(AuthenticationGuard.prototype as any, "canActivate")
-        .mockResolvedValue(true);
+      const parentCanActivateSpy = jest.spyOn(AuthenticationGuard.prototype, "canActivate").mockResolvedValue(true);
 
       const result = await guard.canActivate(context);
 
@@ -89,7 +105,7 @@ describe("AuthenticationGuard", () => {
       const error = new Error("Authentication failed");
 
       expect(() => {
-        guard.handleRequest(error, false, null, {} as any);
+        guard.handleRequest(error, false, null, dummyContext);
       }).toThrow(error);
     });
 
@@ -97,7 +113,7 @@ describe("AuthenticationGuard", () => {
       const jwtError = new JsonWebTokenError("jwt malformed");
 
       expect(() => {
-        guard.handleRequest(null, false, jwtError, {} as any);
+        guard.handleRequest(null, false, jwtError, dummyContext);
       }).toThrow(UnauthorizedException);
 
       expect(i18nService.t).toHaveBeenCalledWith("errors.auth.invalidToken");
@@ -107,7 +123,7 @@ describe("AuthenticationGuard", () => {
       const info = new Error("No auth token");
 
       expect(() => {
-        guard.handleRequest(null, false, info, {} as any);
+        guard.handleRequest(null, false, info, dummyContext);
       }).toThrow(UnauthorizedException);
 
       expect(i18nService.t).toHaveBeenCalledWith("errors.auth.accessTokenNotProvided");
@@ -115,17 +131,26 @@ describe("AuthenticationGuard", () => {
 
     it("handleRequest_validUser_attachesToRequestAndReturnsUser", () => {
       const user = { sub: 1, email: "test@example.com", role: "CASHIER", language: "en", tokenType: "access" };
-      const req = {};
-      const context = {
-        switchToHttp: () => ({
-          getRequest: () => req,
+      const req: Record<PropertyKey, unknown> = {};
+      const context: ExecutionContext = {
+        getType: jest.fn(),
+        getHandler: jest.fn(),
+        getClass: jest.fn(),
+        getArgByIndex: jest.fn(),
+        switchToHttp: jest.fn().mockReturnValue({
+          getRequest: jest.fn().mockReturnValue(req),
+          getResponse: jest.fn(),
+          getNext: jest.fn(),
         }),
-      } as unknown as ExecutionContext;
+        switchToRpc: jest.fn(),
+        switchToWs: jest.fn(),
+        getArgs: jest.fn(),
+      };
 
       const result = guard.handleRequest(null, user, null, context);
 
       expect(result).toBe(user);
-      expect((req as any)[Keys.User]).toBe(user);
+      expect(req[Keys.User]).toBe(user);
     });
   });
 });

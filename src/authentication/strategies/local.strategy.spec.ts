@@ -7,6 +7,7 @@ import { HashingService } from "@/hashing/hashing.service";
 import { NotificationsService } from "@/notification/notification.service";
 import { I18nService } from "nestjs-i18n";
 import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
+import { UserRole } from "@/prisma/client";
 
 describe("LocalStrategy", () => {
   let strategy: LocalStrategy;
@@ -27,6 +28,54 @@ describe("LocalStrategy", () => {
     language: "en",
     passwordHash: "hashed-password",
   } as const;
+
+  const mockUserModel = (
+    overrides?: Partial<{
+      id: number;
+      fullName: string;
+      fullNameAr: string | null;
+      email: string;
+      phoneNumber: string | null;
+      passwordHash: string;
+      nationalId: string;
+      role: UserRole;
+      isActive: boolean;
+      language: string;
+      isVerified: boolean;
+      verificationCode: string | null;
+      verificationCodeExpiresAt: Date | null;
+      deletedAt: Date | null;
+      createdAt: Date;
+      updatedAt: Date;
+    }>,
+  ) => ({
+    id: 1,
+    fullName: "Test User",
+    fullNameAr: null,
+    email: "test@example.com",
+    phoneNumber: null,
+    passwordHash: "hashed-password",
+    nationalId: "0000000000",
+    role: UserRole.CASHIER,
+    isActive: true,
+    language: "en",
+    isVerified: true,
+    verificationCode: null,
+    verificationCodeExpiresAt: null,
+    deletedAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    productPhotos: [],
+    employee: null,
+    customer: null,
+    auditLogs: [],
+    sentNotifications: [],
+    notificationRecipients: [],
+    recordedExpenses: [],
+    createdDiscounts: [],
+    productImportJobs: [],
+    ...overrides,
+  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -85,7 +134,7 @@ describe("LocalStrategy", () => {
 
   describe("validate", () => {
     it("validate_userNotFound_throwsUnauthorized", async () => {
-      prismaService.client.user.findFirst.mockResolvedValue(null);
+      jest.mocked(prismaService.client.user.findFirst).mockResolvedValue(null);
       cacheManager.get.mockResolvedValue(undefined);
 
       await expect(strategy.validate(email, password)).rejects.toThrow(UnauthorizedException);
@@ -94,8 +143,9 @@ describe("LocalStrategy", () => {
     });
 
     it("validate_unverifiedUser_throwsUnauthorized", async () => {
-      const unverifiedUser = { ...mockUser, isVerified: false };
-      prismaService.client.user.findFirst.mockResolvedValue(unverifiedUser);
+      jest
+        .mocked(prismaService.client.user.findFirst)
+        .mockResolvedValue(mockUserModel({ id: userId, isVerified: false }));
       cacheManager.get.mockResolvedValue(undefined);
 
       await expect(strategy.validate(email, password)).rejects.toThrow(UnauthorizedException);
@@ -103,7 +153,7 @@ describe("LocalStrategy", () => {
     });
 
     it("validate_wrongPassword_throwsUnauthorized", async () => {
-      prismaService.client.user.findFirst.mockResolvedValue(mockUser);
+      jest.mocked(prismaService.client.user.findFirst).mockResolvedValue(mockUserModel({ id: userId }));
       hashingService.compare.mockResolvedValue(false);
       cacheManager.get.mockResolvedValue(undefined);
 
@@ -112,7 +162,7 @@ describe("LocalStrategy", () => {
     });
 
     it("validate_validCredentials_returnsActiveUser", async () => {
-      prismaService.client.user.findFirst.mockResolvedValue(mockUser);
+      jest.mocked(prismaService.client.user.findFirst).mockResolvedValue(mockUserModel({ id: userId }));
       hashingService.compare.mockResolvedValue(true);
 
       const result = await strategy.validate(email, password);
@@ -133,7 +183,7 @@ describe("LocalStrategy", () => {
 
   describe("handlePasswordNotMatch (via validate with wrong password)", () => {
     it("handlePasswordNotMatch_firstAttempt_setsCacheToOne", async () => {
-      prismaService.client.user.findFirst.mockResolvedValue(mockUser);
+      jest.mocked(prismaService.client.user.findFirst).mockResolvedValue(mockUserModel({ id: userId }));
       hashingService.compare.mockResolvedValue(false);
       cacheManager.get.mockResolvedValue(undefined);
 
@@ -144,7 +194,7 @@ describe("LocalStrategy", () => {
     });
 
     it("handlePasswordNotMatch_underThreeAttempts_incrementsCache", async () => {
-      prismaService.client.user.findFirst.mockResolvedValue(mockUser);
+      jest.mocked(prismaService.client.user.findFirst).mockResolvedValue(mockUserModel({ id: userId }));
       hashingService.compare.mockResolvedValue(false);
       cacheManager.get.mockResolvedValue(1);
 
@@ -154,7 +204,7 @@ describe("LocalStrategy", () => {
     });
 
     it("handlePasswordNotMatch_threeAttemptsWithUserId_sendsAlert", async () => {
-      prismaService.client.user.findFirst.mockResolvedValue(mockUser);
+      jest.mocked(prismaService.client.user.findFirst).mockResolvedValue(mockUserModel({ id: userId }));
       hashingService.compare.mockResolvedValue(false);
       cacheManager.get.mockResolvedValue(3);
 
@@ -172,8 +222,9 @@ describe("LocalStrategy", () => {
     });
 
     it("handlePasswordNotMatch_threeAttemptsWithoutUserId_returnsSilently", async () => {
-      const unverifiedUser = { ...mockUser, isVerified: false };
-      prismaService.client.user.findFirst.mockResolvedValue(unverifiedUser);
+      jest
+        .mocked(prismaService.client.user.findFirst)
+        .mockResolvedValue(mockUserModel({ id: userId, isVerified: false }));
       cacheManager.get.mockResolvedValue(3);
 
       await expect(strategy.validate(email, password)).rejects.toThrow(UnauthorizedException);

@@ -35,13 +35,20 @@ describe("PermissionsGuard", () => {
       language: "en",
       tokenType: "access",
     };
-    const context = {
+    const context: jest.Mocked<ExecutionContext> = {
       getHandler: jest.fn(),
       getClass: jest.fn(),
+      getType: jest.fn(),
+      getArgByIndex: jest.fn(),
       switchToHttp: jest.fn().mockReturnValue({
         getRequest: jest.fn().mockReturnValue({ [Keys.User]: activeUser }),
+        getResponse: jest.fn(),
+        getNext: jest.fn(),
       }),
-    } as unknown as jest.Mocked<ExecutionContext>;
+      switchToRpc: jest.fn(),
+      switchToWs: jest.fn(),
+      getArgs: jest.fn(),
+    };
     return context;
   };
 

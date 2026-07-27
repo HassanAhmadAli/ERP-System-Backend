@@ -4,7 +4,8 @@ import { UserService } from "./user.service";
 import { PrismaService } from "@/prisma/prisma.service";
 import { AppCachingService } from "@/caching/caching.service";
 import { AuthenticationService } from "@/authentication/authentication.service";
-import type { CreateStaffDto } from "./dto/create-staff.dto";
+import { CreateStaffDto } from "./dto/create-staff.dto";
+import { phoneNumberSchema } from "@/common/schema/phone-number.schema";
 
 describe("UserService", () => {
   let service: UserService;
@@ -104,7 +105,14 @@ describe("UserService", () => {
 
   describe("createStaff", () => {
     it("delegates to AuthenticationService.createVerifiedStaff", async () => {
-      const dto = { role: UserRole.CASHIER, jobTitle: "Cashier" } as unknown as CreateStaffDto;
+      const dto = Object.assign(new CreateStaffDto(), {
+        role: UserRole.CASHIER,
+        jobTitle: "Cashier",
+        fullName: "Staff User",
+        email: "staff@example.com",
+        password: "TestPass123",
+        nationalId: "0987654321",
+      });
       const staffResult = {
         message: "Staff account created",
         user: { id: 1, email: "staff@example.com", fullName: "Staff", fullNameAr: null, role: UserRole.CASHIER },
@@ -121,7 +129,18 @@ describe("UserService", () => {
       const error = new Error("Auth failure");
       createVerifiedStaffMock.mockRejectedValue(error);
 
-      await expect(service.createStaff({} as CreateStaffDto)).rejects.toThrow(error);
+      await expect(
+        service.createStaff(
+          Object.assign(new CreateStaffDto(), {
+            role: UserRole.CASHIER,
+            jobTitle: "Cashier",
+            fullName: "Error User",
+            email: "error@example.com",
+            password: "TestPass123",
+            nationalId: "0000000000",
+          }),
+        ),
+      ).rejects.toThrow(error);
     });
   });
 
@@ -187,12 +206,13 @@ describe("UserService", () => {
 
   describe("updateStaffProfile", () => {
     it("updates staff user and removes cached data", async () => {
-      const dto = { phoneNumber: "+11111111111" };
-      userUpdateMock.mockResolvedValue({ ...mockStaffProfile, phoneNumber: "+11111111111" });
+      const validPhone = phoneNumberSchema.parse("+12025550199");
+      const dto = { phoneNumber: validPhone };
+      userUpdateMock.mockResolvedValue({ ...mockStaffProfile, phoneNumber: "+12025550199" });
 
       const result = await service.updateStaffProfile(dto, 3);
 
-      expect(result).toStrictEqual({ ...mockStaffProfile, phoneNumber: "+11111111111" });
+      expect(result).toStrictEqual({ ...mockStaffProfile, phoneNumber: "+12025550199" });
       expect(userUpdateMock).toHaveBeenCalledWith({
         where: { id: 3, role: { in: [UserRole.CASHIER, UserRole.ACCOUNTANT, UserRole.WAREHOUSE_WORKER] } },
         data: dto,
