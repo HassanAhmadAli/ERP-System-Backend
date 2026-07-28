@@ -5,7 +5,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 import { Prisma } from "./generated/prisma-client/client";
 
-const softDeleteQueryOptions = {
+export const softDeleteQueryOptions = {
   async aggregate({ args, query }: any) {
     if (args.where != undefined && "deletedAt" in args.where) {
       return query(args);

@@ -41,7 +41,7 @@ describe("RefreshTokenIdsStorage", () => {
 
       await storage.insert(userId, tokenId);
 
-      expect(cacheManager.set).toHaveBeenCalledWith(`user-${userId}`, tokenId, expect.any(Number));
+      expect(cacheManager.set).toHaveBeenCalledWith(`user-${userId}`, tokenId, expect.any(Number) as number);
     });
   });
 

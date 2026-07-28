@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from "@nestjs/testing";
 import { BadRequestException } from "@nestjs/common";
 import { Prisma, UserRole, DiscountScope } from "@/prisma/client";
 import { I18nService } from "nestjs-i18n";
-import type { I18nTranslations } from "@/i18n/generated/i18n.generated";
 import { AuditAction } from "@/common/const";
 import { CustomerService } from "./customer.service";
 import { PrismaService } from "@/prisma/prisma.service";
@@ -155,8 +156,8 @@ describe("CustomerService", () => {
           scope: DiscountScope.CUSTOMER,
           customerId: 5,
           isActive: true,
-          startDate: { lte: expect.any(Date) },
-          OR: [{ endDate: null }, { endDate: { gte: expect.any(Date) } }],
+          startDate: { lte: expect.any(Date) as Date },
+          OR: [{ endDate: null }, { endDate: { gte: expect.any(Date) as Date } }],
           AND: [
             {
               OR: [{ maxUses: null }, { usedCount: { lt: "maxUses" } }],

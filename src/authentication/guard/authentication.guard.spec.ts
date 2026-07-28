@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from "@nestjs/testing";
 import { Reflector } from "@nestjs/core";
 import { ExecutionContext, UnauthorizedException } from "@nestjs/common";

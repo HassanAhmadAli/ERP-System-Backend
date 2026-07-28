@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Prisma } from "./generated/prisma-client/client";
 import { recordAuditFromExtension } from "@/audit-log/audit-context";
 import { AuditAction } from "@/common/const";
@@ -48,71 +49,79 @@ function shouldAuditModel(model: string): boolean {
   return !EXCLUDED_MODELS.has(model);
 }
 
+interface AuditModelHandlerParams {
+  model: string;
+  args: any;
+  query: (...args: any[]) => any;
+}
+
+export const auditExtensionHandlers = {
+  async create({ model, args, query }: AuditModelHandlerParams) {
+    const result = (await query(args)) as object;
+    if (shouldAuditModel(model)) {
+      await recordAuditFromExtension({
+        action: AuditAction.CREATE,
+        entity: model,
+        entityId: extractEntityId(result, args),
+        newValue: sanitizeRecord(result),
+      });
+    }
+    return result;
+  },
+  async update({ model, args, query }: AuditModelHandlerParams) {
+    const result = (await query(args)) as object;
+    if (shouldAuditModel(model)) {
+      await recordAuditFromExtension({
+        action: AuditAction.UPDATE,
+        entity: model,
+        entityId: extractEntityId(result, args),
+        oldValue: sanitizeRecord(args.where),
+        newValue: sanitizeRecord(result),
+      });
+    }
+    return result;
+  },
+  async delete({ model, args, query }: AuditModelHandlerParams) {
+    const result = (await query(args)) as object;
+    if (shouldAuditModel(model)) {
+      await recordAuditFromExtension({
+        action: AuditAction.DELETE,
+        entity: model,
+        entityId: extractEntityId(result, args),
+        oldValue: sanitizeRecord(args.where),
+      });
+    }
+    return result;
+  },
+  async updateMany({ model, args, query }: AuditModelHandlerParams) {
+    const result = (await query(args)) as object;
+    if (shouldAuditModel(model)) {
+      await recordAuditFromExtension({
+        action: AuditAction.UPDATE,
+        entity: model,
+        entityId: "many",
+        oldValue: sanitizeRecord(args.where),
+        newValue: sanitizeRecord(args.data),
+      });
+    }
+    return result;
+  },
+  async deleteMany({ model, args, query }: AuditModelHandlerParams) {
+    const result = (await query(args)) as object;
+    if (shouldAuditModel(model)) {
+      await recordAuditFromExtension({
+        action: AuditAction.DELETE,
+        entity: model,
+        entityId: "many",
+        oldValue: sanitizeRecord(args.where),
+      });
+    }
+    return result;
+  },
+};
+
 export const auditPrismaExtension = Prisma.defineExtension({
   query: {
-    $allModels: {
-      async create({ model, args, query }) {
-        const result = await query(args);
-        if (shouldAuditModel(model)) {
-          await recordAuditFromExtension({
-            action: AuditAction.CREATE,
-            entity: model,
-            entityId: extractEntityId(result, args),
-            newValue: sanitizeRecord(result),
-          });
-        }
-        return result;
-      },
-      async update({ model, args, query }) {
-        const result = await query(args);
-        if (shouldAuditModel(model)) {
-          await recordAuditFromExtension({
-            action: AuditAction.UPDATE,
-            entity: model,
-            entityId: extractEntityId(result, args),
-            oldValue: sanitizeRecord(args.where),
-            newValue: sanitizeRecord(result),
-          });
-        }
-        return result;
-      },
-      async delete({ model, args, query }) {
-        const result = await query(args);
-        if (shouldAuditModel(model)) {
-          await recordAuditFromExtension({
-            action: AuditAction.DELETE,
-            entity: model,
-            entityId: extractEntityId(result, args),
-            oldValue: sanitizeRecord(args.where),
-          });
-        }
-        return result;
-      },
-      async updateMany({ model, args, query }) {
-        const result = await query(args);
-        if (shouldAuditModel(model)) {
-          await recordAuditFromExtension({
-            action: AuditAction.UPDATE,
-            entity: model,
-            entityId: "many",
-            oldValue: sanitizeRecord(args.where),
-            newValue: sanitizeRecord(args.data),
-          });
-        }
-        return result;
-      },
-      async deleteMany({ model, args, query }) {
-        const result = await query(args);
-        if (shouldAuditModel(model)) {
-          await recordAuditFromExtension({
-            action: AuditAction.DELETE,
-            entity: model,
-            entityId: "many",
-            oldValue: sanitizeRecord(args.where),
-          });
-        }
-        return result;
-      },
-    },
+    $allModels: auditExtensionHandlers,
   },
 });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from "@nestjs/testing";
 import { BadRequestException, UnauthorizedException } from "@nestjs/common";
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
@@ -198,7 +199,7 @@ describe("AuthenticationService", () => {
         access_token: "access-token",
         refresh_token: "refresh-token",
       });
-      expect(refreshTokenIdsStorage.insert).toHaveBeenCalledWith(mockActiveUser.sub, expect.any(String));
+      expect(refreshTokenIdsStorage.insert).toHaveBeenCalledWith(mockActiveUser.sub, expect.any(String) as string);
     });
 
     it("signIn_noExpectedRole_allowsAnyRole", async () => {
@@ -252,7 +253,7 @@ describe("AuthenticationService", () => {
         access_token: "new-access-token",
         refresh_token: "new-refresh-token",
       });
-      expect(refreshTokenIdsStorage.insert).toHaveBeenCalledWith(1, expect.any(String));
+      expect(refreshTokenIdsStorage.insert).toHaveBeenCalledWith(1, expect.any(String) as string);
     });
   });
 
@@ -261,7 +262,7 @@ describe("AuthenticationService", () => {
     const code = "12345678";
 
     it("verifyEmail_userNotFound_throwsBadRequest", async () => {
-      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb: any) => {
+      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb) => {
         return cb(prismaService.client);
       });
       jest.mocked(prismaService.client.$queryRaw).mockResolvedValue([]);
@@ -276,7 +277,7 @@ describe("AuthenticationService", () => {
         verificationCode: code,
         verificationCodeExpiresAt: new Date(Date.now() + 3600000),
       };
-      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb: any) => {
+      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb) => {
         return cb(prismaService.client);
       });
       jest.mocked(prismaService.client.$queryRaw).mockResolvedValue([user]);
@@ -292,7 +293,7 @@ describe("AuthenticationService", () => {
         verificationCode: "different-code",
         verificationCodeExpiresAt: new Date(Date.now() + 3600000),
       };
-      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb: any) => {
+      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb) => {
         return cb(prismaService.client);
       });
       jest.mocked(prismaService.client.$queryRaw).mockResolvedValue([user]);
@@ -308,7 +309,7 @@ describe("AuthenticationService", () => {
         verificationCode: code,
         verificationCodeExpiresAt: new Date(Date.now() - 3600000),
       };
-      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb: any) => {
+      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb) => {
         return cb(prismaService.client);
       });
       jest.mocked(prismaService.client.$queryRaw).mockResolvedValue([user]);
@@ -325,7 +326,7 @@ describe("AuthenticationService", () => {
         verificationCode: code,
         verificationCodeExpiresAt: new Date(Date.now() + 3600000),
       };
-      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb: any) => {
+      jest.mocked(prismaService.client.$transaction).mockImplementation(async (cb) => {
         return cb(prismaService.client);
       });
       jest.mocked(prismaService.client.$queryRaw).mockResolvedValue([user]);
@@ -366,7 +367,7 @@ describe("AuthenticationService", () => {
             role: "CUSTOMER",
             verificationCode: "12345678",
             isVerified: false,
-          }),
+          }) as object,
         }),
       );
       expect(notificationsService.addNotification).not.toHaveBeenCalled();
@@ -383,7 +384,7 @@ describe("AuthenticationService", () => {
       expect(result.message).toBe("User created");
       expect(notificationsService.addNotification).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: expect.any(String),
+          title: expect.any(String) as string,
           userId: 1,
           email: signupDto.email,
           type: "security",
@@ -405,17 +406,15 @@ describe("AuthenticationService", () => {
       };
 
       hashingService.hash.mockResolvedValue("hashed-password");
-      jest
-        .mocked(prismaService.client.user.create)
-        .mockResolvedValue(
-          mockUserModel({
-            id: 1,
-            email: staffDto.email,
-            fullName: staffDto.fullName,
-            fullNameAr: null,
-            role: staffDto.role,
-          }),
-        );
+      jest.mocked(prismaService.client.user.create).mockResolvedValue(
+        mockUserModel({
+          id: 1,
+          email: staffDto.email,
+          fullName: staffDto.fullName,
+          fullNameAr: null,
+          role: staffDto.role,
+        }),
+      );
 
       const result = await service.createVerifiedStaff(staffDto);
 
@@ -429,14 +428,14 @@ describe("AuthenticationService", () => {
             passwordHash: "hashed-password",
             employee: expect.objectContaining({
               create: { jobTitle: "Cashier" },
-            }),
-          }),
+            }) as object,
+          }) as object,
           select: expect.objectContaining({
             id: true,
             email: true,
             fullName: true,
             role: true,
-          }),
+          }) as object,
         }),
       );
     });
@@ -483,7 +482,7 @@ describe("AuthenticationService", () => {
 
       expect(notificationsService.addNotification).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: expect.any(String),
+          title: expect.any(String) as string,
           userId,
           email,
           type: "security",

@@ -236,9 +236,9 @@ export class OrderService {
       });
 
       if (willComplete) {
-        let discountAmount = new Prisma.Decimal(0);
+        let _discountAmount = new Prisma.Decimal(0);
         if (order.appliedDiscountId != undefined) {
-          discountAmount = await this.discountService.calculateOrderDiscount({
+          _discountAmount = await this.discountService.calculateOrderDiscount({
             discountId: order.appliedDiscountId,
             customerId: order.customerId,
             items: order.items,
@@ -254,9 +254,9 @@ export class OrderService {
       // Handle cancellation after delivery (refund scenario)
       if (dto.status === OrderStatus.CANCELLED && wasCompleted) {
         // Recalculate discount to reverse customer totals accurately
-        let discountAmount = new Prisma.Decimal(0);
+        let _discountAmount = new Prisma.Decimal(0);
         if (order.appliedDiscountId != undefined) {
-          discountAmount = await this.discountService.calculateOrderDiscount({
+          _discountAmount = await this.discountService.calculateOrderDiscount({
             discountId: order.appliedDiscountId,
             customerId: order.customerId,
             items: order.items,

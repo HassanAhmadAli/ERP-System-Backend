@@ -1,5 +1,4 @@
 import { type Prisma, UserRole } from "@/prisma/client";
-import type { PrismaTransactionClient } from "./data/generators";
 import { faker } from "./data/generators";
 import { HashingService } from "@/hashing/hashing.service";
 

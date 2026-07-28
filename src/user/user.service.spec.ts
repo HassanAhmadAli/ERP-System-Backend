@@ -246,7 +246,7 @@ describe("UserService", () => {
       expect(result).toStrictEqual(mockUser);
       expect(userUpdateMock).toHaveBeenCalledWith({
         where: { id: 1 },
-        data: { deletedAt: expect.any(Date) },
+        data: { deletedAt: expect.any(Date) as Date },
       });
     });
 
@@ -267,7 +267,7 @@ describe("UserService", () => {
       expect(result).toStrictEqual(mockUser);
       expect(userUpdateMock).toHaveBeenCalledWith({
         where: { id: 2 },
-        data: { deletedAt: expect.any(Date) },
+        data: { deletedAt: expect.any(Date) as Date },
       });
     });
 
@@ -325,8 +325,8 @@ describe("UserService", () => {
       await service.viewUsersProfiles(defaultQuery, undefined);
 
       const expectedWhere = { role: undefined, deletedAt: null };
-      expect(userFindManyMock).toHaveBeenCalledWith(expect.objectContaining({ where: expectedWhere }));
-      expect(userCountMock).toHaveBeenCalledWith(expect.objectContaining({ where: expectedWhere }));
+      expect(userFindManyMock).toHaveBeenCalledWith(expect.objectContaining({ where: expectedWhere }) as object);
+      expect(userCountMock).toHaveBeenCalledWith(expect.objectContaining({ where: expectedWhere }) as object);
     });
 
     it("uses deletedAt: { not: null } when query.deleted is true", async () => {
@@ -339,7 +339,7 @@ describe("UserService", () => {
       expect(userFindManyMock).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { role: UserRole.ACCOUNTANT, deletedAt: { not: null } },
-          select: expect.objectContaining({ deletedAt: true }),
+          select: expect.objectContaining({ deletedAt: true }) as object,
         }),
       );
     });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from "@nestjs/testing";
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import { UnauthorizedException } from "@nestjs/common";
@@ -212,7 +213,7 @@ describe("LocalStrategy", () => {
 
       expect(notificationsService.addNotification).toHaveBeenCalledWith(
         expect.objectContaining({
-          title: expect.any(String),
+          title: expect.any(String) as string,
           userId,
           email,
           type: "security",
