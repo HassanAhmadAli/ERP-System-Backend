@@ -7,21 +7,24 @@ import { AppModule } from "../src/app.module";
 describe("App (e2e)", () => {
   let app: INestApplication<App>;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.enableShutdownHooks();
 
     await app.init();
-  });
+  }, 30_000);
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
   });
 
-  it("GET /health returns ok", () => {
-    return request(app.getHttpServer()).get("/health").expect(200).expect({ status: "ok" });
+  it("GET /health returns ok", async () => {
+    const response = await request(app.getHttpServer()).get("/health");
+    expect(response.status).toBe(200);
+    expect(response.body).toStrictEqual({ status: "ok" });
   });
 });
