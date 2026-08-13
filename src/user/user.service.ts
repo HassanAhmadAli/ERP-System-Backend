@@ -7,6 +7,7 @@ import { deletedAt, PaginationQueryDto } from "@/common/dto/pagination-query.dto
 import { paginated } from "@/common/types/paginated-response";
 import { AuthenticationService } from "@/authentication/authentication.service";
 import { CreateStaffDto } from "./dto/create-staff.dto";
+import { UpdateLanguageDto } from "./dto/update-language.dto";
 
 const STAFF_ROLES: UserRole[] = [UserRole.CASHIER, UserRole.ACCOUNTANT, UserRole.WAREHOUSE_WORKER];
 const staff_profile_select = {
@@ -37,6 +38,18 @@ export class UserService {
     });
     await this.cachingService.users.removeCachedUserData(userId);
     return res;
+  }
+
+  async updatePersonalLanguage({ language }: UpdateLanguageDto, userId: number) {
+    await Promise.all([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { language },
+        select: {},
+      }),
+      this.cachingService.users.removeCachedUserData(userId),
+    ]);
+    return;
   }
 
   async createStaff(dto: CreateStaffDto) {

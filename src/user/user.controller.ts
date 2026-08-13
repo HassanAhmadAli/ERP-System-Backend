@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query 
 import { ApiTags } from "@nestjs/swagger";
 import { UserService } from "./user.service";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { UpdateLanguageDto } from "./dto/update-language.dto";
 import { ActiveUser } from "@/common/decorators/ActiveUser.decorator";
 import { setPermissions } from "@/access-control/decorators/permissions.decorator";
 import { Permissions } from "@/access-control/permission.type";
@@ -49,6 +50,15 @@ export class UserController {
   @DocumentOkResponse("Profile updated")
   updatePersonalProfile(@Body() dto: UpdateProfileDto, @ActiveUser("sub") userId: number) {
     return this.userService.updatePersonalProfile(dto, userId);
+  }
+
+  @Patch("language")
+  @setPermissions(Permissions.updatePersonalProfile)
+  @DocumentOperation("Update current user language", "Changes the language stored on the authenticated user's record.")
+  @DocumentBody(UpdateLanguageDto)
+  @DocumentOkResponse("Language updated")
+  updateLanguage(@Body() dto: UpdateLanguageDto, @ActiveUser("sub") userId: number) {
+    return this.userService.updatePersonalLanguage(dto, userId);
   }
 
   @Get("me")
