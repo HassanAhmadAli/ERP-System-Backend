@@ -45,7 +45,6 @@ export class UserService {
       this.prisma.user.update({
         where: { id: userId },
         data: { language },
-        select: {},
       }),
       this.cachingService.users.removeCachedUserData(userId),
     ]);

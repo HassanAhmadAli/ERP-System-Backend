@@ -69,11 +69,15 @@ export class OrderService {
         }
       }
 
+      const total = subtotal.sub(discountAmount);
+
       const order = await tx.order.create({
         data: {
           customerId,
           appliedDiscountId,
           subtotal,
+          discountAmount,
+          total,
           deliveryAddress: dto.deliveryAddress ?? customer.address,
           deliveryAddressAr: dto.deliveryAddressAr ?? customer.addressAr,
           items: {
@@ -89,7 +93,41 @@ export class OrderService {
       });
 
       await this.notifyOrderStatus(customer.user.id, customer.user.email, order.id, order.status);
-      return { ...order, discountAmount: discountAmount };
+      return order;
+    });
+  }
+
+  async calculateForUser(userId: number, dto: CreateOrderDto) {
+    const customer = await this.prisma.customer.findUniqueOrThrow({
+      where: { userId },
+      select: { id: true },
+    });
+    return this.calculatePreview(customer.id, dto);
+  }
+
+  async calculatePreview(customerId: number, dto: CreateOrderDto) {
+    return this.prisma.$transaction(async (tx) => {
+      const lineItems = await this.buildLineItems(tx, dto.items, false);
+      const subtotal = lineItems.reduce((sum, item) => sum.add(item.subtotal), new Prisma.Decimal(0));
+
+      const discountAmount = await this.discountService.calculateOrderDiscount({
+        discountId: dto.discountId,
+        customerId,
+        items: dto.items,
+      });
+      const total = subtotal.sub(discountAmount);
+
+      return {
+        subtotal,
+        discountAmount,
+        total,
+        items: lineItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          subtotal: item.subtotal,
+        })),
+      };
     });
   }
 

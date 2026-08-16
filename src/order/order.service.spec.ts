@@ -85,6 +85,8 @@ describe("OrderService", () => {
     id: 1,
     customerId: 5,
     subtotal: new Prisma.Decimal("200"),
+    discountAmount: new Prisma.Decimal("0"),
+    total: new Prisma.Decimal("200"),
     appliedDiscountId: null,
     deliveryAddress: "123 St",
     deliveryAddressAr: null,
@@ -204,7 +206,12 @@ describe("OrderService", () => {
       (prisma.customer.findUniqueOrThrow as jest.Mock).mockResolvedValue(mockCustomerWithUser);
       (prisma.$transaction as jest.Mock).mockImplementation(async (cb) => cb(mockTx));
       mockTx.product.findMany.mockResolvedValue([mockProduct]);
-      mockTx.order.create.mockResolvedValue(mockOrderWithIncludes);
+      mockTx.order.create.mockResolvedValue({
+        ...mockOrderWithIncludes,
+        appliedDiscountId: 1,
+        discountAmount: new Prisma.Decimal("20"),
+        total: new Prisma.Decimal("180"),
+      });
       discountService.calculateOrderDiscount.mockResolvedValue(new Prisma.Decimal("20"));
       discountService.validateDiscountUsable.mockResolvedValue(undefined);
 
@@ -212,10 +219,15 @@ describe("OrderService", () => {
 
       expect(result).toMatchObject({ id: 1 });
       expect(result.discountAmount).toStrictEqual(new Prisma.Decimal("20"));
+      expect(result.total).toStrictEqual(new Prisma.Decimal("180"));
       expect(discountService.validateDiscountUsable).toHaveBeenCalledWith(1);
       expect(mockTx.order.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ appliedDiscountId: 1 }) as object,
+          data: expect.objectContaining({
+            appliedDiscountId: 1,
+            discountAmount: new Prisma.Decimal("20"),
+            total: new Prisma.Decimal("180"),
+          }) as object,
         }),
       );
     });
@@ -225,14 +237,28 @@ describe("OrderService", () => {
       (prisma.customer.findUniqueOrThrow as jest.Mock).mockResolvedValue(mockCustomerWithUser);
       (prisma.$transaction as jest.Mock).mockImplementation(async (cb) => cb(mockTx));
       mockTx.product.findMany.mockResolvedValue([mockProduct]);
-      mockTx.order.create.mockResolvedValue(mockOrderWithIncludes);
+      mockTx.order.create.mockResolvedValue({
+        ...mockOrderWithIncludes,
+        discountAmount: new Prisma.Decimal("0"),
+        total: new Prisma.Decimal("200"),
+      });
       discountService.calculateOrderDiscount.mockResolvedValue(new Prisma.Decimal("0"));
 
       const result = await service.createOrder(5, dto);
 
       expect(result).toMatchObject({ id: 1 });
       expect(result.discountAmount).toStrictEqual(new Prisma.Decimal("0"));
+      expect(result.total).toStrictEqual(new Prisma.Decimal("200"));
       expect(discountService.validateDiscountUsable).not.toHaveBeenCalled();
+      expect(mockTx.order.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            appliedDiscountId: undefined,
+            discountAmount: new Prisma.Decimal("0"),
+            total: new Prisma.Decimal("200"),
+          }) as object,
+        }),
+      );
     });
 
     it("throws BadRequestException when stock is insufficient", async () => {
@@ -267,6 +293,77 @@ describe("OrderService", () => {
       (prisma.$transaction as jest.Mock).mockRejectedValue(new Error("Transaction failed"));
 
       await expect(service.createOrder(5, dto)).rejects.toThrow("Transaction failed");
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // calculateForUser / calculatePreview
+  // ---------------------------------------------------------------------------
+  describe("calculateForUser", () => {
+    it("looks up customer by userId and delegates to calculatePreview", async () => {
+      const dto = { items: [{ productId: 1, quantity: 2 }], discountId: 1 };
+      (prisma.customer.findUniqueOrThrow as jest.Mock).mockResolvedValue({ id: 5 });
+      (prisma.$transaction as jest.Mock).mockImplementation(async (cb) => cb(mockTx));
+      mockTx.product.findMany.mockResolvedValue([mockProduct]);
+      discountService.calculateOrderDiscount.mockResolvedValue(new Prisma.Decimal("20"));
+
+      const result = await service.calculateForUser(10, dto);
+
+      expect(result).toStrictEqual({
+        subtotal: new Prisma.Decimal("200"),
+        discountAmount: new Prisma.Decimal("20"),
+        total: new Prisma.Decimal("180"),
+        items: [
+          { productId: 1, quantity: 2, unitPrice: new Prisma.Decimal("100"), subtotal: new Prisma.Decimal("200") },
+        ],
+      });
+      expect(prisma.customer.findUniqueOrThrow).toHaveBeenCalledWith({
+        where: { userId: 10 },
+        select: { id: true },
+      });
+    });
+  });
+
+  describe("calculatePreview", () => {
+    it("computes subtotal, discount and total without validating stock", async () => {
+      const dto = { items: [{ productId: 1, quantity: 2 }], discountId: 1 };
+      (prisma.$transaction as jest.Mock).mockImplementation(async (cb) => cb(mockTx));
+      mockTx.product.findMany.mockResolvedValue([mockProduct]);
+      discountService.calculateOrderDiscount.mockResolvedValue(new Prisma.Decimal("30"));
+
+      const result = await service.calculatePreview(5, dto);
+
+      expect(result).toStrictEqual({
+        subtotal: new Prisma.Decimal("200"),
+        discountAmount: new Prisma.Decimal("30"),
+        total: new Prisma.Decimal("170"),
+        items: [
+          { productId: 1, quantity: 2, unitPrice: new Prisma.Decimal("100"), subtotal: new Prisma.Decimal("200") },
+        ],
+      });
+    });
+
+    it("returns zero discount when discountId is not provided", async () => {
+      const dto = { items: [{ productId: 1, quantity: 2 }] };
+      (prisma.$transaction as jest.Mock).mockImplementation(async (cb) => cb(mockTx));
+      mockTx.product.findMany.mockResolvedValue([mockProduct]);
+      discountService.calculateOrderDiscount.mockResolvedValue(new Prisma.Decimal("0"));
+
+      const result = await service.calculatePreview(5, dto);
+
+      expect(result).toMatchObject({
+        discountAmount: new Prisma.Decimal("0"),
+        total: new Prisma.Decimal("200"),
+      });
+    });
+
+    it("propagates discount validation errors", async () => {
+      const dto = { items: [{ productId: 1, quantity: 2 }], discountId: 999 };
+      (prisma.$transaction as jest.Mock).mockImplementation(async (cb) => cb(mockTx));
+      mockTx.product.findMany.mockResolvedValue([mockProduct]);
+      discountService.calculateOrderDiscount.mockRejectedValue(new BadRequestException("expired"));
+
+      await expect(service.calculatePreview(5, dto)).rejects.toThrow(BadRequestException);
     });
   });
 

@@ -41,6 +41,30 @@ export class OrderController {
     return this.orderService.createOrder(customerId, dto);
   }
 
+  @Post("customer/calculate")
+  @setPermissions(Permissions.createCustomerOrder)
+  @DocumentOperation(
+    "Calculate order totals (customer)",
+    "Preview subtotal, discount and paid amount before placing the order.",
+  )
+  @DocumentBody(CreateOrderDto)
+  @DocumentOkResponse("Calculated order totals")
+  calculateCustomerOrder(@ActiveUser("sub") userId: number, @Body() dto: CreateOrderDto) {
+    return this.orderService.calculateForUser(userId, dto);
+  }
+
+  @Post("cashier/calculate")
+  @setPermissions(Permissions.createOrder)
+  @DocumentOperation(
+    "Calculate order totals (cashier)",
+    "Preview subtotal, discount and paid amount before placing the order.",
+  )
+  @DocumentBody(CreateCashierOrderDto)
+  @DocumentOkResponse("Calculated order totals")
+  calculateOrder(@Body() { customerId, ...dto }: CreateCashierOrderDto) {
+    return this.orderService.calculatePreview(customerId, dto);
+  }
+
   @Get("customer")
   @setPermissions(Permissions.viewCustomerPersonalOrders)
   @DocumentOperation("List own orders (customer)")

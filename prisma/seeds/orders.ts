@@ -69,11 +69,15 @@ export async function seedOrders(tx: PrismaTransactionClient) {
 
     customerTotals[customerId] = (customerTotals[customerId] ?? 0) + subtotal;
 
+    const discountAmount = useDiscount ? round(subtotal * 0.1) : 0;
+
     orders.push({
       id: i + 1,
       customerId,
       appliedDiscountId: discountId,
       subtotal: round(subtotal),
+      discountAmount,
+      total: round(subtotal - discountAmount),
       deliveryAddress: null,
       deliveryAddressAr: null,
       status,
