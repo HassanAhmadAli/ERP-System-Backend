@@ -9,6 +9,7 @@ allowBuilds:
   msgpackr-extract: true
   prisma: true
   prisma-zod-generator: true
+  puppeteer: true
   unrs-resolver: true
 minimumReleaseAge: 4320
 preferOffline: true

@@ -1,6 +1,18 @@
 {
   "version": 1,
   "skills": {
+    "class-diagram": {
+      "source": "athola/claude-night-market",
+      "sourceType": "github",
+      "skillPath": "plugins/cartograph/skills/class-diagram/SKILL.md",
+      "computedHash": "3733e666a00e321ea4b25612e748d4a5eb722e7034a4cf825ab0f1aef9c1aee7"
+    },
+    "design-doc-mermaid": {
+      "source": "spillwavesolutions/design-doc-mermaid",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "362eecfd376c8932aa86d366a6406bf389ac4f2f52d93e5892adf8c963392afe"
+    },
     "generate-test-cases": {
       "source": "clear-solutions/unit-tests-skills",
       "sourceType": "github",
@@ -30,6 +42,12 @@
       "sourceType": "github",
       "skillPath": "prisma-client-api/SKILL.md",
       "computedHash": "0434410e48fb796bbdc3ad0050654bfc9cf72c89b30dbad098ee5c9f655b7f85"
+    },
+    "slidev-mermaid": {
+      "source": "yoanbernabeu/slidev-skills",
+      "sourceType": "github",
+      "skillPath": "skills/visuals/slidev-mermaid/SKILL.md",
+      "computedHash": "b6e886acfdf3cf699762c3775fc5a31db7a458780c580cd362c811abccdd0221"
     },
     "zod": {
       "source": "anivar/zod-skill",
