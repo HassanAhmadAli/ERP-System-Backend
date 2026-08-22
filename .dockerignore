@@ -30,11 +30,9 @@
 **/secrets.dev.yaml
 **/values.dev.yaml
 **/build
-**/dist
 LICENSE
 README.md
 public/
-dist/*
 nginx.conf
 uploads/
 backups/

@@ -19,6 +19,7 @@
     "start:repl:dev": "cross-env NODE_ENV=development nest start --entryFile repl --watch",
     "start:debug": "cross-env NODE_ENV=development NEST_DEBUG=true nest start --debug --watch",
     "start:prod": "cross-env NODE_ENV=production node dist/main",
+    "start:docker": "pnpm run build && docker compose up --build",
     "lint": "eslint \"{src,test,prisma}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",

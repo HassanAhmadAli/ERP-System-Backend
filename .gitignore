@@ -67,3 +67,4 @@ ignore/
 backups/
 usecases.md
 .agents/skills
+ssl/
