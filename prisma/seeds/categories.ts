@@ -1,5 +1,6 @@
 import type { Prisma } from "@/prisma/client";
 import type { PrismaTransactionClient } from "./data/generators";
+import { CATEGORY_PHOTO_SEEDS, categoryImageUrl, ensureSeedPhotoFiles, storedFileCreateManyInput } from "./photos";
 
 export interface SeedCategory {
   id: number;
@@ -71,15 +72,26 @@ export const CATEGORIES: SeedCategory[] = [
 export const CATEGORY_COUNT = CATEGORIES.length;
 
 export async function seedCategories(tx: PrismaTransactionClient) {
-  const data: Prisma.CategoryCreateManyInput[] = CATEGORIES.map((c) => ({
-    id: c.id,
-    name: c.name,
-    nameAr: c.nameAr,
-    description: c.description,
-    descriptionAr: c.descriptionAr,
-    imageUrl: null,
-    storedFileId: null,
-  }));
+  // Ensure placeholder files exist so download endpoints don't 404 after a fresh seed
+  ensureSeedPhotoFiles(CATEGORY_PHOTO_SEEDS);
+
+  // Create StoredFile rows for categories first (FK target)
+  await tx.storedFile.createMany({ data: CATEGORY_PHOTO_SEEDS.map(storedFileCreateManyInput) });
+
+  // Now create categories with their imageUrl and storedFileId already set —
+  // matches current DB content where every category has a photo.
+  const data: Prisma.CategoryCreateManyInput[] = CATEGORIES.map((c, index) => {
+    const photo = CATEGORY_PHOTO_SEEDS[index]!;
+    return {
+      id: c.id,
+      name: c.name,
+      nameAr: c.nameAr,
+      description: c.description,
+      descriptionAr: c.descriptionAr,
+      imageUrl: categoryImageUrl(photo.storedFileId),
+      storedFileId: photo.storedFileId,
+    };
+  });
 
   await tx.category.createMany({ data });
 }

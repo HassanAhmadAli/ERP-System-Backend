@@ -1,31 +1,36 @@
-import path from "node:path";
 import type { PrismaTransactionClient } from "./data/generators";
-
-export const PRODUCT_PHOTO_STORED_FILE_ID = "8f4c2a91e7d34b6fa0d5c2e81b9f7a3c";
-const PRODUCT_PHOTO_PATH = path.posix.join("uploads", PRODUCT_PHOTO_STORED_FILE_ID);
+import {
+  PRODUCT_PHOTO_LINKS,
+  PRODUCT_PRIMARY_PHOTO_MAP,
+  PRODUCT_STORED_FILE_SEEDS,
+  ensureSeedPhotoFiles,
+  productPhotoUrl,
+  storedFileCreateManyInput,
+} from "./photos";
 
 export async function seedProductPhotos(tx: PrismaTransactionClient) {
-  await tx.storedFile.create({
-    data: {
-      id: PRODUCT_PHOTO_STORED_FILE_ID,
-      originalname: "local-tomato.png",
-      mimetype: "image/png",
-      path: PRODUCT_PHOTO_PATH,
-      size: 118_402,
-      productPhotos: {
-        create: [
-          {
-            id: 1,
-            creatorId: 1,
-            productId: 1,
-          },
-        ],
-      },
-    },
+  // Ensure files exist on disk (uploads/*.jpeg) — creates empty placeholders if missing
+  ensureSeedPhotoFiles(PRODUCT_STORED_FILE_SEEDS);
+
+  // Create StoredFile rows for all product photos (44 files)
+  await tx.storedFile.createMany({ data: PRODUCT_STORED_FILE_SEEDS.map(storedFileCreateManyInput) });
+
+  // Create ProductPhoto linking rows — matches current DB: 44 photos (41 products, 3 extras)
+  await tx.productPhoto.createMany({
+    data: PRODUCT_PHOTO_LINKS.map((link) => ({
+      creatorId: link.creatorId,
+      productId: link.productId,
+      storedFileId: link.storedFileId,
+    })),
   });
 
-  await tx.product.update({
-    where: { id: 1 },
-    data: { imageUrl: `/product-photo/download/${PRODUCT_PHOTO_STORED_FILE_ID}` },
-  });
+  // Update every product's imageUrl to point at its primary photo (as in current DB)
+  // All 41 products have at least one photo; product 1 and 4 have extras but imageUrl points to first.
+  for (const [productIdStr, storedFileId] of Object.entries(PRODUCT_PRIMARY_PHOTO_MAP)) {
+    const productId = Number(productIdStr);
+    await tx.product.update({
+      where: { id: productId },
+      data: { imageUrl: productPhotoUrl(storedFileId) },
+    });
+  }
 }
