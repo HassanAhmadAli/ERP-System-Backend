@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { Test, TestingModule } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService, createPrismaClient } from "./prisma.service";
@@ -25,12 +24,8 @@ jest.mock("./audit-extension", () => ({
   auditPrismaExtension: Symbol("auditPrismaExtension"),
 }));
 
-const { PrismaClient } = jest.requireMock("./generated/prisma-client/client") as {
-  PrismaClient: jest.Mock;
-};
-const { PrismaPg } = jest.requireMock("@prisma/adapter-pg") as {
-  PrismaPg: jest.Mock;
-};
+const { PrismaClient } = jest.requireMock("./generated/prisma-client/client");
+const { PrismaPg } = jest.requireMock("@prisma/adapter-pg");
 
 const createMockPrismaClient = () => {
   const client = {
@@ -70,7 +65,7 @@ describe("PrismaService", () => {
     it("creates PrismaPg adapter with connection string and max connections", () => {
       jest.clearAllMocks();
       const mockClient = createMockPrismaClient();
-      (PrismaClient as jest.Mock).mockReturnValue(mockClient);
+      PrismaClient.mockReturnValue(mockClient);
 
       createPrismaClient({ DATABASE_URL: "postgresql://localhost:5432/test" });
 
@@ -83,7 +78,7 @@ describe("PrismaService", () => {
     it("applies softDelete and audit extensions via $extends chain", () => {
       jest.clearAllMocks();
       const mockClient = createMockPrismaClient();
-      (PrismaClient as jest.Mock).mockReturnValue(mockClient);
+      PrismaClient.mockReturnValue(mockClient);
 
       createPrismaClient({ DATABASE_URL: "postgresql://localhost:5432/test" });
 

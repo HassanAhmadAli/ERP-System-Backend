@@ -1,22 +1,35 @@
+import { DiscountType } from "@/prisma/client";
 import type { Prisma } from "@/prisma/client";
-import { faker } from "@faker-js/faker";
-
-faker.seed(42);
 
 export type PrismaTransactionClient = Omit<
   Prisma.TransactionClient,
   "$connect" | "$disconnect" | "$on" | "$use" | "$extends"
 >;
 
-export { faker };
+function mulberry32(seed: number): () => number {
+  let a = seed;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const rng = mulberry32(20260822);
+
+export function random(): number {
+  return rng();
+}
 
 export function randomDate(start: Date, end: Date): Date {
-  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+  return new Date(start.getTime() + rng() * (end.getTime() - start.getTime()));
 }
 
 export function weightedRandomIndex(weights: number[]): number {
   const total = weights.reduce((a, b) => a + b, 0);
-  let r = Math.random() * total;
+  let r = rng() * total;
   for (let i = 0; i < weights.length; i++) {
     r -= weights[i]!;
     if (r <= 0) return i;
@@ -25,20 +38,20 @@ export function weightedRandomIndex(weights: number[]): number {
 }
 
 export function pick<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)]!;
+  return arr[Math.floor(rng() * arr.length)]!;
 }
 
 export function pickN<T>(arr: readonly T[], n: number): T[] {
-  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  const shuffled = [...arr].sort(() => rng() - 0.5);
   return shuffled.slice(0, Math.min(n, arr.length));
 }
 
 export function randInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(rng() * (max - min + 1)) + min;
 }
 
 export function randFloat(min: number, max: number, decimals = 2): number {
-  return parseFloat((Math.random() * (max - min) + min).toFixed(decimals));
+  return parseFloat((rng() * (max - min) + min).toFixed(decimals));
 }
 
 export function round(num: number, decimals = 2): number {
@@ -66,7 +79,7 @@ export function randomOrderDate(now: Date): Date {
 
   const day = date.getDay();
   const isWeekend = day >= 4;
-  if (Math.random() > (isWeekend ? 0.6 : 0.4)) {
+  if (rng() > (isWeekend ? 0.6 : 0.4)) {
     return randomOrderDate(now);
   }
 
@@ -74,17 +87,14 @@ export function randomOrderDate(now: Date): Date {
   return date;
 }
 
-let barcodeCounter = 1_000_000_000_000;
-export function nextBarcode(): string {
-  return String(barcodeCounter++);
+export interface DiscountRuleLike {
+  type: DiscountType;
+  value: number;
+  maxInvoiceValue: number;
 }
 
-export async function batchCreate<T>(
-  items: T[],
-  createFn: (batch: T[]) => Promise<unknown>,
-  batchSize = 50,
-): Promise<void> {
-  for (let i = 0; i < items.length; i += batchSize) {
-    await createFn(items.slice(i, i + batchSize));
-  }
+export function computeDiscountAmount(rule: DiscountRuleLike, subtotal: number): number {
+  const raw = rule.type === DiscountType.PERCENTAGE ? (subtotal * rule.value) / 100 : Math.min(rule.value, subtotal);
+  const capped = rule.maxInvoiceValue > 0 ? Math.min(raw, rule.maxInvoiceValue) : raw;
+  return round(Math.min(capped, subtotal));
 }

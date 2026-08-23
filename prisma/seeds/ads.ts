@@ -1,55 +1,68 @@
 import { AdPlacement } from "@/prisma/client";
 import type { PrismaTransactionClient } from "./data/generators";
 
+function daysFromNow(days: number): Date {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
 export const adsData = [
   {
     id: 1,
-    title: "Summer Sale",
-    description: "Up to 30% off selected electronics and accessories.",
-    imageUrl: "https://cdn.example.com/ads/summer-sale-banner.jpg",
-    linkUrl: "https://example.com/promotions/summer-sale",
+    title: "Fresh Produce Week",
+    titleAr: "أسبوع الخضار والفواكه الطازجة",
+    description: "Daily arrivals from the Ghouta farms with special prices.",
+    descriptionAr: "وصولات يومية من مزارع الغوطة بأسعار مميزة.",
+    imageUrl: null,
+    linkUrl: "/products?category=vegetables",
     placement: AdPlacement.HOME,
     isActive: true,
-    startDate: new Date("2025-01-01T00:00:00.000Z"),
-    endDate: new Date("2026-12-31T23:59:59.000Z"),
+    startDate: daysFromNow(-10),
+    endDate: daysFromNow(20),
   },
   {
     id: 2,
-    title: "Free shipping on orders over $50",
-    description: "Checkout today and get free delivery on qualifying orders.",
+    title: "Free delivery on orders over SYP 150,000",
+    titleAr: "توصيل مجاني للطلبات التي تتجاوز 150,000 ليرة سورية",
+    description: "Shop online and get your order delivered anywhere at no extra cost.",
+    descriptionAr: "تسوق عبر الإنترنت واحصل على توصيل طلبك دون أي رسوم إضافية.",
     imageUrl: null,
-    linkUrl: "https://example.com/promotions/free-shipping",
+    linkUrl: "/products",
     placement: AdPlacement.CHECKOUT,
     isActive: true,
-    startDate: new Date("2025-01-01T00:00:00.000Z"),
+    startDate: daysFromNow(-30),
     endDate: null,
   },
   {
     id: 3,
-    title: "New arrivals this week",
-    description: "Browse the latest products added to our catalog.",
-    imageUrl: "https://cdn.example.com/ads/new-arrivals-sidebar.jpg",
-    linkUrl: "https://example.com/products?sort=newest",
+    title: "Earn points with every purchase",
+    titleAr: "اجمع النقاط مع كل عملية شراء",
+    description: "Join the loyalty program and redeem points for exclusive rewards.",
+    descriptionAr: "انضم إلى برنامج الولاء واستبدل نقاطك بمكافآت حصرية.",
+    imageUrl: null,
+    linkUrl: "/loyalty",
     placement: AdPlacement.SIDEBAR,
     isActive: true,
-    startDate: new Date("2025-04-01T00:00:00.000Z"),
-    endDate: new Date("2026-06-30T23:59:59.000Z"),
+    startDate: daysFromNow(-60),
+    endDate: daysFromNow(90),
   },
   {
     id: 4,
-    title: "Loyalty members earn double points",
-    description: "Limited-time offer for registered customers.",
+    title: "Ramadan Kareem offers",
+    titleAr: "عروض رمضان كريم",
+    description: "Special discounts across the store during the holy month.",
+    descriptionAr: "خصومات خاصة على جميع أقسام المتجر خلال الشهر الكريم.",
     imageUrl: null,
-    linkUrl: "https://example.com/loyalty",
+    linkUrl: "/products?promo=ramadan",
     placement: AdPlacement.HOME,
     isActive: false,
-    startDate: new Date("2024-01-01T00:00:00.000Z"),
-    endDate: new Date("2024-12-31T23:59:59.000Z"),
+    startDate: daysFromNow(-200),
+    endDate: daysFromNow(-170),
   },
 ];
 
 export async function seedAds(tx: PrismaTransactionClient) {
-  for (const item of adsData) {
-    await tx.advertisement.create({ data: item });
-  }
+  await tx.advertisement.createMany({ data: adsData });
 }

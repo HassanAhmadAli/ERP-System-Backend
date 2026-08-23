@@ -33,6 +33,7 @@ import { ExpenseModule } from "./expense/expense.module";
 import { ReportModule } from "./report/report.module";
 import { HealthController } from "./health/health.controller";
 import { LoyaltyRewardModule } from "./loyalty-offers/loyalty-discount-offer.module";
+import { LoyaltyPolicyModule } from "./loyalty-policy/loyalty-policy.module";
 import { AuditLogModule } from "./audit-log/audit-log.module";
 import { AdModule } from "./ad/ad.module";
 import { FinancialModule } from "./financial/financial.module";
@@ -109,6 +110,7 @@ import { ThrottlerModule } from "@nestjs/throttler";
     ExpenseModule,
     ReportModule,
     LoyaltyRewardModule,
+    LoyaltyPolicyModule,
     AuditLogModule,
     AdModule,
     FinancialModule,

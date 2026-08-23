@@ -1,38 +1,46 @@
 import { ProductImportStatus } from "@/prisma/client";
 import type { PrismaTransactionClient } from "./data/generators";
+import { WAREHOUSE_USER_ID } from "./staff";
+
+function daysAgo(days: number, hour = 9, minute = 0): Date {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  date.setHours(hour, minute, 0, 0);
+  return date;
+}
 
 export const productImportJobsData = [
   {
     id: 1,
-    uploadedById: 5,
-    fileName: "spring-inventory.csv",
+    uploadedById: WAREHOUSE_USER_ID,
+    fileName: "spring-restock-2026.csv",
+    fileNameAr: "توريد-الربيع-2026.csv",
     status: ProductImportStatus.COMPLETED,
-    totalRows: 24,
-    successCount: 22,
+    totalRows: 41,
+    successCount: 39,
     errorCount: 2,
     errors: [
-      { row: 8, message: "Invalid barcode format" },
-      { row: 19, message: "Duplicate SKU" },
+      { row: 17, message: "Invalid barcode format" },
+      { row: 29, message: "Duplicate SKU barcode" },
     ],
-    createdAt: new Date("2025-03-10T09:00:00.000Z"),
-    completedAt: new Date("2025-03-10T09:02:30.000Z"),
+    createdAt: daysAgo(45, 9),
+    completedAt: daysAgo(45, 9, 2),
   },
   {
     id: 2,
-    uploadedById: 5,
-    fileName: "april-restock.csv",
+    uploadedById: WAREHOUSE_USER_ID,
+    fileName: "snacks-restock.csv",
+    fileNameAr: "توريد-السناكس.csv",
     status: ProductImportStatus.FAILED,
-    totalRows: 10,
+    totalRows: 15,
     successCount: 0,
-    errorCount: 10,
+    errorCount: 15,
     errors: [{ row: 1, message: "Missing required column: sellingPrice" }],
-    createdAt: new Date("2025-04-18T14:00:00.000Z"),
-    completedAt: new Date("2025-04-18T14:00:05.000Z"),
+    createdAt: daysAgo(12, 14),
+    completedAt: daysAgo(12, 14, 1),
   },
 ];
 
 export async function seedProductImportJobs(tx: PrismaTransactionClient) {
-  for (const item of productImportJobsData) {
-    await tx.productImportJob.create({ data: item });
-  }
+  await tx.productImportJob.createMany({ data: productImportJobsData });
 }
